@@ -1,0 +1,162 @@
+{
+  "Stable Diffusion 1.4": {
+    "url": "CompVis/stable-diffusion-v1-4",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Stable Diffusion 1.5": {
+    "url": "runwayml/stable-diffusion-v1-5",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Stable Diffusion 2.0 (512)": {
+    "url": "stabilityai/stable-diffusion-2-base",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Stable Diffusion 2.0 (768)": {
+    "url": "stabilityai/stable-diffusion-2",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "v_prediction"
+  },
+  "Stable Diffusion 2.1 (512)": {
+    "url": "stabilityai/stable-diffusion-2-1-base",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Stable Diffusion 2.1 (768)": {
+    "url": "stabilityai/stable-diffusion-2-1",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "v_prediction"
+  },
+  "Pokemon Diffusion": {
+    "url": "justinpinkney/pokemon-stable-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Waifu Diffusion 1.3": {
+    "url": "hakurei/waifu-diffusion-v1-3",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Anything v3.0": {
+    "url": "Linaqruf/anything-v3.0",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "seek.art_MEGA": {
+    "url": "coreco/seek.art_MEGA",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Robo Diffusion": {
+    "url": "nousr/robo-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "nousr robot",
+    "prediction": "epsilon"
+  },
+  "Inkpunk Diffusion": {
+    "url": "Envvi/Inkpunk-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "nvinkpunk",
+    "prediction": "epsilon"
+  },
+  "Classic Animation Diffusion": {
+    "url": "nitrosocke/classic-anim-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "classic disney style",
+    "prediction": "epsilon"
+  },
+  "Modern Animation Diffusion": {
+    "url": "nitrosocke/mo-di-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "modern disney style",
+    "prediction": "epsilon"
+  },
+  "Ghibli Diffusion": {
+    "url": "nitrosocke/Ghibli-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "ghibli style",
+    "prediction": "epsilon"
+  },
+  "Van Gogh Diffusion": {
+    "url": "dallinmackay/Van-Gogh-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "lvngvncnt",
+    "prediction": "epsilon"
+  },
+  "Openjourney": {
+    "url": "prompthero/openjourney",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "mdjrny-v4 style",
+    "prediction": "epsilon"
+  },
+  "Dreamlike Diffusion": {
+    "url": "dreamlike-art/dreamlike-diffusion-1.0",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "dreamlikeart",
+    "prediction": "epsilon"
+  },
+  "Future Diffusion": {
+    "url": "nitrosocke/Future-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "future style",
+    "prediction": "epsilon"
+  },
+  "Gigafractal Diffusion": {
+    "url": "kabachuha/gigafractal2-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "gigafractal artstyle",
+    "prediction": "v_prediction"
+  },
+  "Stable Diffusion 1.4 with VAE": {
+    "url": "CompVis/stable-diffusion-v1-4",
+    "requires_hf_login": false,
+    "vae": {
+      "url": "stabilityai/sd-vae-ft-mse",
+      "requires_hf_login": true
+    },
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Stable Diffusion 1.5 with VAE": {
+    "url": "runwayml/stable-diffusion-v1-5",
+    "requires_hf_login": false,
+    "vae": {
+      "url": "stabilityai/sd-vae-ft-mse",
+      "requires_hf_login": true
+    },
+    "keyword": "",
+    "prediction": "epsilon"
+  }
+}
