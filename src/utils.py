@@ -10,6 +10,27 @@ import numpy as np
 from PIL import Image
 from src import EverythingsPromptRandomizer
 from collections import namedtuple
+from packaging import version
+
+try:
+    from diffusers.utils import PIL_INTERPOLATION
+except ImportError:
+    if version.parse(version.parse(PIL.__version__).base_version) >= version.parse("9.1.0"):
+        PIL_INTERPOLATION = {
+            "linear": PIL.Image.Resampling.BILINEAR,
+            "bilinear": PIL.Image.Resampling.BILINEAR,
+            "bicubic": PIL.Image.Resampling.BICUBIC,
+            "lanczos": PIL.Image.Resampling.LANCZOS,
+            "nearest": PIL.Image.Resampling.NEAREST,
+        }
+    else:
+        PIL_INTERPOLATION = {
+            "linear": PIL.Image.LINEAR,
+            "bilinear": PIL.Image.BILINEAR,
+            "bicubic": PIL.Image.BICUBIC,
+            "lanczos": PIL.Image.LANCZOS,
+            "nearest": PIL.Image.NEAREST,
+        }
 
 Grid = namedtuple("Grid", ["tiles", "tile_w", "tile_h", "image_w", "image_h", "overlap"])
 
@@ -39,7 +60,7 @@ def load_img(path, shape):
             path = os.path.join(path, random.choice(files))
             print(f"Chose random init image {path}")
         image = Image.open(path).convert('RGB')
-    image = image.resize(shape, resample=PIL.Image.Resampling.LANCZOS)
+    image = image.resize(shape, resample=PIL_INTERPOLATION["lanczos"])
     image = np.array(image).astype(np.float16) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image)
@@ -47,14 +68,14 @@ def load_img(path, shape):
 
 def load_img_for_upscale(img, w, h):
     w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
-    image = img.resize((w, h), resample=PIL.Image.Resampling.LANCZOS)
+    image = img.resize((w, h), resample=PIL_INTERPOLATION["lanczos"])
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image)
     return 2.*image - 1.
 
 def resize_image(image):
-        return image.resize((int(image.size[0] * 2), int(image.size[1] * 2)), Image.Resampling.LANCZOS)
+        return image.resize((int(image.size[0] * 2), int(image.size[1] * 2)), PIL_INTERPOLATION["lanczos"])
 
 def split_grid(image, tile_w=512, tile_h=512, overlap=64):
     w = image.width

@@ -5,12 +5,10 @@ import math
 import random
 import torch
 import json
-from tqdm import tqdm
 import PIL
 import numpy as np
 from PIL import Image
 #from diffusers import StableDiffusionPipeline
-from huggingface_hub import notebook_login
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 from src import utils, SimpleStableDiffusionPipeline
 
@@ -51,11 +49,13 @@ def main(opt, pipe, recreate):
         # pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
         if model_choice["vae"] != "":
             if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
+                from huggingface_hub import notebook_login
                 notebook_login()
             vae = AutoencoderKL.from_pretrained(model_choice["vae"]["url"])
             pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(model_choice["url"], vae = vae, safety_checker = None, requires_safety_checker = False).to("cuda")
         else:
             if model_choice["requires_hf_login"]:
+                from huggingface_hub import notebook_login
                 notebook_login()
             pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(model_choice["url"], safety_checker = None, requires_safety_checker = False).to("cuda")
 
