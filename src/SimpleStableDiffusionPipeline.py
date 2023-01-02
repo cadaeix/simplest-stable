@@ -298,7 +298,8 @@ def pad_tokens_and_weights(tokens, weights, max_length, bos, eos, no_boseos_midd
             else:
                 for j in range(max_embeddings_multiples):
                     w.append(1.0)  # weight for starting token in this chunk
-                    w += weights[i][j * (chunk_length - 2)                                    : min(len(weights[i]), (j + 1) * (chunk_length - 2))]
+                    w += weights[i][j * (chunk_length - 2)
+                                         : min(len(weights[i]), (j + 1) * (chunk_length - 2))]
                     w.append(1.0)  # weight for ending token in this chunk
                 w += [1.0] * (weights_length - len(w))
             weights[i] = w[:]
@@ -962,24 +963,24 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
 
         # putting encoding here
         prompt_schedule = get_learned_conditioning_prompt_schedules(
-            [prompt], num_inference_steps)
+            [prompt], num_inference_steps)[0]
 
-        encode_schedule = []
-        for i, (end_at_step, text) in enumerate(prompt_schedule[0]):
-            encode_schedule.append([
-                end_at_step,
-                self._encode_prompt(
-                    text,
-                    device,
-                    num_images_per_prompt,
-                    do_classifier_free_guidance,
-                    negative_prompt,
-                    max_embeddings_multiples
-                ),
-                text
-            ])
+        if negative_prompt != None:
+            negative_schedule = get_learned_conditioning_prompt_schedules(
+                [negative_prompt], num_inference_steps)[0]
+        else:
+            negative_schedule = [[num_inference_steps, None]]
 
-        dtype = encode_schedule[0][1].dtype
+        text_embedding = self._encode_prompt(
+            prompt_schedule[0][1],
+            device,
+            num_images_per_prompt,
+            do_classifier_free_guidance,
+            negative_schedule[0][1],
+            max_embeddings_multiples
+        )
+
+        dtype = text_embedding.dtype
 
         # 6. Prepare latent variables
         latents, init_latents_orig, noise = self.prepare_latents(
@@ -997,7 +998,10 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
-        current_encoding = 0
+        lp = 0
+        ln = 0
+        last_positive = prompt_schedule[0][1]
+        last_negative = negative_schedule[0][1]
 
         # 8. Denoising loop
         for i, t in enumerate(self.progress_bar(timesteps)):
@@ -1009,12 +1013,31 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             latent_model_input = self.scheduler.scale_model_input(
                 latent_model_input, t)
 
-            if encode_schedule[current_encoding][0] <= i:
-                current_encoding += 1
+            change = False
+            if lp < len(prompt_schedule) and prompt_schedule[lp][0] <= i - 1:
+                lp += 1
+                last_positive = prompt_schedule[lp][1]
+                change = True
+            if negative_prompt:
+                if lp < len(negative_schedule) and negative_schedule[ln][0] <= i - 1:
+                    ln += 1
+                    last_negative = negative_schedule[ln][1]
+                    change = True
+
+            if change:
+                print(last_negative)
+                text_embedding = self._encode_prompt(
+                    last_positive,
+                    device,
+                    num_images_per_prompt,
+                    do_classifier_free_guidance,
+                    last_negative,
+                    max_embeddings_multiples
+                )
 
             # predict the noise residual
             noise_pred = self.unet(latent_model_input, t,
-                                   encoder_hidden_states=encode_schedule[current_encoding][1]).sample
+                                   encoder_hidden_states=text_embedding).sample
 
             # perform guidance
             if do_classifier_free_guidance:
