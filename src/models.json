@@ -55,6 +55,13 @@
     "keyword": "",
     "prediction": "epsilon"
   },
+  "Waifu Diffusion 1.4 (Epoch 1 Test Version)": {
+    "url": "hakurei/waifu-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
   "Anything v3.0": {
     "url": "Linaqruf/anything-v3.0",
     "requires_hf_login": false,
