@@ -25,7 +25,7 @@ sampler_dict = {
         "type": "diffusers",
         "sampler": LMSDiscreteScheduler
     },
-    "DPMSolver++ (2S)": {
+    "DPMSolver++ (2S) (has issues with img2img)": {
         "type": "diffusers_DPMSolver",
         "sampler": DPMSolverSinglestepScheduler
     },
@@ -38,11 +38,9 @@ sampler_dict = {
 
 def main(opt, pipe, recreate):
     model_choice = model_dict[opt["model_name"]]
-    opt["prompt"] = utils.process_prompt(
-        opt["prompt"], model_choice["keyword"])
 
     if pipe == None or recreate:
-        print("Loading the model...")
+        print("Loading the model... If this is the first time downloading this model this session, this may take a while...")
         if model_choice["vae"] != "":
             if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
                 utils.login_to_huggingface()
@@ -79,7 +77,6 @@ def main(opt, pipe, recreate):
 
     pipe.enable_attention_slicing()
     tiling_type = "tiling" if opt["tiling"] else "original"
-    utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
 
     if opt["init_img"] != None:
         prompt_options = {
@@ -108,7 +105,15 @@ def main(opt, pipe, recreate):
 
     batch_name = datetime.now().strftime("%H_%M_%S")
     for _b in range(opt["batches"]):
+        utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
         utils.set_seed(opt["seed"])
+        prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
+            opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
+        if prompt_options["negative_prompt"]:
+            prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
+                opt["negative"], "")
+
+        print(prompt_options["prompt"])
         image = pipe(**prompt_options).images[0]
         image_name = f"{batch_name}_{_b}"
         image.save(f"{image_name}.png")

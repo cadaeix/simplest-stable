@@ -60,9 +60,9 @@ def login_to_huggingface():
     login(token)
 
 
-def process_prompt(prompt, keyword):
+def process_prompt_and_add_keyword(prompt, keyword):
     result = EverythingsPromptRandomizer.random_prompt(prompt)
-    if keyword != "" and keyword not in prompt:
+    if keyword != "" and keyword != None and keyword not in prompt:
         result = f"({keyword}:1), {result}"
     return result
 

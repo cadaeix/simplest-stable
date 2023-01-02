@@ -941,19 +941,6 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         # dtype = text_embeddings.dtype
         # moving input prompt slightly later for scheduling
 
-        # 4. Preprocess image and mask
-        if isinstance(image, PIL.Image.Image):
-            image = preprocess_image(image)
-        if image is not None:
-            image = image.to(device=self.device, dtype=dtype)
-        if isinstance(mask_image, PIL.Image.Image):
-            mask_image = preprocess_mask(mask_image, self.vae_scale_factor)
-        if mask_image is not None:
-            mask = mask_image.to(device=self.device, dtype=dtype)
-            mask = torch.cat([mask] * batch_size * num_images_per_prompt)
-        else:
-            mask = None
-
         # 5. set timesteps
         self.scheduler.set_timesteps(num_inference_steps, device=device)
         timesteps, num_inference_steps = self.get_timesteps(
@@ -981,6 +968,19 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         )
 
         dtype = text_embedding.dtype
+
+        # 4. Preprocess image and mask
+        if isinstance(image, PIL.Image.Image):
+            image = preprocess_image(image)
+        if image is not None:
+            image = image.to(device=self.device, dtype=dtype)
+        if isinstance(mask_image, PIL.Image.Image):
+            mask_image = preprocess_mask(mask_image, self.vae_scale_factor)
+        if mask_image is not None:
+            mask = mask_image.to(device=self.device, dtype=dtype)
+            mask = torch.cat([mask] * batch_size * num_images_per_prompt)
+        else:
+            mask = None
 
         # 6. Prepare latent variables
         latents, init_latents_orig, noise = self.prepare_latents(
