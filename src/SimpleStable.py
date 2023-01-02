@@ -42,6 +42,7 @@ def main(opt, pipe, recreate):
         opt["prompt"], model_choice["keyword"])
 
     if pipe == None or recreate:
+        print("Loading the model...")
         if model_choice["vae"] != "":
             if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
                 utils.login_to_huggingface()

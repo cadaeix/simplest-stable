@@ -16,7 +16,7 @@ from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput, 
 from diffusers.utils import deprecate, logging
 from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
-
+import lark
 
 try:
     from diffusers.utils import PIL_INTERPOLATION
@@ -40,6 +40,103 @@ except ImportError:
 # ------------------------------------------------------------------------------
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+
+schedule_parser = lark.Lark(r"""
+!start: (prompt | /[][():]/+)*
+prompt: (emphasized | scheduled | alternate | plain | WHITESPACE)*
+!emphasized: "(" prompt ")"
+        | "(" prompt ":" prompt ")"
+        | "[" prompt "]"
+scheduled: "[" [prompt ":"] prompt ":" [WHITESPACE] NUMBER "]"
+alternate: "[" prompt ("|" prompt)+ "]"
+WHITESPACE: /\s+/
+plain: /([^\\\[\]():|]|\\.)+/
+%import common.SIGNED_NUMBER -> NUMBER
+""")
+
+
+def get_learned_conditioning_prompt_schedules(prompts, steps):
+    """
+    >>> g = lambda p: get_learned_conditioning_prompt_schedules([p], 10)[0]
+    >>> g("test")
+    [[10, 'test']]
+    >>> g("a [b:3]")
+    [[3, 'a '], [10, 'a b']]
+    >>> g("a [b: 3]")
+    [[3, 'a '], [10, 'a b']]
+    >>> g("a [[[b]]:2]")
+    [[2, 'a '], [10, 'a [[b]]']]
+    >>> g("[(a:2):3]")
+    [[3, ''], [10, '(a:2)']]
+    >>> g("a [b : c : 1] d")
+    [[1, 'a b  d'], [10, 'a  c  d']]
+    >>> g("a[b:[c:d:2]:1]e")
+    [[1, 'abe'], [2, 'ace'], [10, 'ade']]
+    >>> g("a [unbalanced")
+    [[10, 'a [unbalanced']]
+    >>> g("a [b:.5] c")
+    [[5, 'a  c'], [10, 'a b c']]
+    >>> g("a [{b|d{:.5] c")  # not handling this right now
+    [[5, 'a  c'], [10, 'a {b|d{ c']]
+    >>> g("((a][:b:c [d:3]")
+    [[3, '((a][:b:c '], [10, '((a][:b:c d']]
+    """
+
+    def collect_steps(steps, tree):
+        l = [steps]
+
+        class CollectSteps(lark.Visitor):
+            def scheduled(self, tree):
+                tree.children[-1] = float(tree.children[-1])
+                if tree.children[-1] < 1:
+                    tree.children[-1] *= steps
+                tree.children[-1] = min(steps, int(tree.children[-1]))
+                l.append(tree.children[-1])
+
+            def alternate(self, tree):
+                l.extend(range(1, steps+1))
+        CollectSteps().visit(tree)
+        return sorted(set(l))
+
+    def at_step(step, tree):
+        class AtStep(lark.Transformer):
+            def scheduled(self, args):
+                before, after, _, when = args
+                yield before or () if step <= when else after
+
+            def alternate(self, args):
+                yield next(args[(step - 1) % len(args)])
+
+            def start(self, args):
+                def flatten(x):
+                    if type(x) == str:
+                        yield x
+                    else:
+                        for gen in x:
+                            yield from flatten(gen)
+                return ''.join(flatten(args))
+
+            def plain(self, args):
+                yield args[0].value
+
+            def __default__(self, data, children, meta):
+                for child in children:
+                    yield from child
+        return AtStep().transform(tree)
+
+    def get_schedule(prompt):
+        try:
+            tree = schedule_parser.parse(prompt)
+        except lark.exceptions.LarkError as e:
+            if 0:
+                import traceback
+                traceback.print_exc()
+            return [[steps, prompt]]
+        return [[t, at_step(t, tree)] for t in collect_steps(steps, tree)]
+
+    promptdict = {prompt: get_schedule(prompt) for prompt in set(prompts)}
+    return [promptdict[prompt] for prompt in prompts]
+
 
 re_attention = re.compile(
     r"""
@@ -201,7 +298,7 @@ def pad_tokens_and_weights(tokens, weights, max_length, bos, eos, no_boseos_midd
             else:
                 for j in range(max_embeddings_multiples):
                     w.append(1.0)  # weight for starting token in this chunk
-                    w += weights[i][j * (chunk_length - 2): min(len(weights[i]), (j + 1) * (chunk_length - 2))]
+                    w += weights[i][j * (chunk_length - 2)                                    : min(len(weights[i]), (j + 1) * (chunk_length - 2))]
                     w.append(1.0)  # weight for ending token in this chunk
                 w += [1.0] * (weights_length - len(w))
             weights[i] = w[:]
@@ -831,16 +928,17 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         # corresponds to doing no classifier free guidance.
         do_classifier_free_guidance = guidance_scale > 1.0
 
-        # 3. Encode input prompt
-        text_embeddings = self._encode_prompt(
-            prompt,
-            device,
-            num_images_per_prompt,
-            do_classifier_free_guidance,
-            negative_prompt,
-            max_embeddings_multiples,
-        )
-        dtype = text_embeddings.dtype
+        # # 3. Encode input prompt
+        # text_embeddings = self._encode_prompt(
+        #     prompt,
+        #     device,
+        #     num_images_per_prompt,
+        #     do_classifier_free_guidance,
+        #     negative_prompt,
+        #     max_embeddings_multiples,
+        # )
+        # dtype = text_embeddings.dtype
+        # moving input prompt slightly later for scheduling
 
         # 4. Preprocess image and mask
         if isinstance(image, PIL.Image.Image):
@@ -862,6 +960,27 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         latent_timestep = timesteps[:1].repeat(
             batch_size * num_images_per_prompt)
 
+        # putting encoding here
+        prompt_schedule = get_learned_conditioning_prompt_schedules(
+            [prompt], num_inference_steps)
+
+        encode_schedule = []
+        for i, (end_at_step, text) in enumerate(prompt_schedule[0]):
+            encode_schedule.append([
+                end_at_step,
+                self._encode_prompt(
+                    text,
+                    device,
+                    num_images_per_prompt,
+                    do_classifier_free_guidance,
+                    negative_prompt,
+                    max_embeddings_multiples
+                ),
+                text
+            ])
+
+        dtype = encode_schedule[0][1].dtype
+
         # 6. Prepare latent variables
         latents, init_latents_orig, noise = self.prepare_latents(
             image,
@@ -878,17 +997,24 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
+        current_encoding = 0
+
         # 8. Denoising loop
         for i, t in enumerate(self.progress_bar(timesteps)):
+            # print(i)
+            # print(encode_schedule[current_encoding][2])
             # expand the latents if we are doing classifier free guidance
             latent_model_input = torch.cat(
                 [latents] * 2) if do_classifier_free_guidance else latents
             latent_model_input = self.scheduler.scale_model_input(
                 latent_model_input, t)
 
+            if encode_schedule[current_encoding][0] <= i:
+                current_encoding += 1
+
             # predict the noise residual
             noise_pred = self.unet(latent_model_input, t,
-                                   encoder_hidden_states=text_embeddings).sample
+                                   encoder_hidden_states=encode_schedule[current_encoding][1]).sample
 
             # perform guidance
             if do_classifier_free_guidance:
