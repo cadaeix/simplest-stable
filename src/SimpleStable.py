@@ -1,14 +1,7 @@
 from datetime import datetime
-import os
-import random
-import math
-import random
 import torch
 import json
-import PIL
-import numpy as np
-from PIL import Image
-#from diffusers import StableDiffusionPipeline
+from huggingface_hub import login
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 from src import utils, SimpleStableDiffusionPipeline
 
@@ -40,23 +33,27 @@ sampler_dict = {
     }
 }
 
+def login_to_huggingface():
+    print("This model requires an authentication token, which you can get by logging in at https://huggingface.co/ and going to https://huggingface.co/settings/tokens.")
+    print("You may also have to accept the model's terms of service.")
+
+    token = input("What is your huggingface token?:")
+    login(token)
+
 
 def main(opt, pipe, recreate):
     model_choice = model_dict[opt["model_name"]]
     opt["prompt"] = utils.process_prompt(opt["prompt"], model_choice["keyword"])
 
     if pipe == None or recreate:
-        # pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
         if model_choice["vae"] != "":
             if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
-                from huggingface_hub import notebook_login
-                notebook_login()
+                login_to_huggingface()
             vae = AutoencoderKL.from_pretrained(model_choice["vae"]["url"])
             pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(model_choice["url"], vae = vae, safety_checker = None, requires_safety_checker = False).to("cuda")
         else:
             if model_choice["requires_hf_login"]:
-                from huggingface_hub import notebook_login
-                notebook_login()
+                login_to_huggingface()
             pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(model_choice["url"], safety_checker = None, requires_safety_checker = False).to("cuda")
 
 
@@ -70,7 +67,6 @@ def main(opt, pipe, recreate):
         #     prediction_type=model_choice["prediction"]
         # )
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"].from_pretrained(model_choice["url"], subfolder="scheduler")
-        # from_pretrained(opt.model_url, subfolder="scheduler")
     elif sampler_dict[opt["sampler"]]["type"] == "diffusers_DPMSolver":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
             beta_start=0.00085,
@@ -86,7 +82,6 @@ def main(opt, pipe, recreate):
             solver_order=2
         )
 
-    # pipe.scheduler = scheduler
     pipe.enable_attention_slicing()
 
     if opt["init_img"] != None:
@@ -113,7 +108,6 @@ def main(opt, pipe, recreate):
             "num_images_per_prompt": 1,
             "eta": opt["eta"]
         }
-
 
     print(prompt_options)
     batch_name = datetime.now().strftime("%H_%M_%S")
