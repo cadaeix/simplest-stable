@@ -144,7 +144,7 @@
     "requires_hf_login": false,
     "vae": {
       "url": "stabilityai/sd-vae-ft-mse",
-      "requires_hf_login": true
+      "requires_hf_login": false
     },
     "keyword": "",
     "prediction": "epsilon"
@@ -154,7 +154,7 @@
     "requires_hf_login": false,
     "vae": {
       "url": "stabilityai/sd-vae-ft-mse",
-      "requires_hf_login": true
+      "requires_hf_login": false
     },
     "keyword": "",
     "prediction": "epsilon"

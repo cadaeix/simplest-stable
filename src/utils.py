@@ -7,6 +7,7 @@ import torch
 from tqdm import tqdm
 import PIL
 import numpy as np
+import torch.nn as nn
 from PIL import Image
 from src import EverythingsPromptRandomizer
 from collections import namedtuple
@@ -32,7 +33,32 @@ except ImportError:
             "nearest": PIL.Image.NEAREST,
         }
 
-Grid = namedtuple("Grid", ["tiles", "tile_w", "tile_h", "image_w", "image_h", "overlap"])
+Grid = namedtuple("Grid", ["tiles", "tile_w",
+                  "tile_h", "image_w", "image_h", "overlap"])
+
+
+def find_modules_and_assign_padding_mode(pipe, mode):
+    module_names, _, _ = pipe.extract_init_dict(dict(pipe.config))
+    for module_name in module_names:
+        module = getattr(pipe, module_name)
+        if isinstance(module, torch.nn.Module):
+            for m in module.modules():
+                if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+                    if mode == "setup":
+                        m._orig_padding_mode = m.padding_mode
+                    elif mode == "original":
+                        m.padding_mode = m._orig_padding_mode
+                    elif mode == "tiling":
+                        m.padding_mode = 'circular'
+
+
+def login_to_huggingface():
+    print("This model requires an authentication token, which you can get by logging in at https://huggingface.co/ and going to https://huggingface.co/settings/tokens.")
+    print("You may also have to accept the model's terms of service.")
+
+    token = input("What is your huggingface token?:")
+    login(token)
+
 
 def process_prompt(prompt, keyword):
     result = EverythingsPromptRandomizer.random_prompt(prompt)
@@ -46,7 +72,7 @@ def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    #print(f"Using the seed {seed}")
+    # print(f"Using the seed {seed}")
     return seed
 
 
@@ -66,16 +92,20 @@ def load_img(path, shape):
     image = torch.from_numpy(image)
     return 2.*image - 1.
 
+
 def load_img_for_upscale(img, w, h):
-    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    # resize to integer multiple of 32
+    w, h = map(lambda x: x - x % 32, (w, h))
     image = img.resize((w, h), resample=PIL_INTERPOLATION["lanczos"])
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image)
     return 2.*image - 1.
 
+
 def resize_image(image):
-        return image.resize((int(image.size[0] * 2), int(image.size[1] * 2)), PIL_INTERPOLATION["lanczos"])
+    return image.resize((int(image.size[0] * 2), int(image.size[1] * 2)), PIL_INTERPOLATION["lanczos"])
+
 
 def split_grid(image, tile_w=512, tile_h=512, overlap=64):
     w = image.width
@@ -113,14 +143,17 @@ def split_grid(image, tile_w=512, tile_h=512, overlap=64):
 
     return grid
 
+
 def combine_grid(grid):
     def make_mask_image(r):
         r = r * 255 / grid.overlap
         r = r.astype(np.uint8)
         return Image.fromarray(r, 'L')
 
-    mask_w = make_mask_image(np.arange(grid.overlap, dtype=np.float32).reshape((1, grid.overlap)).repeat(grid.tile_h, axis=0))
-    mask_h = make_mask_image(np.arange(grid.overlap, dtype=np.float32).reshape((grid.overlap, 1)).repeat(grid.image_w, axis=1))
+    mask_w = make_mask_image(np.arange(grid.overlap, dtype=np.float32).reshape(
+        (1, grid.overlap)).repeat(grid.tile_h, axis=0))
+    mask_h = make_mask_image(np.arange(grid.overlap, dtype=np.float32).reshape(
+        (grid.overlap, 1)).repeat(grid.image_w, axis=1))
 
     combined_image = Image.new("RGB", (grid.image_w, grid.image_h))
     for y, h, row in grid.tiles:
@@ -130,24 +163,29 @@ def combine_grid(grid):
                 combined_row.paste(tile, (0, 0))
                 continue
 
-            combined_row.paste(tile.crop((0, 0, grid.overlap, h)), (x, 0), mask=mask_w)
-            combined_row.paste(tile.crop((grid.overlap, 0, w, h)), (x + grid.overlap, 0))
+            combined_row.paste(
+                tile.crop((0, 0, grid.overlap, h)), (x, 0), mask=mask_w)
+            combined_row.paste(
+                tile.crop((grid.overlap, 0, w, h)), (x + grid.overlap, 0))
 
         if y == 0:
             combined_image.paste(combined_row, (0, 0))
             continue
 
-        combined_image.paste(combined_row.crop((0, 0, combined_row.width, grid.overlap)), (0, y), mask=mask_h)
-        combined_image.paste(combined_row.crop((0, grid.overlap, combined_row.width, h)), (0, y + grid.overlap))
+        combined_image.paste(combined_row.crop(
+            (0, 0, combined_row.width, grid.overlap)), (0, y), mask=mask_h)
+        combined_image.paste(combined_row.crop(
+            (0, grid.overlap, combined_row.width, h)), (0, y + grid.overlap))
 
     return combined_image
+
 
 def sd_upscale(image, name, opt, pipe):
     tile_w = 768
     tile_h = 768
 
     resized_image = resize_image(image)
-    grid = split_grid(resized_image, tile_w=tile_w, tile_h=tile_h, overlap = 128)
+    grid = split_grid(resized_image, tile_w=tile_w, tile_h=tile_h, overlap=128)
 
     work = []
 
@@ -161,22 +199,23 @@ def sd_upscale(image, name, opt, pipe):
 
     for i in range(batch_count):
         work_results.append(pipe(
-            prompt = opt["prompt"],
-            negative_prompt = None if opt["negative"] == "" else opt["negative"],
-            image = load_img_for_upscale(work[i], tile_w, tile_h),
-            strength = opt["upscale_strength"],
-            height = tile_h,
-            width = tile_w,
-            num_inference_steps = opt["steps"],
-            guidance_scale = opt["detail_scale"],
-            num_images_per_prompt = 1,
-            eta = opt["eta"]
+            prompt=opt["prompt"],
+            negative_prompt=None if opt["negative"] == "" else opt["negative"],
+            image=load_img_for_upscale(work[i], tile_w, tile_h),
+            strength=opt["upscale_strength"],
+            height=tile_h,
+            width=tile_w,
+            num_inference_steps=opt["steps"],
+            guidance_scale=opt["detail_scale"],
+            num_images_per_prompt=1,
+            eta=opt["eta"]
         ).images[0])
 
     image_index = 0
     for y, h, row in grid.tiles:
         for tiledata in row:
-            tiledata[2] = work_results[image_index] if image_index < len(work_results) else Image.new("RGB", (tile_w, tile_h))
+            tiledata[2] = work_results[image_index] if image_index < len(
+                work_results) else Image.new("RGB", (tile_w, tile_h))
             image_index += 1
 
     final_result = combine_grid(grid)

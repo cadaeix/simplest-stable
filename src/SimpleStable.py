@@ -1,11 +1,13 @@
 from datetime import datetime
+from IPython.display import display, clear_output
 import torch
 import json
 from huggingface_hub import login
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 from src import utils, SimpleStableDiffusionPipeline
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+device = torch.device(
+    "cuda") if torch.cuda.is_available() else torch.device("cpu")
 m = open('src/models.json')
 model_dict = json.load(m)
 m.close()
@@ -33,40 +35,32 @@ sampler_dict = {
     }
 }
 
-def login_to_huggingface():
-    print("This model requires an authentication token, which you can get by logging in at https://huggingface.co/ and going to https://huggingface.co/settings/tokens.")
-    print("You may also have to accept the model's terms of service.")
-
-    token = input("What is your huggingface token?:")
-    login(token)
-
 
 def main(opt, pipe, recreate):
     model_choice = model_dict[opt["model_name"]]
-    opt["prompt"] = utils.process_prompt(opt["prompt"], model_choice["keyword"])
+    opt["prompt"] = utils.process_prompt(
+        opt["prompt"], model_choice["keyword"])
 
     if pipe == None or recreate:
         if model_choice["vae"] != "":
             if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
-                login_to_huggingface()
+                utils.login_to_huggingface()
             vae = AutoencoderKL.from_pretrained(model_choice["vae"]["url"])
-            pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(model_choice["url"], vae = vae, safety_checker = None, requires_safety_checker = False).to("cuda")
+            pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
+                model_choice["url"], vae=vae, safety_checker=None, requires_safety_checker=False).to("cuda")
         else:
             if model_choice["requires_hf_login"]:
-                login_to_huggingface()
-            pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(model_choice["url"], safety_checker = None, requires_safety_checker = False).to("cuda")
-
+                utils.login_to_huggingface()
+            pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
+                model_choice["url"], safety_checker=None, requires_safety_checker=False).to("cuda")
+        utils.find_modules_and_assign_padding_mode(pipe, "setup")
+        clear_output(wait=False)
+        name = opt["model_name"]
+        print(f"{name} has been loaded!")
 
     if sampler_dict[opt["sampler"]]["type"] == "diffusers":
-        # pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
-        #     num_train_timesteps = 1000,
-        #     beta_start= 0.0001,
-        #     beta_end = 0.02,
-        #     beta_schedule = 'linear',
-        #     trained_betas = None,
-        #     prediction_type=model_choice["prediction"]
-        # )
-        pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"].from_pretrained(model_choice["url"], subfolder="scheduler")
+        pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"].from_pretrained(
+            model_choice["url"], subfolder="scheduler")
     elif sampler_dict[opt["sampler"]]["type"] == "diffusers_DPMSolver":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
             beta_start=0.00085,
@@ -83,12 +77,14 @@ def main(opt, pipe, recreate):
         )
 
     pipe.enable_attention_slicing()
+    tiling_type = "tiling" if opt["tiling"] else "original"
+    utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
 
     if opt["init_img"] != None:
         prompt_options = {
             "prompt": opt["prompt"],
             "negative_prompt": None if opt["negative"] == "" else opt["negative"],
-            "image": utils.load_img(opt["init_img"], shape=(opt["W"], opt["H"]).to(device)),
+            "image": utils.load_img(opt["init_img"], shape=(opt["W"], opt["H"])),
             "strength": opt["strength"],
             "height": opt["H"],
             "width": opt["W"],
@@ -109,7 +105,6 @@ def main(opt, pipe, recreate):
             "eta": opt["eta"]
         }
 
-    print(prompt_options)
     batch_name = datetime.now().strftime("%H_%M_%S")
     for _b in range(opt["batches"]):
         utils.set_seed(opt["seed"])
@@ -120,6 +115,7 @@ def main(opt, pipe, recreate):
         opt["seed"] += 1
 
         if opt["upscale"]:
+            utils.find_modules_and_assign_padding_mode(pipe, "original")
             utils.sd_upscale(image, image_name, opt, pipe)
 
     return pipe
