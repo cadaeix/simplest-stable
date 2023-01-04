@@ -103,7 +103,6 @@ class EmbeddingDatabase:
         text_embeddings = text_encoder.get_input_embeddings().weight.data
 
         if emb.shape[-1] != text_embeddings.shape[-1]:
-            print("Not loading this shit lol")
             return False
 
         token_list = self.split_embedding_and_register(
@@ -693,10 +692,11 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 loaded.append(token)
             else:
                 not_loaded.append(token)
-        print(f"Loaded the following embeddings: {' '.join(loaded)}")
+        if len(loaded) > 0:
+            print(f"Loaded the following embeddings: {' '.join(loaded)}")
         if len(not_loaded) > 0:
             print(
-                f"Did not load the following embeddings: {' '.join(not_loaded)}")
+                f"Did not load the following embeddings (probably because they're for a different version of Stable Diffusion): {' '.join(not_loaded)}")
 
     @property
     def _execution_device(self):
