@@ -36,7 +36,7 @@ sampler_dict = {
 }
 
 
-def main(opt, pipe, recreate):
+def main(opt, pipe, recreate, embeddings_list):
     model_choice = model_dict[opt["model_name"]]
 
     if pipe == None or recreate:
@@ -56,6 +56,9 @@ def main(opt, pipe, recreate):
         clear_output(wait=False)
         name = opt["model_name"]
         print(f"{name} has been loaded!")
+        for emb_path in embeddings_list:
+            pipe.embedding_database.add_embedding_path(emb_path)
+        pipe.load_embeddings()
 
     if sampler_dict[opt["sampler"]]["type"] == "diffusers":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"].from_pretrained(

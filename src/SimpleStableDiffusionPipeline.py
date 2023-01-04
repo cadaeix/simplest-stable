@@ -1,6 +1,6 @@
 # Initial code sourced from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 #
-
+import os
 import inspect
 import re
 from typing import Callable, List, Optional, Union
@@ -41,6 +41,81 @@ except ImportError:
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
+
+class Embedding:
+    def __init__(self, id_token, token, data, encoded_tokens):
+        self.id_token = id_token
+        self.token = token
+        self.data = data
+        self.number_of_vectors = data.shape[0]
+        self.shape = data.shape[-1]
+        self.encoded_tokens = encoded_tokens
+
+
+class EmbeddingDatabase:
+    def __init__(self):
+        self.embeddings_paths = []
+        self.embeddings = {}
+
+    def split_embedding_and_register(self, data, text_encoder, length):
+        data_length = data.shape[0]
+        text_encoder.resize_token_embeddings(length + data_length)
+
+        token_list = []
+        for x in range(data_length):
+            text_encoder.get_input_embeddings(
+            ).weight.data[length + x] = data[x]
+            token_list.append(length + x)
+
+        return token_list
+
+    def add_embedding_path(self, learned_embeds_path, id_token=None):
+        token = id_token if id_token is not None else os.path.basename(
+            learned_embeds_path.split('.')[0])
+        self.embeddings_paths.append([token, learned_embeds_path])
+
+    def add_embedding_to_model(self, learned_embeds_path, tokenizer, text_encoder, id_token):
+        loaded_embeds = torch.load(learned_embeds_path, map_location="cuda")
+
+        # textual inversion embeddings
+        if 'string_to_param' in loaded_embeds:
+            param_dict = loaded_embeds['string_to_param']
+            if hasattr(param_dict, '_parameters'):
+                # fix for torch 1.12.1 loading saved file from torch 1.11
+                param_dict = getattr(param_dict, '_parameters')
+            assert len(
+                param_dict) == 1, 'embedding file has multiple terms in it'
+            emb = next(iter(param_dict.items()))[1]
+        # diffuser concepts
+        elif type(loaded_embeds) == dict and type(next(iter(loaded_embeds.values()))) == torch.Tensor:
+            assert len(loaded_embeds.keys()
+                       ) == 1, 'embedding file has multiple terms in it'
+
+            emb = next(iter(loaded_embeds.values()))
+            if len(emb.shape) == 1:
+                emb = emb.unsqueeze(0)
+        else:
+            raise Exception(
+                f"Couldn't identify {id_token} as a textual inversion embedding or diffuser concept.")
+
+        tokenizer.add_tokens(id_token)
+        token_id = tokenizer.convert_tokens_to_ids(id_token)
+        text_embeddings = text_encoder.get_input_embeddings().weight.data
+
+        if emb.shape[-1] != text_embeddings.shape[-1]:
+            print("Not loading this shit lol")
+            return False
+
+        token_list = self.split_embedding_and_register(
+            emb.data, text_encoder, text_embeddings.shape[0])
+
+        self.embeddings[token_id] = Embedding(
+            token_id, id_token, emb.data, token_list)
+
+        return True
+
+
+# from Automatic's webui
 schedule_parser = lark.Lark(r"""
 !start: (prompt | /[][():]/+)*
 prompt: (emphasized | scheduled | alternate | plain | WHITESPACE)*
@@ -258,10 +333,19 @@ def get_prompts_with_weights(pipe: StableDiffusionPipeline, prompt: List[str], m
         text_weight = []
         for word, weight in texts_and_weights:
             # tokenize and discard the starting and the ending token
+
             token = pipe.tokenizer(word).input_ids[1:-1]
-            text_token += token
+            new_token = []
+            for i in range(len(token)):
+                if token[i] in pipe.embedding_database.embeddings:
+                    new_token += (
+                        pipe.embedding_database.embeddings[token[i]].encoded_tokens)
+                else:
+                    new_token.append(token[i])
+
+            text_token += new_token
             # copy the weight by length of token
-            text_weight += [weight] * len(token)
+            text_weight += [weight] * len(new_token)
             # stop if the text is too long (longer than truncation limit)
             if len(text_token) > max_length:
                 truncated = True
@@ -569,6 +653,7 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 requires_safety_checker=requires_safety_checker,
             )
             self.__init__additional__()
+            self.embedding_database = EmbeddingDatabase()
 
     else:
 
@@ -592,11 +677,26 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 feature_extractor=feature_extractor,
             )
             self.__init__additional__()
+            self.embedding_database = EmbeddingDatabase()
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
             setattr(self, "vae_scale_factor", 2 **
                     (len(self.vae.config.block_out_channels) - 1))
+
+    def load_embeddings(self):
+        loaded = []
+        not_loaded = []
+        for token, emb_path in self.embedding_database.embeddings_paths:
+            if self.embedding_database.add_embedding_to_model(
+                    emb_path, self.tokenizer, self.text_encoder, token):
+                loaded.append(token)
+            else:
+                not_loaded.append(token)
+        print(f"Loaded the following embeddings: {' '.join(loaded)}")
+        if len(not_loaded) > 0:
+            print(
+                f"Did not load the following embeddings: {' '.join(not_loaded)}")
 
     @property
     def _execution_device(self):
