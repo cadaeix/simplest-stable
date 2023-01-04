@@ -692,11 +692,13 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 loaded.append(token)
             else:
                 not_loaded.append(token)
+        message = ""
         if len(loaded) > 0:
-            print(f"Loaded the following embeddings: {' '.join(loaded)}")
+            message += f"Loaded the following embeddings: {' '.join(loaded)}\n"
         if len(not_loaded) > 0:
-            print(
-                f"Did not load the following embeddings (probably because they're for a different version of Stable Diffusion): {' '.join(not_loaded)}")
+            message += f"Did not load the following embeddings (probably because they're for a different version of Stable Diffusion): {' '.join(not_loaded)}\n"
+        if message != "":
+            print(message)
 
     @property
     def _execution_device(self):
