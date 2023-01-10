@@ -37,6 +37,15 @@ sampler_dict = {
 
 sampler_list = list(sampler_dict.keys())
 
+res_dict = {"Custom (Select this and put width and height below)": "",
+            "Square 512x512 (default, good for most models)": [512,512],
+            "Landscape 768x512": [768,512],
+            "Portrait 512x768": [512,768],
+            "Square 768x768 (good for 768 models)": [768,768],
+            "Landscape 1152x768 (does not work on free colab)": [1152,768],
+            "Portrait 768x1152 (does not work on free colab)":[768,1152]}
+
+
 def setup_pipe(model_opt):
     model_choice = model_dict[model_opt]
     if model_choice["vae"] != "":
@@ -51,7 +60,6 @@ def setup_pipe(model_opt):
         pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
             model_choice["url"], safety_checker=None, requires_safety_checker=False).to("cuda")
     utils.find_modules_and_assign_padding_mode(pipe, "setup")
-    clear_output(wait=False)
     # name = opt["model_name"]
     # print(f"{name} has been loaded!")
     # for emb_path in embeddings_list:
@@ -108,28 +116,43 @@ def gradio_main(opt, pipe):
             "eta": opt["eta"]
         }
 
+    images = []
     batch_name = datetime.now().strftime("%H_%M_%S")
-    #for _b in range(opt["batches"]):
-    utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
-    utils.set_seed(opt["seed"])
-    prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
-        opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
-    if prompt_options["negative_prompt"]:
-        prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
-            opt["negative"], "")
+    for _b in range(opt["number_of_images"]):
+        utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
+        utils.set_seed(opt["seed"])
+        prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
+            opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
+        if prompt_options["negative_prompt"]:
+            prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
+                opt["negative"], "")
 
-    print(prompt_options["prompt"])
-    image = pipe(**prompt_options).images[0]
-    image_name = f"{batch_name}"
-    image.save(f"{image_name}.png")
-    #display(image)
-    opt["seed"] += 1
+        print(prompt_options["prompt"])
+        image = pipe(**prompt_options).images[0]
+        image_name = f"{batch_name}_{_b}"
+        image.save(f"{image_name}.png")
+        images.append(image)
+        opt["seed"] += 1
+    # utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
+    # utils.set_seed(opt["seed"])
+    # prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
+    #     opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
+    # if prompt_options["negative_prompt"]:
+    #     prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
+    #         opt["negative"], "")
+
+    # print(prompt_options["prompt"])
+    # image = pipe(**prompt_options).images[0]
+    # image_name = f"{batch_name}"
+    # image.save(f"{image_name}.png")
+    # #display(image)
+    # opt["seed"] += 1
 
     # if opt["upscale"]:
     #     utils.find_modules_and_assign_padding_mode(pipe, "original")
     #     utils.sd_upscale(image, image_name, opt, pipe)
 
-    return image
+    return images
 
 def main(opt, pipe, recreate, embeddings_list):
     model_choice = model_dict[opt["model_name"]]
