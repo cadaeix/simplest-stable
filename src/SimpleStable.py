@@ -98,8 +98,6 @@ def gradio_main(opt, pipe):
             mask = opt["mask_image"].resize([opt["W"], opt["H"]])
             mask_image = mask.filter(ImageFilter.GaussianBlur(radius=4))
 
-            display(mask_image)
-
             prompt_options = {
                 "prompt": opt["prompt"],
                 "negative_prompt": None if opt["negative"] == "" else opt["negative"],
