@@ -5,6 +5,7 @@ import json
 from huggingface_hub import login
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 from src import utils, SimpleStableDiffusionPipeline
+from PIL import Image, ImageFilter
 
 device = torch.device(
     "cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -92,19 +93,40 @@ def gradio_main(opt, pipe):
     tiling_type = "tiling" if opt["tiling"] else "original"
 
     if opt["init_img"] != None:
-        prompt_options = {
-            "prompt": opt["prompt"],
-            "negative_prompt": None if opt["negative"] == "" else opt["negative"],
-            "image": utils.load_img(opt["init_img"], shape=(opt["W"], opt["H"])),
-            "strength": opt["strength"],
-            "height": opt["H"],
-            "width": opt["W"],
-            "num_inference_steps": opt["steps"],
-            "guidance_scale": opt["scale"],
-            "num_images_per_prompt": 1,
-            "eta": opt["eta"]
-        }
-    else:
+        if opt["mask_image"] != None: #inpainting
+
+            mask = opt["mask_image"].resize([opt["W"], opt["H"]])
+            mask_image = mask.filter(ImageFilter.GaussianBlur(radius=4))
+
+            display(mask_image)
+
+            prompt_options = {
+                "prompt": opt["prompt"],
+                "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+                "image": opt["init_img"].resize([opt["W"], opt["H"]]),
+                "mask_image": mask_image,
+                "strength": opt["strength"],
+                "height": opt["H"],
+                "width": opt["W"],
+                "num_inference_steps": opt["steps"],
+                "guidance_scale": opt["scale"],
+                "num_images_per_prompt": 1,
+                "eta": opt["eta"]
+            }
+        else: #img2img
+            prompt_options = {
+                "prompt": opt["prompt"],
+                "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+                "image": opt["init_img"].resize([opt["W"], opt["H"]]),
+                "strength": opt["strength"],
+                "height": opt["H"],
+                "width": opt["W"],
+                "num_inference_steps": opt["steps"],
+                "guidance_scale": opt["scale"],
+                "num_images_per_prompt": 1,
+                "eta": opt["eta"]
+            }
+    else: #txt2img
         prompt_options = {
             "prompt": opt["prompt"],
             "negative_prompt": None if opt["negative"] == "" else opt["negative"],
@@ -127,30 +149,17 @@ def gradio_main(opt, pipe):
             prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
                 opt["negative"], "")
 
-        print(prompt_options["prompt"])
         image = pipe(**prompt_options).images[0]
         image_name = f"{batch_name}_{_b}"
         image.save(f"{image_name}.png")
-        images.append(image)
+        saved_image = image
+
+        if opt["upscale"]:
+            utils.find_modules_and_assign_padding_mode(pipe, "original")
+            saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe)
+
+        images.append(saved_image)
         opt["seed"] += 1
-    # utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
-    # utils.set_seed(opt["seed"])
-    # prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
-    #     opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
-    # if prompt_options["negative_prompt"]:
-    #     prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
-    #         opt["negative"], "")
-
-    # print(prompt_options["prompt"])
-    # image = pipe(**prompt_options).images[0]
-    # image_name = f"{batch_name}"
-    # image.save(f"{image_name}.png")
-    # #display(image)
-    # opt["seed"] += 1
-
-    # if opt["upscale"]:
-    #     utils.find_modules_and_assign_padding_mode(pipe, "original")
-    #     utils.sd_upscale(image, image_name, opt, pipe)
 
     return images
 

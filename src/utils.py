@@ -179,6 +179,47 @@ def combine_grid(grid):
 
     return combined_image
 
+def sd_upscale_gradio(image, name, opt, pipe):
+    tile_w = 768
+    tile_h = 768
+
+    resized_image = resize_image(image)
+    grid = split_grid(resized_image, tile_w=tile_w, tile_h=tile_h, overlap=128)
+
+    work = []
+
+    for y, h, row in grid.tiles:
+        for tiledata in row:
+            work.append(tiledata[2])
+
+    batch_count = len(work)
+
+    work_results = []
+
+    for i in range(batch_count):
+        work_results.append(pipe(
+            prompt=opt["prompt"],
+            negative_prompt=None if opt["negative"] == "" else opt["negative"],
+            image=load_img_for_upscale(work[i], tile_w, tile_h),
+            strength=opt["upscale_strength"],
+            height=tile_h,
+            width=tile_w,
+            num_inference_steps=opt["steps"],
+            guidance_scale=opt["detail_scale"],
+            num_images_per_prompt=1,
+            eta=opt["eta"]
+        ).images[0])
+
+    image_index = 0
+    for y, h, row in grid.tiles:
+        for tiledata in row:
+            tiledata[2] = work_results[image_index] if image_index < len(
+                work_results) else Image.new("RGB", (tile_w, tile_h))
+            image_index += 1
+
+    final_result = combine_grid(grid)
+    final_result.save(f"{name}_upscale.png")
+    return final_result
 
 def sd_upscale(image, name, opt, pipe):
     tile_w = 768
