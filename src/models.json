@@ -63,7 +63,7 @@
     "prediction": "epsilon"
   },
   "Anything v3.0": {
-    "url": "Linaqruf/anything-v3.0",
+    "url": "Linaqruf/anything-v3-better-vae",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
