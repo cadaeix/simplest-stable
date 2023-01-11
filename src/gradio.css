@@ -1,25 +1,109 @@
-/* #img2img_input {
-    height: 500px
-}
-
-#inpaint_input {
-    height: 500px
+/* .container {
+    max-width: 100%;
 } */
 
-#hidden_element{
-    display: none;
+#img2img_input,
+#inpaint_input,
+#output_gallery,
+#adv_settings,
+#output_box {
+    --tw-border-opacity: 1;
+    border-color: rgb(55 65 81 / var(--tw-border-opacity));
 }
 
-.gr-form{
-    background: transparent;
+
+.body,
+.gradio-container,
+.dark\:bg-gray-950,
+.dark .gr-box, .dark .dark\:bg-gray-950,
+.dark .dark\:bg-gray-700 {
+    background-color: #000814;
+}
+
+.dark .border-gray-200 {
+    border-color: #000814
+}
+
+#custom_width > div > div > input,
+#custom_height > div > div > input,
+#step_count > div > div > input,
+#guidance_scale > div > div > input,
+#upscale_strength > div > div > input {
+    width: 8em;
+    margin: 0px auto;
+}
+
+#reuse_seed,
+#random_seed {
+    width: 9em;
+    font-size: 0.9em;
+
+}
+
+#output_gallery {
+    margin: 25px 0px;
+}
+
+#seed_col {
+    max-width: 15em;
+    min-width: 15em !important;
+}
+
+#seed_button_col {
+    max-width: 8em;
+    min-width: 8em !important;
+}
+
+#model_submit {
+    height: 2em;
+    max-width: 8em;
+    margin: auto;
+}
+
+#model_choice {
+    padding: 0;
+}
+
+#model_row {
+    width: 40em
+}
+
+#hidden_element {
+    display: none;
+    height: 0px;
 }
 
 .gr-form {
-    border-style: none
+    border-style: none;
+    background: transparent;
 }
 
-#img2img_input, #img2img_input > .h-60, #img2img_input > .h-60 > div, #img2img_input > .h-60 > div > img, #inpaint_input, #inpaint_input > .h-60, #inpaint_input > .h-60 > div, #inpaint_input > .h-60 > div > img {
+.row > *,
+.row > .gr-form > * {
+    min-width: min(120px, 100%);
+    flex: 1 1 0%;
+}
+
+#img2img_input, #img2img_input > .h-60,
+#img2img_input > .h-60 > div,
+#img2img_input > .h-60 > div > img,
+#inpaint_input, #inpaint_input > .h-60,
+#inpaint_input > .h-60 > div,
+#inpaint_input > .h-60 > div > img {
     height: 480px !important;
     max-height: 480px !important;
     min-height: 480px !important;
 }
+
+input[type="range"]{
+    margin: 0.5em 0 -0.3em 0;
+}
+
+/* .min-h-\[4rem\] {
+    min-height: unset !important;
+} */
+
+footer {
+    display: none !important;
+}
+
