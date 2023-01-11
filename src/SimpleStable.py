@@ -159,7 +159,7 @@ def gradio_main(opt, pipe):
             saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe)
 
         images.append(saved_image)
-        opt["seed"] += 1
+        seed += 1
 
     return images
 
