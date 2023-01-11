@@ -1,13 +1,9 @@
-.body {
-    background-color: black
+#img2img_input {
+    height: 500px
 }
 
-.gradio-container {
-    background-color: black
-}
-
-h1 {
-    color: red
+#inpaint_input {
+    height: 500px
 }
 
 .gr-form {
