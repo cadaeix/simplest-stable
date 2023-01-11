@@ -160,13 +160,6 @@
     "keyword": "gigafractal artstyle",
     "prediction": "v_prediction"
   },
-  "Oldjourney (768)": {
-    "url": "StarwingDigital/Oldjourney",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "oldjourney",
-    "prediction": "v_prediction"
-  },
   "Stable Diffusion 1.4 with VAE": {
     "url": "CompVis/stable-diffusion-v1-4",
     "requires_hf_login": false,
