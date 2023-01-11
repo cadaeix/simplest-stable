@@ -62,6 +62,13 @@
     "keyword": "",
     "prediction": "epsilon"
   },
+  "Plat Diffusion (Waifu 1.4 finetune)": {
+    "url": "p1atdev/plat-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
   "Anything v3.0": {
     "url": "Linaqruf/anything-v3-better-vae",
     "requires_hf_login": false,
@@ -132,6 +139,13 @@
     "keyword": "dreamlikeart",
     "prediction": "epsilon"
   },
+  "Dreamlike Photoreal": {
+    "url": "dreamlike-art/dreamlike-photoreal-2.0",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
   "Future Diffusion": {
     "url": "nitrosocke/Future-Diffusion",
     "requires_hf_login": false,
@@ -139,11 +153,18 @@
     "keyword": "future style",
     "prediction": "epsilon"
   },
-  "Gigafractal Diffusion": {
+  "Gigafractal Diffusion (768)": {
     "url": "kabachuha/gigafractal2-diffusion",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "gigafractal artstyle",
+    "prediction": "v_prediction"
+  },
+  "Oldjourney (768)": {
+    "url": "StarwingDigital/Oldjourney",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "oldjourney",
     "prediction": "v_prediction"
   },
   "Stable Diffusion 1.4 with VAE": {

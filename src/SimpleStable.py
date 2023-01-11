@@ -1,4 +1,5 @@
 from datetime import datetime
+import random
 from IPython.display import display, clear_output
 import torch
 import json
@@ -138,9 +139,10 @@ def gradio_main(opt, pipe):
 
     images = []
     batch_name = datetime.now().strftime("%H_%M_%S")
+    seed = random.randint(0, 2**32) if opt["seed"] < 0 else opt["seed"]
     for _b in range(opt["number_of_images"]):
+        utils.set_seed(seed)
         utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
-        utils.set_seed(opt["seed"])
         prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
             opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
         if prompt_options["negative_prompt"]:
@@ -231,10 +233,11 @@ def main(opt, pipe, recreate, embeddings_list):
             "eta": opt["eta"]
         }
 
+    seed = random.randint(0, 2**32) if opt["seed"] < 0 else opt["seed"]
     batch_name = datetime.now().strftime("%H_%M_%S")
     for _b in range(opt["batches"]):
+        utils.set_seed(seed)
         utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
-        utils.set_seed(opt["seed"])
         prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
             opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
         if prompt_options["negative_prompt"]:
@@ -246,7 +249,7 @@ def main(opt, pipe, recreate, embeddings_list):
         image_name = f"{batch_name}_{_b}"
         image.save(f"{image_name}.png")
         display(image)
-        opt["seed"] += 1
+        seed += 1
 
         if opt["upscale"]:
             utils.find_modules_and_assign_padding_mode(pipe, "original")
