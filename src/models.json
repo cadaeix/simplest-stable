@@ -146,6 +146,13 @@
     "keyword": "",
     "prediction": "epsilon"
   },
+  "Analog Diffusion": {
+    "url": "wavymulder/Analog-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "analog style",
+    "prediction": "epsilon"
+  },
   "Future Diffusion": {
     "url": "nitrosocke/Future-Diffusion",
     "requires_hf_login": false,

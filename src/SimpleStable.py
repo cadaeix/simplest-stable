@@ -6,7 +6,7 @@ import json
 from huggingface_hub import login
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 from src import utils, SimpleStableDiffusionPipeline
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, PngImagePlugin
 
 device = torch.device(
     "cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -150,13 +150,15 @@ def gradio_main(opt, pipe):
                 opt["negative"], "")
 
         image = pipe(**prompt_options).images[0]
-        image_name = f"{batch_name}_{_b}"
-        image.save(f"{image_name}.png")
+        image_name = f"{batch_name}_{seed}_{_b}"
+
+        utils.save_image(image, image_name, prompt_options, opt, seed, opt["outputs_folder"])
+
         saved_image = image
 
         if opt["upscale"]:
             utils.find_modules_and_assign_padding_mode(pipe, "original")
-            saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe)
+            saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe, seed)
 
         images.append(saved_image)
         seed += 1

@@ -8,7 +8,7 @@ from tqdm import tqdm
 import PIL
 import numpy as np
 import torch.nn as nn
-from PIL import Image
+from PIL import Image, PngImagePlugin
 from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
@@ -35,6 +35,22 @@ except ImportError:
 
 Grid = namedtuple("Grid", ["tiles", "tile_w",
                   "tile_h", "image_w", "image_h", "overlap"])
+
+
+def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, is_upscale=False):
+    pnginfo = PngImagePlugin.PngInfo()
+
+    prompt_info = f'Prompt: {prompt_options["prompt"]}' if prompt_options["prompt"] else ""
+    negative_info = f'\nNegative: {prompt_options["negative_prompt"]}' if prompt_options["negative_prompt"] else ""
+    upscale_options = f'\nUpscale Strength: {opt["upscale_strength"]}' if is_upscale else ""
+    tiling_options = f'\nTiling: True' if opt["tiling"] else ""
+
+    settings_info = f'{prompt_info}{negative_info}\nSeed: {seed}\nSteps: {str(prompt_options["num_inference_steps"])}\nSampler: {opt["sampler"]}\nGuidance Scale: {prompt_options["guidance_scale"]}\nResolution: {opt["W"]}x{opt["H"]}\nModel: {opt["model_name"]}\nProgram: Simple Stable {upscale_options}{tiling_options}'
+
+    pnginfo.add_text("parameters", settings_info)
+
+    filepath = os.path.join(outputs_folder, f"{image_name}.png")
+    image.save(filepath, pnginfo=pnginfo)
 
 
 def find_modules_and_assign_padding_mode(pipe, mode):
@@ -179,7 +195,7 @@ def combine_grid(grid):
 
     return combined_image
 
-def sd_upscale_gradio(image, name, opt, pipe):
+def sd_upscale_gradio(image, name, opt, pipe, seed):
     tile_w = 768
     tile_h = 768
 
@@ -196,19 +212,20 @@ def sd_upscale_gradio(image, name, opt, pipe):
 
     work_results = []
 
+    prompt_options = {
+        "prompt": opt["prompt"],
+        "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+        "strength": opt["upscale_strength"],
+        "height": tile_h,
+        "width": tile_w,
+        "num_inference_steps": opt["steps"],
+        "guidance_scale": opt["detail_scale"] * 2,
+        "num_images_per_prompt": 1,
+        "eta": opt["eta"]
+    }
+
     for i in range(batch_count):
-        work_results.append(pipe(
-            prompt=opt["prompt"],
-            negative_prompt=None if opt["negative"] == "" else opt["negative"],
-            image=load_img_for_upscale(work[i], tile_w, tile_h),
-            strength=opt["upscale_strength"],
-            height=tile_h,
-            width=tile_w,
-            num_inference_steps=opt["steps"],
-            guidance_scale=opt["detail_scale"],
-            num_images_per_prompt=1,
-            eta=opt["eta"]
-        ).images[0])
+        work_results.append(pipe(**prompt_options, image=load_img_for_upscale(work[i], tile_w, tile_h)).images[0])
 
     image_index = 0
     for y, h, row in grid.tiles:
@@ -218,7 +235,9 @@ def sd_upscale_gradio(image, name, opt, pipe):
             image_index += 1
 
     final_result = combine_grid(grid)
-    final_result.save(f"{name}_upscale.png")
+
+    save_image(final_result, f"{name}_upscale", prompt_options, opt, seed, opt["outputs_folder"])
+
     return final_result
 
 def sd_upscale(image, name, opt, pipe):
