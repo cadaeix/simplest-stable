@@ -78,6 +78,7 @@ def login_to_huggingface():
 
 def process_prompt_and_add_keyword(prompt, keyword):
     result = EverythingsPromptRandomizer.random_prompt(prompt)
+    result = EverythingsPromptRandomizer.random_prompt(prompt) #run it twice because there's some sublists
     if keyword != "" and keyword != None and keyword not in prompt:
         result = f"({keyword}:1), {result}"
     return result
