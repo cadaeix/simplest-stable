@@ -1,6 +1,6 @@
-/* .container {
-    max-width: 100%;
-} */
+.container {
+    max-width: 95%;
+}
 
 #img2img_input,
 #inpaint_input,
@@ -31,6 +31,15 @@
 #upscale_strength > div > div > input {
     width: 8em;
     margin: 0px auto;
+    font-size: 1.2em;
+}
+
+/* .gr-box {
+    font-size: 1.1em
+} */
+
+.text-\[0\.855rem\] {
+    font-size: 1.1em
 }
 
 #reuse_seed,
@@ -45,7 +54,7 @@
 }
 
 #seed_col {
-    max-width: 15em;
+    /* max-width: 15em; */
     min-width: 15em !important;
 }
 
