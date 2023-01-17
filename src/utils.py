@@ -40,17 +40,21 @@ Grid = namedtuple("Grid", ["tiles", "tile_w",
 def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, is_upscale=False):
     pnginfo = PngImagePlugin.PngInfo()
 
+    if opt["sampler"] == "DPMSolver++ (2S) (has issues with img2img)":
+        opt["sampler"] = "DPMSolver++ (2S)"
+
     prompt_info = f'Prompt: {prompt_options["prompt"]}' if prompt_options["prompt"] else ""
     negative_info = f'\nNegative: {prompt_options["negative_prompt"]}' if prompt_options["negative_prompt"] else ""
-    upscale_options = f'\nUpscale Strength: {opt["upscale_strength"]}' if is_upscale else ""
-    tiling_options = f'\nTiling: True' if opt["tiling"] else ""
+    upscale_options = f'\t\t\tUpscale Strength: {opt["upscale_strength"]}' if is_upscale else ""
+    tiling_options = f'\t\\ttTiling: True' if opt["tiling"] else ""
 
-    settings_info = f'{prompt_info}{negative_info}\nSeed: {seed}\nSteps: {str(prompt_options["num_inference_steps"])}\nSampler: {opt["sampler"]}\nGuidance Scale: {prompt_options["guidance_scale"]}\nResolution: {opt["W"]}x{opt["H"]}\nModel: {opt["model_name"]}\nProgram: Simple Stable {upscale_options}{tiling_options}'
+    settings_info = f'{prompt_info}{negative_info}\nSeed: {seed}\t\t\tSteps: {str(prompt_options["num_inference_steps"])}\t\t\tSampler: {opt["sampler"]}\t\t\tGuidance Scale: {prompt_options["guidance_scale"]}\t\tResolution: {opt["W"]}x{opt["H"]}{upscale_options}{tiling_options}\nModel: {opt["model_name"]}\t\t\tProgram: Simple Stable (Gradio)'
 
     pnginfo.add_text("parameters", settings_info)
 
     filepath = os.path.join(outputs_folder, f"{image_name}.png")
     image.save(filepath, pnginfo=pnginfo)
+    return settings_info
 
 
 def find_modules_and_assign_padding_mode(pipe, mode):

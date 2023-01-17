@@ -31,6 +31,10 @@ sampler_dict = {
             "type": "diffusers_DPMSolver",
             "sampler": DPMSolverSinglestepScheduler
         },
+        "DPMSolver++ (2S)": {
+            "type": "diffusers_DPMSolver",
+            "sampler": DPMSolverSinglestepScheduler
+        },
         "DPMSolver++ (2M)": {
             "type": "diffusers_DPMSolver",
             "sampler": DPMSolverMultistepScheduler
@@ -138,6 +142,7 @@ def gradio_main(opt, pipe):
         }
 
     images = []
+    images_details = []
     batch_name = datetime.now().strftime("%H_%M_%S")
     seed = random.randint(0, 2**32) if opt["seed"] < 0 else opt["seed"]
     for _b in range(opt["number_of_images"]):
@@ -152,7 +157,7 @@ def gradio_main(opt, pipe):
         image = pipe(**prompt_options).images[0]
         image_name = f"{batch_name}_{seed}_{_b}"
 
-        utils.save_image(image, image_name, prompt_options, opt, seed, opt["outputs_folder"])
+        settings_info = utils.save_image(image, image_name, prompt_options, opt, seed, opt["outputs_folder"])
 
         saved_image = image
 
@@ -161,9 +166,10 @@ def gradio_main(opt, pipe):
             saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe, seed)
 
         images.append(saved_image)
+        images_details.append(settings_info)
         seed += 1
 
-    return images
+    return images, images_details
 
 def main(opt, pipe, recreate, embeddings_list):
     model_choice = model_dict[opt["model_name"]]
