@@ -1107,8 +1107,7 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
 
         # 8. Denoising loop
         for i, t in enumerate(self.progress_bar(timesteps)):
-            # print(i)
-            # print(encode_schedule[current_encoding][2])
+
             # expand the latents if we are doing classifier free guidance
             latent_model_input = torch.cat(
                 [latents] * 2) if do_classifier_free_guidance else latents
