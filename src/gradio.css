@@ -69,12 +69,19 @@
     margin: auto;
 }
 
-#model_choice {
-    padding: 0;
+#model_dropdown_type {
+    max-width: 25%
 }
 
+/* #download_model_choice,
+#cached_model_choice,
+#custom_model_choice
+ {
+    padding: 0;
+} */
+
 #model_row {
-    width: 40em
+    width: 60em
 }
 
 #hidden_element {

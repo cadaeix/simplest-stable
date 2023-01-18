@@ -1,5 +1,6 @@
 from datetime import datetime
 import random
+import os
 from IPython.display import display, clear_output
 import torch
 import json
@@ -50,22 +51,39 @@ res_dict = {"Custom (Select this and put width and height below)": "",
             "Landscape 1152x768 (does not work on free colab)": [1152,768],
             "Portrait 768x1152 (does not work on free colab)":[768,1152]}
 
-def load_cached_model(model_name):
-    model_list = utils.get_all_cached_hf_models()
-    path = model_list[model_name]
+
+def load_cached_model(model_name, custom_model_dict):
+    model_list = utils.get_all_cached_hf_models(custom_model_dict)
+    pipe_info = model_list[model_name]
     pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-            path, safety_checker=None, requires_safety_checker=False, local_files_only=True).to("cuda")
+            pipe_info["path"], safety_checker=None, requires_safety_checker=False, local_files_only=True).to("cuda")
     utils.find_modules_and_assign_padding_mode(pipe, "setup")
-    pipe.enable_attention_slicing()
-    return pipe
+    #pipe.enable_attention_slicing()
+    return pipe, pipe_info
+
+
+def load_custom_model(model_name, custom_model_dict):
+    custom_model = custom_model_dict[model_name]
+    hf_cache_folder = utils.get_huggingface_cache_path()
+
+    pipe, prediction_type = run_ckpt.run_and_cache_custom_model(custom_model["path"], model_name, hf_cache_folder, custom_model["yaml"], custom_model["vae"], True)
+
+    pipe_info = {
+        "keyword": custom_model["keywords"],
+        "prediction_type": prediction_type
+    }
+    utils.find_modules_and_assign_padding_mode(pipe, "setup")
+
+    return pipe, pipe_info
+
 
 def load_custom_ckpt(filepath, prediction_type):
     pipe = run_ckpt.run_ckpt_in_pipeline(filepath, prediction_type, image_size=512, save=False)
     utils.find_modules_and_assign_padding_mode(pipe, "setup")
     return pipe
 
-def setup_pipe(model_opt):
-    model_choice = model_dict[model_opt]
+def load_downloadable_model(model_name, custom_model_dict=None):
+    model_choice = model_dict[model_name]
     if model_choice["vae"] != "":
         if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
             utils.login_to_huggingface()
@@ -78,116 +96,30 @@ def setup_pipe(model_opt):
         pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
             model_choice["url"], safety_checker=None, requires_safety_checker=False).to("cuda")
     utils.find_modules_and_assign_padding_mode(pipe, "setup")
+
+    pipe_info = {
+        "keyword": model_choice["keyword"],
+        "prediction_type": model_choice["prediction"]
+    }
+
     # name = opt["model_name"]
     # print(f"{name} has been loaded!")
     # for emb_path in embeddings_list:
     #     pipe.embedding_database.add_embedding_path(emb_path)
     # pipe.load_embeddings()
     # pipe.enable_attention_slicing()
-    return pipe
-
-def gradio_main_custom(opt, pipe):
-    model_choice = {
-    "keyword": "",
-    "prediction": "epsilon"
-    }
-
-    pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
-        beta_start=0.00085,
-        beta_end=0.012,
-        beta_schedule="scaled_linear",
-        num_train_timesteps=1000,
-        trained_betas=None,
-        prediction_type=model_choice["prediction"],
-        thresholding=False,
-        algorithm_type="dpmsolver++",
-        solver_type="midpoint",
-        lower_order_final=True,
-        solver_order=2
-        )
-
-    tiling_type = "tiling" if opt["tiling"] else "original"
-
-    if opt["init_img"] != None:
-        if opt["mask_image"] != None: #inpainting
-
-            mask = opt["mask_image"].resize([opt["W"], opt["H"]])
-            mask_image = mask.filter(ImageFilter.GaussianBlur(radius=4))
-
-            prompt_options = {
-                "prompt": opt["prompt"],
-                "negative_prompt": None if opt["negative"] == "" else opt["negative"],
-                "image": opt["init_img"].resize([opt["W"], opt["H"]]),
-                "mask_image": mask_image,
-                "strength": opt["strength"],
-                "height": opt["H"],
-                "width": opt["W"],
-                "num_inference_steps": opt["steps"],
-                "guidance_scale": opt["scale"],
-                "num_images_per_prompt": 1,
-                "eta": opt["eta"]
-            }
-        else: #img2img
-            prompt_options = {
-                "prompt": opt["prompt"],
-                "negative_prompt": None if opt["negative"] == "" else opt["negative"],
-                "image": opt["init_img"].resize([opt["W"], opt["H"]]),
-                "strength": opt["strength"],
-                "height": opt["H"],
-                "width": opt["W"],
-                "num_inference_steps": opt["steps"],
-                "guidance_scale": opt["scale"],
-                "num_images_per_prompt": 1,
-                "eta": opt["eta"]
-            }
-    else: #txt2img
-        prompt_options = {
-            "prompt": opt["prompt"],
-            "negative_prompt": None if opt["negative"] == "" else opt["negative"],
-            "height": opt["H"],
-            "width": opt["W"],
-            "num_inference_steps": opt["steps"],
-            "guidance_scale": opt["scale"],
-            "num_images_per_prompt": 1,
-            "eta": opt["eta"]
-        }
-
-    images = []
-    batch_name = datetime.now().strftime("%H_%M_%S")
-    seed = random.randint(0, 2**32) if opt["seed"] < 0 else opt["seed"]
-    for _b in range(opt["number_of_images"]):
-        utils.set_seed(seed)
-        utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
-        prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
-            opt["prompt"], "")
-        if prompt_options["negative_prompt"]:
-            prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
-                opt["negative"], "")
-
-        image = pipe(**prompt_options).images[0]
-        image_name = f"{batch_name}_{seed}_{_b}"
-
-        utils.save_image(image, image_name, prompt_options, opt, seed, opt["outputs_folder"])
-
-        saved_image = image
-
-        if opt["upscale"]:
-            utils.find_modules_and_assign_padding_mode(pipe, "original")
-            saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe, seed)
-
-        images.append(saved_image)
-        seed += 1
-
-    return images
-
-
+    return pipe, pipe_info
 
 def gradio_main(opt, pipe):
-    model_choice = model_dict[opt["model_name"]]
-
     if sampler_dict[opt["sampler"]]["type"] == "diffusers":
-        pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"].from_pretrained(
-            model_choice["url"], subfolder="scheduler")
+        pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
+            beta_end = 0.012,
+            beta_schedule = "scaled_linear",
+            beta_start = 0.00085,
+            num_train_timesteps = 1000,
+            prediction_type = opt["prediction_type"],
+            trained_betas = None,
+        )
     elif sampler_dict[opt["sampler"]]["type"] == "diffusers_DPMSolver":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
             beta_start=0.00085,
@@ -195,7 +127,7 @@ def gradio_main(opt, pipe):
             beta_schedule="scaled_linear",
             num_train_timesteps=1000,
             trained_betas=None,
-            prediction_type=model_choice["prediction"],
+            prediction_type=opt["prediction_type"],
             thresholding=False,
             algorithm_type="dpmsolver++",
             solver_type="midpoint",
@@ -257,7 +189,7 @@ def gradio_main(opt, pipe):
         utils.set_seed(seed)
         utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
         prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
-            opt["prompt"], model_choice["keyword"] if opt["add_keyword"] else "")
+            opt["prompt"], opt["keyword"] if opt["add_keyword"] else "")
         if prompt_options["negative_prompt"]:
             prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
                 opt["negative"], "")

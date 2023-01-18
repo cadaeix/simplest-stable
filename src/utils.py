@@ -1,4 +1,6 @@
 import os
+import re
+import os
 import random
 import math
 import random
@@ -14,6 +16,17 @@ from PIL import Image, PngImagePlugin
 from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
+
+with open('src/models.json') as modelfile:
+    model_dict = json.load(modelfile)
+
+#this is awful
+model_dict_under_urls = {}
+for i in model_dict.items():
+        model_dict_under_urls[i[1]["url"]] = {
+            "keyword": i[1]["keyword"],
+            "prediction_type": i[1]["prediction"]
+        }
 
 try:
     from diffusers.utils import PIL_INTERPOLATION
@@ -38,18 +51,85 @@ except ImportError:
 Grid = namedtuple("Grid", ["tiles", "tile_w",
                   "tile_h", "image_w", "image_h", "overlap"])
 
-def check_saved_models():
+def get_huggingface_cache_path():
+    return os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers")
+
+def process_custom_model_glob(globlist):
+    results = {}
+    for file in globlist:
+        stemname, filename = os.path.split(file)
+        basename, _ = os.path.splitext(filename)
+        yaml = os.path.join(stemname, f"{basename}.yaml") if os.path.exists(os.path.join(stemname, f"{basename}.yaml")) else None
+        vae = os.path.join(stemname, f"{basename}.vae.pt") if os.path.exists(os.path.join(stemname, f"{basename}.vae.pt")) else None
+        kw = re.search(r"\[(.*?)\]", basename)
+        if kw:
+            kw = kw.group(0).replace('[', '').replace(']', '')
+            kw = kw.split(',')
+
+        results[basename] = {
+            "path": file,
+            "yaml": yaml,
+            "vae": vae,
+            "keywords": kw
+        }
+
+    return results
+
+
+def find_custom_models(path: str | None):
+    if not path:
+        return {}
+    if not os.path.exists(path):
+        print("Could not find path!")
+        #return statement
+
+    #assume ones without yamls are v1/epsilon
+    ckpts = glob.glob(os.path.join(path, "*.ckpt"))
+    safetensors = glob.glob(os.path.join(path, "*.safetensors"))
+
+    return {**process_custom_model_glob(ckpts), **process_custom_model_glob(safetensors)}
+
+
+def get_info(name, folderpath, model_dict, custom_model_dict=None):
+    if name in model_dict:
+        return model_dict[name]
+    elif custom_model_dict and name in custom_model_dict:
+        prediction_type = get_prediction_type_from_diffusers_cache(folderpath)
+        return {
+            'keyword': custom_model_dict[name]["keywords"],
+            'prediction_type': prediction_type
+        }
+    else:
+        prediction_type = get_prediction_type_from_diffusers_cache(folderpath)
+        return {
+            'keyword': "",
+            'prediction_type': prediction_type
+        }
+
+def get_prediction_type_from_diffusers_cache(folderpath):
+    with open(os.path.join(folderpath, "scheduler", "scheduler_config.json")) as jsonfile:
+        model_json = json.load(jsonfile)
+    if "prediction_type" not in model_json:
+        prediction_type = "epsilon"
+    else:
+        prediction_type = model_json["prediction_type"]
+
+    return prediction_type
+
+def check_saved_models(custom_model_dict=None):
     folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", "*", "model_index.json")
 
     result = {}
     for model_folderpath in glob.glob(folderpath):
         folderpath, _ = os.path.split(model_folderpath)
-        _, foldername = os.path.split(folderpath)
-        result[foldername] = folderpath
+        _, name = os.path.split(folderpath)
+        info = get_info(name, folderpath, model_dict_under_urls, custom_model_dict)
+        info["path"] = folderpath
+        result[name] = info
     return result
 
 
-def check_cached_models():
+def check_cached_models(custom_model_dict=None):
     folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", "*", "snapshots", "*", "model_index.json")
 
     result = {}
@@ -60,12 +140,16 @@ def check_cached_models():
             pathlist = str.split(model_folderpath, os.path.sep)
             if "model" in pathlist[-4]:
                 name = pathlist[-4][8:].replace("--", "/")
+                print(name)
                 sd_model_folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", pathlist[-4])
-                result[name] = sd_model_folderpath
+                folderpath, _ = os.path.split(model_folderpath)
+                info = get_info(name, folderpath, model_dict_under_urls, custom_model_dict)
+                info["path"] = folderpath
+                result[name] = info
     return result
 
-def get_all_cached_hf_models():
-    return {**check_saved_models(), **check_cached_models()}
+def get_all_cached_hf_models(custom_model_dict = None):
+    return {**check_saved_models(custom_model_dict), **check_cached_models(custom_model_dict)}
 
 def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, is_upscale=False):
     pnginfo = PngImagePlugin.PngInfo()
@@ -113,7 +197,12 @@ def login_to_huggingface():
 def process_prompt_and_add_keyword(prompt, keyword):
     result = EverythingsPromptRandomizer.random_prompt(prompt)
     result = EverythingsPromptRandomizer.random_prompt(prompt) #run it twice because there's some sublists
-    if keyword != "" and keyword != None and keyword not in prompt:
+    if type(keyword) is list:
+        for kw in keyword:
+            kw_strip = kw.strip()
+            if kw_strip not in prompt:
+                result = f"({kw_strip}:1), {result}"
+    elif keyword != "" and keyword != None and keyword not in prompt:
         result = f"({keyword}:1), {result}"
     return result
 
