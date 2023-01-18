@@ -76,7 +76,7 @@ def process_custom_model_glob(globlist):
     return results
 
 
-def find_custom_models(path: str | None):
+def find_custom_models(path):
     if not path:
         return {}
     if not os.path.exists(path):
