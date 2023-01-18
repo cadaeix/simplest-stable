@@ -5,7 +5,7 @@ import torch
 import json
 from huggingface_hub import login
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
-from src import utils, SimpleStableDiffusionPipeline
+from src import utils, SimpleStableDiffusionPipeline, run_ckpt
 from PIL import Image, ImageFilter, PngImagePlugin
 
 device = torch.device(
@@ -59,6 +59,10 @@ def load_cached_model(model_name):
     pipe.enable_attention_slicing()
     return pipe
 
+def load_custom_ckpt(filepath, prediction_type):
+    pipe = run_ckpt.run_ckpt_in_pipeline(filepath, prediction_type, image_size=512, save=False)
+    utils.find_modules_and_assign_padding_mode(pipe, "setup")
+    return pipe
 
 def setup_pipe(model_opt):
     model_choice = model_dict[model_opt]
@@ -79,8 +83,104 @@ def setup_pipe(model_opt):
     # for emb_path in embeddings_list:
     #     pipe.embedding_database.add_embedding_path(emb_path)
     # pipe.load_embeddings()
-    pipe.enable_attention_slicing()
+    # pipe.enable_attention_slicing()
     return pipe
+
+def gradio_main_custom(opt, pipe):
+    model_choice = {
+    "keyword": "",
+    "prediction": "epsilon"
+    }
+
+    pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
+        beta_start=0.00085,
+        beta_end=0.012,
+        beta_schedule="scaled_linear",
+        num_train_timesteps=1000,
+        trained_betas=None,
+        prediction_type=model_choice["prediction"],
+        thresholding=False,
+        algorithm_type="dpmsolver++",
+        solver_type="midpoint",
+        lower_order_final=True,
+        solver_order=2
+        )
+
+    tiling_type = "tiling" if opt["tiling"] else "original"
+
+    if opt["init_img"] != None:
+        if opt["mask_image"] != None: #inpainting
+
+            mask = opt["mask_image"].resize([opt["W"], opt["H"]])
+            mask_image = mask.filter(ImageFilter.GaussianBlur(radius=4))
+
+            prompt_options = {
+                "prompt": opt["prompt"],
+                "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+                "image": opt["init_img"].resize([opt["W"], opt["H"]]),
+                "mask_image": mask_image,
+                "strength": opt["strength"],
+                "height": opt["H"],
+                "width": opt["W"],
+                "num_inference_steps": opt["steps"],
+                "guidance_scale": opt["scale"],
+                "num_images_per_prompt": 1,
+                "eta": opt["eta"]
+            }
+        else: #img2img
+            prompt_options = {
+                "prompt": opt["prompt"],
+                "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+                "image": opt["init_img"].resize([opt["W"], opt["H"]]),
+                "strength": opt["strength"],
+                "height": opt["H"],
+                "width": opt["W"],
+                "num_inference_steps": opt["steps"],
+                "guidance_scale": opt["scale"],
+                "num_images_per_prompt": 1,
+                "eta": opt["eta"]
+            }
+    else: #txt2img
+        prompt_options = {
+            "prompt": opt["prompt"],
+            "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+            "height": opt["H"],
+            "width": opt["W"],
+            "num_inference_steps": opt["steps"],
+            "guidance_scale": opt["scale"],
+            "num_images_per_prompt": 1,
+            "eta": opt["eta"]
+        }
+
+    images = []
+    batch_name = datetime.now().strftime("%H_%M_%S")
+    seed = random.randint(0, 2**32) if opt["seed"] < 0 else opt["seed"]
+    for _b in range(opt["number_of_images"]):
+        utils.set_seed(seed)
+        utils.find_modules_and_assign_padding_mode(pipe, tiling_type)
+        prompt_options["prompt"] = utils.process_prompt_and_add_keyword(
+            opt["prompt"], "")
+        if prompt_options["negative_prompt"]:
+            prompt_options["negative_prompt"] = utils.process_prompt_and_add_keyword(
+                opt["negative"], "")
+
+        image = pipe(**prompt_options).images[0]
+        image_name = f"{batch_name}_{seed}_{_b}"
+
+        utils.save_image(image, image_name, prompt_options, opt, seed, opt["outputs_folder"])
+
+        saved_image = image
+
+        if opt["upscale"]:
+            utils.find_modules_and_assign_padding_mode(pipe, "original")
+            saved_image = utils.sd_upscale_gradio(image, image_name, opt, pipe, seed)
+
+        images.append(saved_image)
+        seed += 1
+
+    return images
+
+
 
 def gradio_main(opt, pipe):
     model_choice = model_dict[opt["model_name"]]
