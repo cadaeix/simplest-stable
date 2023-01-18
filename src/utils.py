@@ -4,6 +4,8 @@ import math
 import random
 import requests
 import torch
+import glob
+import json
 from tqdm import tqdm
 import PIL
 import numpy as np
@@ -36,6 +38,34 @@ except ImportError:
 Grid = namedtuple("Grid", ["tiles", "tile_w",
                   "tile_h", "image_w", "image_h", "overlap"])
 
+def check_saved_models():
+    folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", "*", "model_index.json")
+
+    result = {}
+    for model_folderpath in glob.glob(folderpath):
+        folderpath, _ = os.path.split(model_folderpath)
+        _, foldername = os.path.split(folderpath)
+        result[foldername] = folderpath
+    return result
+
+
+def check_cached_models():
+    folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", "*", "snapshots", "*", "model_index.json")
+
+    result = {}
+    for model_folderpath in glob.glob(folderpath):
+        with open(model_folderpath) as json_file:
+            model_json = json.load(json_file)
+        if model_json["_class_name"] == "StableDiffusionPipeline":
+            pathlist = str.split(model_folderpath, os.path.sep)
+            if "model" in pathlist[-4]:
+                name = pathlist[-4][8:].replace("--", "/")
+                sd_model_folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", pathlist[-4])
+                result[name] = sd_model_folderpath
+    return result
+
+def get_all_cached_hf_models():
+    return {**check_saved_models(), **check_cached_models()}
 
 def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, is_upscale=False):
     pnginfo = PngImagePlugin.PngInfo()

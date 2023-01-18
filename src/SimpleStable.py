@@ -10,9 +10,8 @@ from PIL import Image, ImageFilter, PngImagePlugin
 
 device = torch.device(
     "cuda") if torch.cuda.is_available() else torch.device("cpu")
-m = open('src/models.json')
-model_dict = json.load(m)
-m.close()
+with open('src/models.json') as modelfile:
+    model_dict = json.load(modelfile)
 
 sampler_dict = {
         "Euler a": {
@@ -50,6 +49,15 @@ res_dict = {"Custom (Select this and put width and height below)": "",
             "Square 768x768 (good for 768 models)": [768,768],
             "Landscape 1152x768 (does not work on free colab)": [1152,768],
             "Portrait 768x1152 (does not work on free colab)":[768,1152]}
+
+def load_cached_model(model_name):
+    model_list = utils.get_all_cached_hf_models()
+    path = model_list[model_name]
+    pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
+            path, safety_checker=None, requires_safety_checker=False, local_files_only=True).to("cuda")
+    utils.find_modules_and_assign_padding_mode(pipe, "setup")
+    pipe.enable_attention_slicing()
+    return pipe
 
 
 def setup_pipe(model_opt):
