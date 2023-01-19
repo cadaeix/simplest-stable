@@ -51,6 +51,9 @@ except ImportError:
 Grid = namedtuple("Grid", ["tiles", "tile_w",
                   "tile_h", "image_w", "image_h", "overlap"])
 
+def process_embeddings_folder(embeddings_path):
+   return glob.glob(os.path.join(embeddings_path, "*.pt")) + glob.glob(os.path.join(embeddings_path, "*.bin"))
+
 def get_huggingface_cache_path():
     return os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers")
 

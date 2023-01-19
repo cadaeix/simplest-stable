@@ -110,6 +110,14 @@ def load_downloadable_model(model_name, custom_model_dict=None):
     # pipe.enable_attention_slicing()
     return pipe, pipe_info
 
+def load_embeddings(embeddings_folder, pipe):
+    if embeddings_folder and os.path.exists(embeddings_folder):
+        emb_list = utils.process_embeddings_folder(embeddings_folder)
+
+        for emb_path in emb_list:
+            pipe.embedding_database.add_embedding_path(emb_path)
+        pipe.load_embeddings()
+
 def gradio_main(opt, pipe):
     if sampler_dict[opt["sampler"]]["type"] == "diffusers":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
@@ -294,8 +302,8 @@ def main(opt, pipe, recreate, embeddings_list):
 
         print(prompt_options["prompt"])
         image = pipe(**prompt_options).images[0]
-        image_name = f"{batch_name}_{_b}"
-        image.save(f"{image_name}.png")
+        image_name = f"{batch_name}_{seed}_{_b}"
+        utils.save_image(image, image_name, prompt_options, opt, seed, opt["outputs_folder"])
         display(image)
         seed += 1
 
