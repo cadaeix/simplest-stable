@@ -25,24 +25,66 @@ function recreateNode(el, withChildren) {
   }
 }
 
-// function setupOutputGallery() {
-//   console.log("lol");
-//   setTimeout(() => {
-//     gradioApp()
-//       .querySelectorAll("div[id$=output_gallery] .gallery-item")[0]
-//       .click();
-//   }, 100);
-//   console.log("lol2");
-//   setTimeout(() => {
-//     gradioApp().querySelectorAll(".modify-upload.z-10.top-2")[0].remove();
-//   }, 100);
-//   console.log("lol3");
-//   setTimeout(() => {
-//     recreateNode(
-//       gradioApp().querySelectorAll(
-//         "#output_gallery > .absolute.group.inset-0"
-//       )[0],
-//       false
-//     );
-//   }, 100);
-// }
+function setVisibility(el, on) {
+  const hidden_element = "hidden_element";
+  if (on & el.classList.contains(hidden_element)) {
+    el.classList.remove(hidden_element);
+  } else if (!on) {
+    el.classList.add(hidden_element);
+  }
+}
+
+function handleModelDropdowns() {
+  const modelTypeDropdown = gradioApp().querySelector(
+    "div[id$=model_dropdown_type] label select"
+  );
+
+  const downloadModelDropdown = gradioApp().querySelector(
+    "div[id$=download_model_choice]"
+  );
+  const cachedModelDropdown = gradioApp().querySelector(
+    "div[id$=cached_model_choice]"
+  );
+  const customModelDropdown = gradioApp().querySelector(
+    "div[id$=custom_model_choice]"
+  );
+
+  switch (modelTypeDropdown.value) {
+    case "Installed Models":
+      setVisibility(downloadModelDropdown, false);
+      setVisibility(cachedModelDropdown, true);
+      setVisibility(customModelDropdown, false);
+      break;
+    case "Downloadable Models":
+      setVisibility(downloadModelDropdown, true);
+      setVisibility(cachedModelDropdown, false);
+      setVisibility(customModelDropdown, false);
+      break;
+    case "Custom Models":
+      setVisibility(downloadModelDropdown, false);
+      setVisibility(cachedModelDropdown, false);
+      setVisibility(customModelDropdown, true);
+      break;
+  }
+}
+
+function runOnStart() {
+  const downloadModelDropdown = gradioApp().querySelector(
+    "div[id$=download_model_choice]"
+  );
+  const cachedModelDropdown = gradioApp().querySelector(
+    "div[id$=cached_model_choice]"
+  );
+  const customModelDropdown = gradioApp().querySelector(
+    "div[id$=custom_model_choice]"
+  );
+
+  setVisibility(downloadModelDropdown, true);
+  setVisibility(cachedModelDropdown, false);
+  setVisibility(customModelDropdown, false);
+}
+
+// run startup javascript after elements load in
+setTimeout(() => {
+  runOnStart();
+}, 500);

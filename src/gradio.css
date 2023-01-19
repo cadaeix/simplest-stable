@@ -34,10 +34,6 @@
     font-size: 1.2em;
 }
 
-/* .gr-box {
-    font-size: 1.1em
-} */
-
 .text-\[0\.855rem\] {
     font-size: 1.1em
 }
@@ -73,20 +69,15 @@
     max-width: 25%
 }
 
-/* #download_model_choice,
-#cached_model_choice,
-#custom_model_choice
- {
-    padding: 0;
-} */
-
 #model_row {
     width: 60em
 }
 
-#hidden_element {
+#hidden_element,
+.hidden_element {
     display: none;
     height: 0px;
+    width: 0px;
 }
 
 .gr-form {
@@ -114,10 +105,6 @@
 input[type="range"]{
     margin: 0.5em 0 -0.3em 0;
 }
-
-/* .min-h-\[4rem\] {
-    min-height: unset !important;
-} */
 
 footer {
     display: none !important;
