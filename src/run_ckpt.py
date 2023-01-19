@@ -11,14 +11,30 @@ from diffusers import (
     DPMSolverMultistepScheduler
 )
 from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
-from .scripts.convert_original_stable_diffusion_to_diffusers import create_unet_diffusers_config, convert_ldm_unet_checkpoint, create_vae_diffusers_config, convert_ldm_vae_checkpoint, convert_ldm_clip_checkpoint, convert_open_clip_checkpoint
+from .scripts.convert_original_stable_diffusion_to_diffusers import (
+        create_unet_diffusers_config,
+        convert_ldm_unet_checkpoint,
+        create_vae_diffusers_config,
+        convert_ldm_vae_checkpoint,
+        convert_ldm_clip_checkpoint,
+        convert_open_clip_checkpoint,
+        safe_open
+)
 from transformers import AutoFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 def get_huggingface_cache_path():
     return os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers")
 
 def run_and_cache_custom_model(custom_model_path, name, folder_path, config_file = None, vae_file = None, cache=True):
-    checkpoint = torch.load(custom_model_path, map_location="cuda")
+    _, extension = os.path.splitext(custom_model_path)
+    if extension == ".safetensors":
+        checkpoint = {}
+        with safe_open(custom_model_path, framework="pt", device="cpu") as f:
+            for key in f.keys():
+                checkpoint[key] = f.get_tensor(key)
+    else:
+        checkpoint = torch.load(custom_model_path, map_location="cuda")
+
     global_step = checkpoint["global_step"] if "global_step" in checkpoint else None
     checkpoint = checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
     upcast_attention = False

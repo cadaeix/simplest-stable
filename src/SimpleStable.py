@@ -31,10 +31,6 @@ sampler_dict = {
             "type": "diffusers_DPMSolver",
             "sampler": DPMSolverSinglestepScheduler
         },
-        "DPMSolver++ (2S)": {
-            "type": "diffusers_DPMSolver",
-            "sampler": DPMSolverSinglestepScheduler
-        },
         "DPMSolver++ (2M)": {
             "type": "diffusers_DPMSolver",
             "sampler": DPMSolverMultistepScheduler
@@ -102,12 +98,6 @@ def load_downloadable_model(model_name, custom_model_dict=None):
         "prediction_type": model_choice["prediction"]
     }
 
-    # name = opt["model_name"]
-    # print(f"{name} has been loaded!")
-    # for emb_path in embeddings_list:
-    #     pipe.embedding_database.add_embedding_path(emb_path)
-    # pipe.load_embeddings()
-    # pipe.enable_attention_slicing()
     return pipe, pipe_info
 
 def load_embeddings(embeddings_folder, pipe):

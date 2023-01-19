@@ -43,6 +43,15 @@ logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
 
 class Embedding:
+    """
+    A textual inversion embedding, with the following attributes:
+        id_token: The token ID for the embedding
+        token: The token (string) for the embedding
+        data: The embedding data, as a tensor
+        number_of_vectors: The number of vectors in the data
+        shape: The shape of the data
+        encoded_tokens: A list of token IDs for the encoded tokens
+    """
     def __init__(self, id_token, token, data, encoded_tokens):
         self.id_token = id_token
         self.token = token
@@ -53,11 +62,19 @@ class Embedding:
 
 
 class EmbeddingDatabase:
+    """
+    A class representing a database of embeddings, with the following attributes:
+        embeddings_paths: A list of paths to the embeddings
+        embeddings: A dictionary of embeddings, with token IDs as keys
+    """
     def __init__(self):
         self.embeddings_paths = []
         self.embeddings = {}
 
     def split_embedding_and_register(self, data, text_encoder, length):
+        """
+        Split the given data into chunks, and register them with the text encoder
+        """
         data_length = data.shape[0]
         text_encoder.resize_token_embeddings(length + data_length)
 
@@ -70,13 +87,18 @@ class EmbeddingDatabase:
         return token_list
 
     def add_embedding_path(self, learned_embeds_path, id_token=None):
+        """
+        Add the given path to the list of embedding paths, with the given token
+        """
         token = id_token if id_token is not None else os.path.basename(
             learned_embeds_path.split('.')[0])
         self.embeddings_paths.append([token, learned_embeds_path])
 
     def add_embedding_to_model(self, learned_embeds_path, tokenizer, text_encoder, id_token):
+        """
+        Add the embedding from the given path to the model, using the given tokenizer and text encoder
+        """
         loaded_embeds = torch.load(learned_embeds_path, map_location="cuda")
-
         # textual inversion embeddings
         if 'string_to_param' in loaded_embeds:
             param_dict = loaded_embeds['string_to_param']
@@ -131,29 +153,18 @@ plain: /([^\\\[\]():|]|\\.)+/
 
 def get_learned_conditioning_prompt_schedules(prompts, steps):
     """
-    >>> g = lambda p: get_learned_conditioning_prompt_schedules([p], 10)[0]
-    >>> g("test")
-    [[10, 'test']]
-    >>> g("a [b:3]")
-    [[3, 'a '], [10, 'a b']]
-    >>> g("a [b: 3]")
-    [[3, 'a '], [10, 'a b']]
-    >>> g("a [[[b]]:2]")
-    [[2, 'a '], [10, 'a [[b]]']]
-    >>> g("[(a:2):3]")
-    [[3, ''], [10, '(a:2)']]
-    >>> g("a [b : c : 1] d")
-    [[1, 'a b  d'], [10, 'a  c  d']]
-    >>> g("a[b:[c:d:2]:1]e")
-    [[1, 'abe'], [2, 'ace'], [10, 'ade']]
-    >>> g("a [unbalanced")
-    [[10, 'a [unbalanced']]
-    >>> g("a [b:.5] c")
-    [[5, 'a  c'], [10, 'a b c']]
-    >>> g("a [{b|d{:.5] c")  # not handling this right now
-    [[5, 'a  c'], [10, 'a {b|d{ c']]
-    >>> g("((a][:b:c [d:3]")
-    [[3, '((a][:b:c '], [10, '((a][:b:c d']]
+    This function takes in a list of prompts and the total number of steps, and returns a list of lists.
+    Each sub-list represents the steps at which a prompt should be used, and the corresponding prompt text.
+    The function uses Lark, a parsing library, to parse the input prompts according to a set of grammar rules defined in 'schedule_parser'.
+    These grammar rules define various types of attention tokens such as emphasized, scheduled, alternate and plain.
+    The function applies the grammar rules to the input prompts and creates a parse tree for each prompt.
+    Then it uses a visitor to collect the steps at which a prompt should be used, and a transformer to generate the prompt text at each step.
+    If the input prompt is unbalanced or invalid, the function returns the original input prompt.
+
+    Examples:
+    get_learned_conditioning_prompt_schedules(["test"], 10) -> [[10, 'test']]
+    get_learned_conditioning_prompt_schedules(["a [b:3]"], 10) -> [[3, 'a '], [10, 'a b']]
+    get_learned_conditioning_prompt_schedules(["a [unbalanced"], 10) -> [[10, 'a [unbalanced']]
     """
 
     def collect_steps(steps, tree):
@@ -231,40 +242,29 @@ re_attention = re.compile(
     re.X,
 )
 
+re_break = re.compile(r"\s*\bBREAK\b\s*", re.S)
 
 def parse_prompt_attention(text):
     """
-    Parses a string with attention tokens and returns a list of pairs: text and its associated weight.
-    Accepted tokens are:
-      (abc) - increases attention to abc by a multiplier of 1.1
-      (abc:3.12) - increases attention to abc by a multiplier of 3.12
-      [abc] - decreases attention to abc by a multiplier of 1.1
-      \( - literal character '('
-      \[ - literal character '['
-      \) - literal character ')'
-      \] - literal character ']'
-      \\ - literal character '\'
-      anything else - just text
-    >>> parse_prompt_attention('normal text')
-    [['normal text', 1.0]]
-    >>> parse_prompt_attention('an (important) word')
-    [['an ', 1.0], ['important', 1.1], [' word', 1.0]]
-    >>> parse_prompt_attention('(unbalanced')
-    [['unbalanced', 1.1]]
-    >>> parse_prompt_attention('\(literal\]')
-    [['(literal]', 1.0]]
-    >>> parse_prompt_attention('(unnecessary)(parens)')
-    [['unnecessaryparens', 1.1]]
-    >>> parse_prompt_attention('a (((house:1.3)) [on] a (hill:0.5), sun, (((sky))).')
-    [['a ', 1.0],
-     ['house', 1.5730000000000004],
-     [' ', 1.1],
-     ['on', 1.0],
-     [' a ', 1.1],
-     ['hill', 0.55],
-     [', sun, ', 1.1],
-     ['sky', 1.4641000000000006],
-     ['.', 1.1]]
+    This function takes in a string and returns a list of tuples, where each tuple represents a piece of text and its associated weight.
+    The function looks for special attention tokens in the input string, which are used to adjust the weight of certain text. The accepted tokens are:
+
+    - (abc) - increases the attention to 'abc' by a factor of 1.1
+    - (abc:1.5) - sets the attention to 'abc' to 1.5
+    - [abc] - decreases the attention to 'abc' by a factor of 1.1
+    - \( - a literal '(' character
+    - \[ - a literal '[' character
+    - \) - a literal ')' character
+    - \] - a literal ']' character
+    - \\ - a literal '\' character
+    - BREAK - ends the chunk and starts a new chunk
+
+    Any other text found in the input string is given a weight of 1.0.
+
+    Examples:
+    parse_prompt_attention('normal text') -> [['normal text', 1.0]]
+    parse_prompt_attention('an (important) word') -> [['an ', 1.0], ['important', 1.1], [' word', 1.0]]
+    parse_prompt_attention('\(literal\]') -> [['(literal]', 1.0]]
     """
 
     res = []
@@ -282,20 +282,24 @@ def parse_prompt_attention(text):
         text = m.group(0)
         weight = m.group(1)
 
-        if text.startswith("\\"):
+        if text.startswith('\\'):
             res.append([text[1:], 1.0])
-        elif text == "(":
+        elif text == '(':
             round_brackets.append(len(res))
-        elif text == "[":
+        elif text == '[':
             square_brackets.append(len(res))
         elif weight is not None and len(round_brackets) > 0:
             multiply_range(round_brackets.pop(), float(weight))
-        elif text == ")" and len(round_brackets) > 0:
+        elif text == ')' and len(round_brackets) > 0:
             multiply_range(round_brackets.pop(), round_bracket_multiplier)
-        elif text == "]" and len(square_brackets) > 0:
+        elif text == ']' and len(square_brackets) > 0:
             multiply_range(square_brackets.pop(), square_bracket_multiplier)
         else:
-            res.append([text, 1.0])
+            parts = re.split(re_break, text)
+            for i, part in enumerate(parts):
+                if i > 0:
+                    res.append(["BREAK", -1])
+                res.append([part, 1.0])
 
     for pos in round_brackets:
         multiply_range(pos, round_bracket_multiplier)
@@ -800,18 +804,6 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 f" {type(callback_steps)}."
             )
 
-    # def get_timesteps(self, num_inference_steps, strength, device, is_text2img):
-    #     if is_text2img:
-    #         return self.scheduler.timesteps.to(device), num_inference_steps
-    #     else:
-    #         # get the original timestep using init_timestep
-    #         offset = self.scheduler.config.get("steps_offset", 0)
-    #         init_timestep = int(num_inference_steps * strength) + offset
-    #         init_timestep = min(init_timestep, num_inference_steps)
-
-    #         t_start = max(num_inference_steps - init_timestep + offset, 0)
-    #         timesteps = self.scheduler.timesteps[t_start:].to(device)
-    #         return timesteps, num_inference_steps - t_start
 
     def get_timesteps(self, num_inference_steps, strength, device, is_text2img):
         if is_text2img:
@@ -821,11 +813,6 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             offset = self.scheduler.config.get("steps_offset", 0)
             init_timestep = int(num_inference_steps * strength) + offset
             init_timestep = min(init_timestep, num_inference_steps)
-
-            # t_start = max(num_inference_steps - init_timestep + offset, 0)
-            # timesteps = self.scheduler.timesteps[-init_timestep]
-            # timesteps = torch.tensor([timesteps], device='cuda')
-            # return timesteps, num_inference_steps - t_start
 
             t_start = max(num_inference_steps - init_timestep + offset, 0)
             timesteps = self.scheduler.timesteps[t_start:].to(device)
