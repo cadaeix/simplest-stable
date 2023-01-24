@@ -70,14 +70,28 @@
     "prediction": "epsilon"
   },
   "Anything v3.0": {
-    "url": "Linaqruf/anything-v3-better-vae",
+    "url": "aldi7/anything-v3-mirror",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
     "prediction": "epsilon"
   },
+  "AnimeChanStyle": {
+    "url": "AdamOswald1/Anime_with_support_for_Gen-Imp_characters",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "AnimeChanStyle",
+    "prediction": "epsilon"
+  },
   "seek.art_MEGA": {
     "url": "coreco/seek.art_MEGA",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Sygil Diffusion": {
+    "url": "Sygil/Sygil-Diffusion",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
@@ -95,6 +109,13 @@
     "requires_hf_login": false,
     "vae": "",
     "keyword": "nvinkpunk",
+    "prediction": "epsilon"
+  },
+  "Vivid Watercolors": {
+    "url": "Evel/VividWatercolors",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "wtrcolor style",
     "prediction": "epsilon"
   },
   "Classic Animation Diffusion": {
