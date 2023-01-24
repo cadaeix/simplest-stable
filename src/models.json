@@ -48,13 +48,6 @@
     "keyword": "",
     "prediction": "epsilon"
   },
-  "Waifu Diffusion 1.3": {
-    "url": "hakurei/waifu-diffusion-v1-3",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "",
-    "prediction": "epsilon"
-  },
   "Waifu Diffusion 1.4 (Epoch 1 Test Version)": {
     "url": "hakurei/waifu-diffusion",
     "requires_hf_login": false,
