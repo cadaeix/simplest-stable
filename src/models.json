@@ -41,8 +41,64 @@
     "keyword": "",
     "prediction": "v_prediction"
   },
-  "Pokemon Diffusion": {
-    "url": "justinpinkney/pokemon-stable-diffusion",
+  "Dreamlike Diffusion": {
+    "url": "dreamlike-art/dreamlike-diffusion-1.0",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "dreamlikeart",
+    "prediction": "epsilon"
+  },
+  "Openjourney": {
+    "url": "prompthero/openjourney",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "mdjrny-v4 style",
+    "prediction": "epsilon"
+  },
+  "Openjourney V2 Beta": {
+    "url": "prompthero/openjourney-v2",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "seek.art_MEGA": {
+    "url": "coreco/seek.art_MEGA",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Sygil Diffusion": {
+    "url": "Sygil/Sygil-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Analog Diffusion": {
+    "url": "wavymulder/Analog-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "analog style",
+    "prediction": "epsilon"
+  },
+  "Dreamlike Photoreal": {
+    "url": "dreamlike-art/dreamlike-photoreal-2.0",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Anything v3.0": {
+    "url": "aldi7/anything-v3-mirror",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Anything v4.0": {
+    "url": "andite/anything-v4.0",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
@@ -62,41 +118,6 @@
     "keyword": "",
     "prediction": "epsilon"
   },
-  "Anything v3.0": {
-    "url": "aldi7/anything-v3-mirror",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "",
-    "prediction": "epsilon"
-  },
-  "AnimeChanStyle": {
-    "url": "AdamOswald1/Anime_with_support_for_Gen-Imp_characters",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "AnimeChanStyle",
-    "prediction": "epsilon"
-  },
-  "seek.art_MEGA": {
-    "url": "coreco/seek.art_MEGA",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "",
-    "prediction": "epsilon"
-  },
-  "Sygil Diffusion": {
-    "url": "Sygil/Sygil-Diffusion",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "",
-    "prediction": "epsilon"
-  },
-  "Robo Diffusion": {
-    "url": "nousr/robo-diffusion",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "nousr robot",
-    "prediction": "epsilon"
-  },
   "Inkpunk Diffusion": {
     "url": "Envvi/Inkpunk-Diffusion",
     "requires_hf_login": false,
@@ -109,6 +130,41 @@
     "requires_hf_login": false,
     "vae": "",
     "keyword": "wtrcolor style",
+    "prediction": "epsilon"
+  },
+  "Future Diffusion": {
+    "url": "nitrosocke/Future-Diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "future style",
+    "prediction": "epsilon"
+  },
+  "Gigafractal Diffusion (768)": {
+    "url": "kabachuha/gigafractal2-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "gigafractal artstyle",
+    "prediction": "v_prediction"
+  },
+  "Van Gogh Diffusion": {
+    "url": "dallinmackay/Van-Gogh-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "lvngvncnt",
+    "prediction": "epsilon"
+  },
+  "Pokemon Diffusion": {
+    "url": "justinpinkney/pokemon-stable-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Robo Diffusion": {
+    "url": "nousr/robo-diffusion",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "nousr robot",
     "prediction": "epsilon"
   },
   "Classic Animation Diffusion": {
@@ -132,73 +188,11 @@
     "keyword": "ghibli style",
     "prediction": "epsilon"
   },
-  "Van Gogh Diffusion": {
-    "url": "dallinmackay/Van-Gogh-diffusion",
+  "Furry Diffusion": {
+    "url": "lunarfish/furrydiffusion",
     "requires_hf_login": false,
     "vae": "",
-    "keyword": "lvngvncnt",
-    "prediction": "epsilon"
-  },
-  "Openjourney": {
-    "url": "prompthero/openjourney",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "mdjrny-v4 style",
-    "prediction": "epsilon"
-  },
-  "Dreamlike Diffusion": {
-    "url": "dreamlike-art/dreamlike-diffusion-1.0",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "dreamlikeart",
-    "prediction": "epsilon"
-  },
-  "Dreamlike Photoreal": {
-    "url": "dreamlike-art/dreamlike-photoreal-2.0",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "",
-    "prediction": "epsilon"
-  },
-  "Analog Diffusion": {
-    "url": "wavymulder/Analog-Diffusion",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "analog style",
-    "prediction": "epsilon"
-  },
-  "Future Diffusion": {
-    "url": "nitrosocke/Future-Diffusion",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "future style",
-    "prediction": "epsilon"
-  },
-  "Gigafractal Diffusion (768)": {
-    "url": "kabachuha/gigafractal2-diffusion",
-    "requires_hf_login": false,
-    "vae": "",
-    "keyword": "gigafractal artstyle",
-    "prediction": "v_prediction"
-  },
-  "Stable Diffusion 1.4 with VAE": {
-    "url": "CompVis/stable-diffusion-v1-4",
-    "requires_hf_login": false,
-    "vae": {
-      "url": "stabilityai/sd-vae-ft-mse",
-      "requires_hf_login": false
-    },
-    "keyword": "",
-    "prediction": "epsilon"
-  },
-  "Stable Diffusion 1.5 with VAE": {
-    "url": "runwayml/stable-diffusion-v1-5",
-    "requires_hf_login": false,
-    "vae": {
-      "url": "stabilityai/sd-vae-ft-mse",
-      "requires_hf_login": false
-    },
-    "keyword": "",
+    "keyword": "furry",
     "prediction": "epsilon"
   }
 }
