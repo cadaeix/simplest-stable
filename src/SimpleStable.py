@@ -4,7 +4,7 @@ import os
 from IPython.display import display, clear_output
 import torch
 import json
-from huggingface_hub import login
+from huggingface_hub import hf_hub_download
 from diffusers import AutoencoderKL, EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 from src import utils, SimpleStableDiffusionPipeline, run_ckpt
 from PIL import Image, ImageFilter, PngImagePlugin
@@ -48,9 +48,8 @@ res_dict = {"Custom (Select this and put width and height below)": "",
             "Portrait 768x1152 (does not work on free colab)":[768,1152]}
 
 
-def load_cached_model(model_name, custom_model_dict):
-    model_list = utils.get_all_cached_hf_models(custom_model_dict)
-    pipe_info = model_list[model_name]
+def load_cached_model(model_name, custom_model_dict, cached_model_dict):
+    pipe_info = cached_model_dict[model_name]
     pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
             pipe_info["path"], safety_checker=None, requires_safety_checker=False, local_files_only=True).to("cuda")
     utils.find_modules_and_assign_padding_mode(pipe, "setup")
@@ -58,7 +57,7 @@ def load_cached_model(model_name, custom_model_dict):
     return pipe, pipe_info
 
 
-def load_custom_model(model_name, custom_model_dict):
+def load_custom_model(model_name, custom_model_dict, cached_model_dict = None):
     custom_model = custom_model_dict[model_name]
     hf_cache_folder = utils.get_huggingface_cache_path()
 
@@ -72,25 +71,43 @@ def load_custom_model(model_name, custom_model_dict):
 
     return pipe, pipe_info
 
-
-def load_custom_ckpt(filepath, prediction_type):
-    pipe = run_ckpt.run_ckpt_in_pipeline(filepath, prediction_type, image_size=512, save=False)
-    utils.find_modules_and_assign_padding_mode(pipe, "setup")
-    return pipe
-
-def load_downloadable_model(model_name, custom_model_dict=None):
-    model_choice = model_dict[model_name]
+def load_diffusers_model(model_choice):
     if model_choice["vae"] != "":
         if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
             utils.login_to_huggingface()
-        vae = AutoencoderKL.from_pretrained(model_choice["vae"]["url"])
+        vae = AutoencoderKL.from_pretrained(model_choice["vae"]["repo_id"])
         pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-            model_choice["url"], vae=vae, safety_checker=None, requires_safety_checker=False).to("cuda")
+            model_choice["repo_id"], vae=vae, safety_checker=None, requires_safety_checker=False).to("cuda")
     else:
         if model_choice["requires_hf_login"]:
             utils.login_to_huggingface()
         pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-            model_choice["url"], safety_checker=None, requires_safety_checker=False).to("cuda")
+            model_choice["repo_id"], safety_checker=None, requires_safety_checker=False).to("cuda")
+    return pipe
+
+def load_downloadable_model(model_name, custom_model_dict=None, cached_model_dict=None):
+    model_choice = model_dict[model_name]
+
+    if model_choice["type"] == "diffusers":
+        pipe = load_diffusers_model(model_choice)
+    elif model_choice["type"] == "hf-file":
+        if model_name not in cached_model_dict:
+            print("Loading from HF")
+            hf_cache_folder = utils.get_huggingface_cache_path()
+            ckpt = hf_hub_download(repo_id=model_choice["repo_id"], filename=model_choice["filename"])
+            if model_choice["config"] != "":
+                config = hf_hub_download(repo_id=model_choice["repo_id"], filename=model_choice["config"])
+            else:
+                config = None
+            if model_choice["vae"] != "":
+                vae = hf_hub_download(repo_id=model_choice["repo_id"], filename=model_choice["vae"])
+            else:
+                vae = None
+            pipe, _ = run_ckpt.run_and_cache_custom_model(ckpt, model_name, hf_cache_folder, config, vae, True)
+        else:
+            print("loading from cache")
+            return load_cached_model(model_name, custom_model_dict, cached_model_dict)
+
     utils.find_modules_and_assign_padding_mode(pipe, "setup")
 
     pipe_info = {
@@ -217,14 +234,14 @@ def main(opt, pipe, recreate, embeddings_list):
         if model_choice["vae"] != "":
             if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
                 utils.login_to_huggingface()
-            vae = AutoencoderKL.from_pretrained(model_choice["vae"]["url"])
+            vae = AutoencoderKL.from_pretrained(model_choice["vae"]["repo_id"])
             pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-                model_choice["url"], vae=vae, safety_checker=None, requires_safety_checker=False).to("cuda")
+                model_choice["repo_id"], vae=vae, safety_checker=None, requires_safety_checker=False).to("cuda")
         else:
             if model_choice["requires_hf_login"]:
                 utils.login_to_huggingface()
             pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-                model_choice["url"], safety_checker=None, requires_safety_checker=False).to("cuda")
+                model_choice["repo_id"], safety_checker=None, requires_safety_checker=False).to("cuda")
         utils.find_modules_and_assign_padding_mode(pipe, "setup")
         clear_output(wait=False)
         name = opt["model_name"]
@@ -235,7 +252,7 @@ def main(opt, pipe, recreate, embeddings_list):
 
     if sampler_dict[opt["sampler"]]["type"] == "diffusers":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"].from_pretrained(
-            model_choice["url"], subfolder="scheduler")
+            model_choice["repo_id"], subfolder="scheduler")
     elif sampler_dict[opt["sampler"]]["type"] == "diffusers_DPMSolver":
         pipe.scheduler = sampler_dict[opt["sampler"]]["sampler"](
             beta_start=0.00085,
