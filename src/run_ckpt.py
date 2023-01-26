@@ -107,6 +107,7 @@ def run_and_cache_custom_model(custom_model_path, name, folder_path, config_file
     if model_type == "FrozenOpenCLIPEmbedder":
         text_model = convert_open_clip_checkpoint(checkpoint)
         tokenizer = CLIPTokenizer.from_pretrained("stabilityai/stable-diffusion-2", subfolder="tokenizer")
+        safety_checker = StableDiffusionSafetyChecker.from_pretrained("CompVis/stable-diffusion-safety-checker")
         pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline(
             vae=vae,
             text_encoder=text_model,
@@ -114,7 +115,8 @@ def run_and_cache_custom_model(custom_model_path, name, folder_path, config_file
             unet=unet,
             scheduler=scheduler,
             feature_extractor=None,
-            requires_safety_checker=False,
+            safety_checker=safety_checker,
+            requires_safety_checker=False
         )
     elif model_type == "FrozenCLIPEmbedder":
         text_model = convert_ldm_clip_checkpoint(checkpoint)

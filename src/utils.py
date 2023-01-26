@@ -17,16 +17,26 @@ from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
 
-with open('src/models.json') as modelfile:
-    model_dict = json.load(modelfile)
-
 #this is awful
-model_dict_under_urls = {}
-for i in model_dict.items():
-        model_dict_under_urls[i[1]["url"]] = {
-            "keyword": i[1]["keyword"],
-            "prediction_type": i[1]["prediction"]
-        }
+def mini_model_lookup():
+    with open('src/models.json') as modelfile:
+        model_dict = json.load(modelfile)
+
+    model_dict_under_urls = {}
+    for i in model_dict.items():
+            if i[1]["type"] == "hf-file":
+                model_name = i[0]
+            elif i[1]["type"] == "diffusers":
+                model_name = i[1]["repo_id"]
+
+            model_dict_under_urls[model_name] = {
+                "keyword": i[1]["keyword"],
+                "prediction_type": i[1]["prediction"]
+            }
+
+    return model_dict_under_urls
+
+model_dict_under_urls = mini_model_lookup()
 
 try:
     from diffusers.utils import PIL_INTERPOLATION
@@ -143,8 +153,6 @@ def check_cached_models(custom_model_dict=None):
             pathlist = str.split(model_folderpath, os.path.sep)
             if "model" in pathlist[-4]:
                 name = pathlist[-4][8:].replace("--", "/")
-                print(name)
-                sd_model_folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", pathlist[-4])
                 folderpath, _ = os.path.split(model_folderpath)
                 info = get_info(name, folderpath, model_dict_under_urls, custom_model_dict)
                 info["path"] = folderpath

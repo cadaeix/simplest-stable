@@ -79,7 +79,7 @@ function runOnStart() {
     "div[id$=custom_model_choice]"
   );
 
-  setVisibility(downloadModelDropdown, true);
+  setVisibility(downloadModelDropdown, false);
   setVisibility(cachedModelDropdown, false);
   setVisibility(customModelDropdown, false);
 }
@@ -87,4 +87,8 @@ function runOnStart() {
 // run startup javascript after elements load in
 setTimeout(() => {
   runOnStart();
-}, 500);
+}, 100);
+// do it again
+setTimeout(() => {
+  runOnStart();
+}, 1000);
