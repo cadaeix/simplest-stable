@@ -230,19 +230,12 @@ def main(opt, pipe, recreate, embeddings_list):
     model_choice = model_dict[opt["model_name"]]
 
     if pipe == None or recreate:
+        del pipe
+        all_cached_hf_models = utils.get_all_cached_hf_models([])
         print("Loading the model... If this is the first time downloading this model this session, this may take a while...")
-        if model_choice["vae"] != "":
-            if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
-                utils.login_to_huggingface()
-            vae = AutoencoderKL.from_pretrained(model_choice["vae"]["repo_id"])
-            pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-                model_choice["repo_id"], vae=vae, safety_checker=None, requires_safety_checker=False).to("cuda")
-        else:
-            if model_choice["requires_hf_login"]:
-                utils.login_to_huggingface()
-            pipe = SimpleStableDiffusionPipeline.SimpleStableDiffusionPipeline.from_pretrained(
-                model_choice["repo_id"], safety_checker=None, requires_safety_checker=False).to("cuda")
-        utils.find_modules_and_assign_padding_mode(pipe, "setup")
+        pipe, pipe_info = load_downloadable_model(opt["model_name"], custom_model_dict={}, cached_model_dict=all_cached_hf_models)
+        pipe = pipe.to("cuda")
+        pipe.enable_attention_slicing()
         clear_output(wait=False)
         name = opt["model_name"]
         print(f"{name} has been loaded!")
@@ -268,7 +261,6 @@ def main(opt, pipe, recreate, embeddings_list):
             solver_order=2
         )
 
-    pipe.enable_attention_slicing()
     tiling_type = "tiling" if opt["tiling"] else "original"
 
     if opt["init_img"] != None:

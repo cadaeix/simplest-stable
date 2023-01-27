@@ -104,10 +104,8 @@
     "prediction": "epsilon"
   },
   "Anything v3.0": {
-    "type": "hf-file",
-    "repo_id": "AdamOswald1/anything-v5.0",
-    "filename": "any-v3-fp32-better-vae.safetensors",
-    "config": "",
+    "type": "diffusers",
+    "repo_id": "AdamOswald1/Anything-Preservation",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
@@ -116,6 +114,15 @@
   "Anything v4.0": {
     "type": "diffusers",
     "repo_id": "andite/anything-v4.0",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "",
+    "prediction": "epsilon"
+  },
+  "Waifu Diffusion 1.3": {
+    "type": "hf-file",
+    "repo_id": "hakurei/waifu-diffusion",
+    "filename": "wd-v1-3-float16.ckpt",
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
