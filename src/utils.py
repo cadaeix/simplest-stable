@@ -1,3 +1,4 @@
+import gc
 import os
 import re
 import os
@@ -17,24 +18,27 @@ from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
 
-#this is awful
+# this is awful
+
+
 def mini_model_lookup():
     with open('src/models.json') as modelfile:
         model_dict = json.load(modelfile)
 
     model_dict_under_urls = {}
     for i in model_dict.items():
-            if i[1]["type"] == "hf-file":
-                model_name = i[0]
-            elif i[1]["type"] == "diffusers":
-                model_name = i[1]["repo_id"]
+        if i[1]["type"] == "hf-file":
+            model_name = i[0]
+        elif i[1]["type"] == "diffusers":
+            model_name = i[1]["repo_id"]
 
-            model_dict_under_urls[model_name] = {
-                "keyword": i[1]["keyword"],
-                "prediction_type": i[1]["prediction"]
-            }
+        model_dict_under_urls[model_name] = {
+            "keyword": i[1]["keyword"],
+            "prediction_type": i[1]["prediction"]
+        }
 
     return model_dict_under_urls
+
 
 model_dict_under_urls = mini_model_lookup()
 
@@ -61,19 +65,30 @@ except ImportError:
 Grid = namedtuple("Grid", ["tiles", "tile_w",
                   "tile_h", "image_w", "image_h", "overlap"])
 
+
+def free_ram():
+    gc.collect()
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+
+
 def process_embeddings_folder(embeddings_path):
-   return glob.glob(os.path.join(embeddings_path, "*.pt")) + glob.glob(os.path.join(embeddings_path, "*.bin"))
+    return glob.glob(os.path.join(embeddings_path, "*.pt")) + glob.glob(os.path.join(embeddings_path, "*.bin"))
+
 
 def get_huggingface_cache_path():
     return os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers")
+
 
 def process_custom_model_glob(globlist):
     results = {}
     for file in globlist:
         stemname, filename = os.path.split(file)
         basename, _ = os.path.splitext(filename)
-        yaml = os.path.join(stemname, f"{basename}.yaml") if os.path.exists(os.path.join(stemname, f"{basename}.yaml")) else None
-        vae = os.path.join(stemname, f"{basename}.vae.pt") if os.path.exists(os.path.join(stemname, f"{basename}.vae.pt")) else None
+        config = os.path.join(stemname, f"{basename}.yaml") if os.path.exists(
+            os.path.join(stemname, f"{basename}.yaml")) else None
+        vae = os.path.join(stemname, f"{basename}.vae.pt") if os.path.exists(
+            os.path.join(stemname, f"{basename}.vae.pt")) else None
         kw = re.search(r"\[(.*?)\]", basename)
         if kw:
             kw = kw.group(0).replace('[', '').replace(']', '')
@@ -81,7 +96,7 @@ def process_custom_model_glob(globlist):
 
         results[basename] = {
             "path": file,
-            "yaml": yaml,
+            "config": config,
             "vae": vae,
             "keywords": kw
         }
@@ -94,9 +109,9 @@ def find_custom_models(path):
         return {}
     if not os.path.exists(path):
         print("Could not find path!")
-        #return statement
+        # return statement
 
-    #assume ones without yamls are v1/epsilon
+    # assume ones without yamls are v1/epsilon
     ckpts = glob.glob(os.path.join(path, "*.ckpt"))
     safetensors = glob.glob(os.path.join(path, "*.safetensors"))
 
@@ -119,6 +134,7 @@ def get_info(name, folderpath, model_dict, custom_model_dict=None):
             'prediction_type': prediction_type
         }
 
+
 def get_prediction_type_from_diffusers_cache(folderpath):
     with open(os.path.join(folderpath, "scheduler", "scheduler_config.json")) as jsonfile:
         model_json = json.load(jsonfile)
@@ -129,21 +145,25 @@ def get_prediction_type_from_diffusers_cache(folderpath):
 
     return prediction_type
 
+
 def check_saved_models(custom_model_dict=None):
-    folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", "*", "model_index.json")
+    folderpath = os.path.join(os.path.expanduser(
+        '~'), ".cache", "huggingface", "diffusers", "*", "model_index.json")
 
     result = {}
     for model_folderpath in glob.glob(folderpath):
         folderpath, _ = os.path.split(model_folderpath)
         _, name = os.path.split(folderpath)
-        info = get_info(name, folderpath, model_dict_under_urls, custom_model_dict)
+        info = get_info(name, folderpath,
+                        model_dict_under_urls, custom_model_dict)
         info["path"] = folderpath
         result[name] = info
     return result
 
 
 def check_cached_models(custom_model_dict=None):
-    folderpath = os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers", "*", "snapshots", "*", "model_index.json")
+    folderpath = os.path.join(os.path.expanduser(
+        '~'), ".cache", "huggingface", "diffusers", "*", "snapshots", "*", "model_index.json")
 
     result = {}
     for model_folderpath in glob.glob(folderpath):
@@ -154,15 +174,18 @@ def check_cached_models(custom_model_dict=None):
             if "model" in pathlist[-4]:
                 name = pathlist[-4][8:].replace("--", "/")
                 folderpath, _ = os.path.split(model_folderpath)
-                info = get_info(name, folderpath, model_dict_under_urls, custom_model_dict)
+                info = get_info(name, folderpath,
+                                model_dict_under_urls, custom_model_dict)
                 info["path"] = folderpath
                 result[name] = info
     return result
 
-def get_all_cached_hf_models(custom_model_dict = None):
+
+def get_all_cached_hf_models(custom_model_dict=None):
     return {**check_saved_models(custom_model_dict), **check_cached_models(custom_model_dict)}
 
-def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, is_upscale=False):
+
+def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, program_version, is_upscale=False):
     pnginfo = PngImagePlugin.PngInfo()
 
     if opt["sampler"] == "DPMSolver++ (2S) (has issues with img2img)":
@@ -173,7 +196,7 @@ def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, is_
     upscale_options = f'\t\t\tUpscale Strength: {opt["upscale_strength"]}' if is_upscale else ""
     tiling_options = f'\t\\ttTiling: True' if opt["tiling"] else ""
 
-    settings_info = f'{prompt_info}{negative_info}\nSeed: {seed}\t\t\tSteps: {str(prompt_options["num_inference_steps"])}\t\t\tSampler: {opt["sampler"]}\t\t\tGuidance Scale: {prompt_options["guidance_scale"]}\t\tResolution: {opt["W"]}x{opt["H"]}{upscale_options}{tiling_options}\nModel: {opt["model_name"]}\t\t\tProgram: Simple Stable (Gradio)'
+    settings_info = f'{prompt_info}{negative_info}\nSeed: {seed}\t\t\tSteps: {str(prompt_options["num_inference_steps"])}\t\t\tSampler: {opt["sampler"]}\t\t\tGuidance Scale: {prompt_options["guidance_scale"]}\t\tResolution: {opt["W"]}x{opt["H"]}{upscale_options}{tiling_options}\nModel: {opt["model_name"]}\t\t\tProgram: {program_version}'
 
     pnginfo.add_text("parameters", settings_info)
 
@@ -207,7 +230,8 @@ def login_to_huggingface():
 
 def process_prompt_and_add_keyword(prompt, keyword):
     result = EverythingsPromptRandomizer.random_prompt(prompt)
-    result = EverythingsPromptRandomizer.random_prompt(prompt) #run it twice because there's some sublists
+    result = EverythingsPromptRandomizer.random_prompt(
+        prompt)  # run it twice because there's some sublists
     if type(keyword) is list:
         for kw in keyword:
             kw_strip = kw.strip()
@@ -329,90 +353,3 @@ def combine_grid(grid):
             (0, grid.overlap, combined_row.width, h)), (0, y + grid.overlap))
 
     return combined_image
-
-def sd_upscale_gradio(image, name, opt, pipe, seed):
-    tile_w = 768
-    tile_h = 768
-
-    resized_image = resize_image(image)
-    grid = split_grid(resized_image, tile_w=tile_w, tile_h=tile_h, overlap=128)
-
-    work = []
-
-    for y, h, row in grid.tiles:
-        for tiledata in row:
-            work.append(tiledata[2])
-
-    batch_count = len(work)
-
-    work_results = []
-
-    prompt_options = {
-        "prompt": opt["prompt"],
-        "negative_prompt": None if opt["negative"] == "" else opt["negative"],
-        "strength": opt["upscale_strength"],
-        "height": tile_h,
-        "width": tile_w,
-        "num_inference_steps": opt["steps"],
-        "guidance_scale": opt["detail_scale"] * 2,
-        "num_images_per_prompt": 1,
-        "eta": opt["eta"]
-    }
-
-    for i in range(batch_count):
-        work_results.append(pipe(**prompt_options, image=load_img_for_upscale(work[i], tile_w, tile_h)).images[0])
-
-    image_index = 0
-    for y, h, row in grid.tiles:
-        for tiledata in row:
-            tiledata[2] = work_results[image_index] if image_index < len(
-                work_results) else Image.new("RGB", (tile_w, tile_h))
-            image_index += 1
-
-    final_result = combine_grid(grid)
-
-    save_image(final_result, f"{name}_upscale", prompt_options, opt, seed, opt["outputs_folder"])
-
-    return final_result
-
-def sd_upscale(image, name, opt, pipe):
-    tile_w = 768
-    tile_h = 768
-
-    resized_image = resize_image(image)
-    grid = split_grid(resized_image, tile_w=tile_w, tile_h=tile_h, overlap=128)
-
-    work = []
-
-    for y, h, row in grid.tiles:
-        for tiledata in row:
-            work.append(tiledata[2])
-
-    batch_count = len(work)
-
-    work_results = []
-
-    for i in range(batch_count):
-        work_results.append(pipe(
-            prompt=opt["prompt"],
-            negative_prompt=None if opt["negative"] == "" else opt["negative"],
-            image=load_img_for_upscale(work[i], tile_w, tile_h),
-            strength=opt["upscale_strength"],
-            height=tile_h,
-            width=tile_w,
-            num_inference_steps=opt["steps"],
-            guidance_scale=opt["detail_scale"],
-            num_images_per_prompt=1,
-            eta=opt["eta"]
-        ).images[0])
-
-    image_index = 0
-    for y, h, row in grid.tiles:
-        for tiledata in row:
-            tiledata[2] = work_results[image_index] if image_index < len(
-                work_results) else Image.new("RGB", (tile_w, tile_h))
-            image_index += 1
-
-    final_result = combine_grid(grid)
-    final_result.save(f"{name}_upscale.png")
-    display(final_result)

@@ -1,0 +1,106 @@
+{
+  "embeddings": [
+    {
+      "filename": "v1_midj_strong",
+      "download_url": "https://huggingface.co/crumb/midjourney-textual-inversions/resolve/main/midj-strong.pt",
+      "version": "1.x",
+      "description": "Midjourney V3 style, strong - by @aicrumb"
+    },
+    {
+      "filename": "v1_midj_portrait",
+      "download_url": "https://huggingface.co/crumb/midjourney-textual-inversions/resolve/main/midj-portrait.pt",
+      "version": "1.x",
+      "description": "Midjourney V3 style, portrait - by @aicrumb"
+    },
+    {
+      "filename": "v1_midj_anthro",
+      "download_url": "https://huggingface.co/crumb/midjourney-textual-inversions/resolve/main/midj-anthro.pt",
+      "version": "1.x",
+      "description": "Midjourney V3 style, anthro furries - by @aicrumb"
+    },
+    {
+      "filename": "v1_bad_prompt",
+      "download_url": "https://huggingface.co/datasets/Nerfgun3/bad_prompt/resolve/main/bad_prompt_version2.pt",
+      "version": "1.x",
+      "description": "Negative embedding for better anime pictures with better anatomy - by Nerfgun"
+    },
+    {
+      "filename": "v1_charturner",
+      "download_url": "https://huggingface.co/Mousewrites/charTurner/resolve/main/charTurner.pt",
+      "version": "1.x",
+      "description": "Character turnaround sheets - by Mousewrites"
+    },
+    {
+      "filename": "v2_knollingcase",
+      "download_url": "https://huggingface.co/ProGamerGov/knollingcase-embeddings-sd-v2-0/resolve/main/kc32-v4-5000.pt",
+      "version": "2.x",
+      "description": "Sleek sci fi concept of objects in glass cases - by ProGamerGov"
+    },
+    {
+      "filename": "v2_dreamink",
+      "download_url": "https://huggingface.co/cadaeic/v2_dreamink/resolve/main/v2_dreamink.pt",
+      "version": "2.x",
+      "description": "brightly coloured silhouetted landscapes in a flat illustration style - by teuthisdreams"
+    },
+    {
+      "filename": "v2_PhotoHelper",
+      "download_url": "https://huggingface.co/spaablauw/PhotoHelper/resolve/main/PhotoHelper.pt",
+      "version": "2.x",
+      "description": "Photorealistic pictures - by spaablauw"
+    },
+    {
+      "filename": "v2_CinemaHelper",
+      "download_url": "https://huggingface.co/spaablauw/CinemaHelper/resolve/main/CinemaHelper.pt",
+      "version": "2.x",
+      "description": "Cinema photos with bokeh, depth of field, soft lights and muted colors - by spaablauw"
+    },
+    {
+      "filename": "v2_ActionHelper",
+      "download_url": "https://huggingface.co/spaablauw/ActionHelper/resolve/main/ActionHelper.pt",
+      "version": "2.x",
+      "description": "Blue and orange action cinema photos - by spaablauw"
+    },
+    {
+      "filename": "v2_VintageHelper",
+      "download_url": "https://huggingface.co/spaablauw/VintageHelper/resolve/main/VintageHelper.pt",
+      "version": "2.x",
+      "description": "Vintage photos with bokeh, colorgrading, depth of field, composition and adds grain and imperfections - by spaablauw"
+    },
+    {
+      "filename": "v2_laxpeint",
+      "download_url": "https://huggingface.co/EldritchAdam/laxpeint/resolve/main/laxpeintV2.pt",
+      "version": "2.x",
+      "description": "loose digital painting style - by EldritchAdam"
+    },
+    {
+      "filename": "v2_classipeint",
+      "download_url": "https://huggingface.co/EldritchAdam/classipeint/blob/main/classipeint.pt",
+      "version": "2.x",
+      "description": "brush strokes and oil painting style - by EldritchAdam"
+    },
+    {
+      "filename": "v2_AnimeScreenCap",
+      "download_url": "https://huggingface.co/Conflictx/AnimeScreencap/resolve/main/AnimeScreenCap.pt",
+      "version": "2.x",
+      "description": "warm anime landscapes - by ConflictX"
+    },
+    {
+      "filename": "v2_DoubleExposure",
+      "download_url": "https://huggingface.co/joachimsallstrom/Double-Exposure-Embedding/resolve/main/dblx.pt",
+      "version": "2.x",
+      "description": "Double exposures - by joachimsallstrom"
+    },
+    {
+      "filename": "v2_glitch",
+      "download_url": "https://huggingface.co/joachimsallstrom/Glitch-Embedding/resolve/main/glitch.pt",
+      "version": "2.x",
+      "description": "glitchy style inspired by 80s and 90s VHS tape aesthetics - by joachimsallstrom"
+    },
+    {
+      "filename": "v2_wrong",
+      "download_url": "https://huggingface.co/minimaxir/wrong_embedding_sd_2_0/resolve/main/learned_embeds.bin",
+      "version": "2.x",
+      "description": "a negative prompt to improve the quality and fidelity of generated images - by minimaxir"
+    }
+  ]
+}
