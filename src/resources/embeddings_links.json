@@ -73,12 +73,6 @@
       "description": "loose digital painting style - by EldritchAdam"
     },
     {
-      "filename": "v2_classipeint.pt",
-      "download_url": "https://huggingface.co/EldritchAdam/classipeint/blob/main/classipeint.pt",
-      "version": "2.x",
-      "description": "brush strokes and oil painting style - by EldritchAdam"
-    },
-    {
       "filename": "v2_AnimeScreenCap.pt",
       "download_url": "https://huggingface.co/Conflictx/AnimeScreencap/resolve/main/AnimeScreenCap.pt",
       "version": "2.x",
