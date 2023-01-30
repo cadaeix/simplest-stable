@@ -266,7 +266,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         negative = negative if negative != None else ""
         used_seed = random.randint(0, 2**32) if seed < 0 else seed
         width, height = [custom_width, custom_height] if (
-            lambda x: x == "Custom (Select this and put width and height below)") else res_dict[resolution]
+            resolution == "Custom (Select this and put width and height below)") else res_dict[resolution]
 
         if "Insert standard Danbooru model quality prompt" in additional_options:
             prompt = "masterpiece, best quality, " + prompt
