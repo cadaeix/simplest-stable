@@ -9,7 +9,6 @@ import requests
 import torch
 import glob
 import json
-from tqdm import tqdm
 import PIL
 import numpy as np
 import torch.nn as nn
@@ -18,11 +17,9 @@ from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
 
-# this is awful
 
-
-def mini_model_lookup():
-    with open('src/models.json') as modelfile:
+def mini_model_lookup():  # this is awful, fix this soon
+    with open('src/resources/models.json') as modelfile:
         model_dict = json.load(modelfile)
 
     model_dict_under_urls = {}
