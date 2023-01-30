@@ -290,7 +290,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         return images, used_seed, message
 
     # control flow
-    with open('src/models.json') as modelfile:
+    with open('src/resources/models.json') as modelfile:
         model_dict = json.load(modelfile)
 
     if not os.path.exists(outputs_folder):
