@@ -132,7 +132,10 @@ def output_section():
 
 
 def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], enable_attention_slicing: bool = False, enable_xformers: bool = False):
-    global pipe, pipe_info, session_folder
+    global pipe, pipe_info, session_folder, model_dict
+
+    with open('src/resources/models.json') as modelfile:
+        model_dict = json.load(modelfile)
 
     def model_selections():
         with gr.Row(elem_id="model_row"):
@@ -291,9 +294,6 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         return images, used_seed, message
 
     # control flow
-    with open('src/resources/models.json') as modelfile:
-        model_dict = json.load(modelfile)
-
     if not os.path.exists(outputs_folder):
         os.mkdir(outputs_folder)
     session_folder = outputs_folder
