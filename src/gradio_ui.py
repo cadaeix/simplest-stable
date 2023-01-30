@@ -132,10 +132,19 @@ def output_section():
 
 
 def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], enable_attention_slicing: bool = False, enable_xformers: bool = False):
-    global pipe, pipe_info, session_folder, model_dict
+    global pipe, pipe_info, session_folder, model_dict, all_custom_models, all_cached_hf_models
 
     with open('src/resources/models.json') as modelfile:
         model_dict = json.load(modelfile)
+
+    pipe, pipe_info = prepare_pipe(
+        starting_model_to_load, "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
+
+    pipe = load_embeddings_from_folders(
+        pipe, embeddings_path, downloaded_embeddings)
+
+    all_custom_models = find_custom_models(custom_models_path)
+    all_cached_hf_models = get_all_cached_hf_models(all_custom_models)
 
     def model_selections():
         with gr.Row(elem_id="model_row"):
@@ -310,15 +319,6 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
 
     with open("src/gradio.css") as file:
         css += file.read() + "\n"
-
-    pipe, pipe_info = prepare_pipe(
-        starting_model_to_load, "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
-
-    pipe = load_embeddings_from_folders(
-        pipe, embeddings_path, downloaded_embeddings)
-
-    all_custom_models = find_custom_models(custom_models_path)
-    all_cached_hf_models = get_all_cached_hf_models(all_custom_models)
 
     load_javascript = LoadJavaScript()
     with gr.Blocks(css=css, title="Simple Stable") as main:
