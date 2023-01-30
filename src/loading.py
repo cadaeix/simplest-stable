@@ -3,13 +3,11 @@ from src.run_ckpt import run_and_cache_custom_model
 from src.utils import find_modules_and_assign_padding_mode, get_huggingface_cache_path, login_to_huggingface, process_embeddings_folder
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
 from diffusers import AutoencoderKL
-import torch
-import json
 from huggingface_hub import hf_hub_download
 import os
 
 
-def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict, custom_model_dict: Optional[dict], cached_model_dict: Optional[dict], attention_slicing: bool = False) -> Tuple[SimpleStableDiffusionPipeline, dict]:
+def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict, custom_model_dict: Optional[dict], cached_model_dict: Optional[dict], enable_attention_slicing: bool = False, enable_xformers: bool = False) -> Tuple[SimpleStableDiffusionPipeline, dict]:
     pipe_info = None
 
     if cached_model_dict and ((model_name in cached_model_dict) or (model_type == "Installed Models")):
@@ -38,7 +36,9 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
     else:
         raise ValueError(f"Tried to load {model_name} and failed.")
 
-    if attention_slicing:
+    if enable_xformers:
+        pipe.enable_xformers_memory_efficient_attention()
+    elif enable_attention_slicing:
         pipe.enable_attention_slicing()
 
     find_modules_and_assign_padding_mode(pipe, "setup")

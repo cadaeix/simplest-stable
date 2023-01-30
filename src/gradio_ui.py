@@ -128,9 +128,10 @@ def output_section():
     return generate_button, image_output, to_img2img_button, to_inpaint_button, log_output
 
 # main function
+# xformers takes precedent over attention_slicing
 
 
-def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], attention_slicing: bool = False):
+def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], enable_attention_slicing: bool = False, enable_xformers: bool = False):
     global pipe, pipe_info, session_folder
 
     def model_selections():
@@ -229,7 +230,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         del pipe
         free_ram()
         pipe, pipe_info = prepare_pipe(chosen_model_name, dropdown_type, model_dict,
-                                       all_cached_hf_models, all_custom_models, attention_slicing)
+                                       all_cached_hf_models, all_custom_models, enable_attention_slicing, enable_xformers)
         return f"{chosen_model_name} loaded", chosen_model_name
 
     def generate(mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, model_name, progress=gr.Progress(track_tqdm=True)):
@@ -311,7 +312,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         css += file.read() + "\n"
 
     pipe, pipe_info = prepare_pipe(
-        starting_model_to_load, "Downloadable Models", model_dict, None, None, attention_slicing)
+        starting_model_to_load, "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
 
     pipe = load_embeddings_from_folders(
         pipe, embeddings_path, downloaded_embeddings)
