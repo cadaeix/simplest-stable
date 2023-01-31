@@ -156,7 +156,7 @@
   "Pastel Waifu Diffusion": {
     "type": "hf-file",
     "repo_id": "andite/pastel-mix",
-    "filename": " pastelmix-better-vae-fp16.safetensors",
+    "filename": "pastelmix-better-vae-fp16.safetensors",
     "config": "",
     "vae": "",
     "keyword": "mksks style",
