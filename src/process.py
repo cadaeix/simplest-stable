@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 import torch
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
-from src.utils import combine_grid, load_img_for_upscale, resize_image, set_seed, find_modules_and_assign_padding_mode, process_prompt_and_add_keyword, save_image, split_grid, free_ram
+from src.utils import combine_grid, load_img, load_img_for_upscale, resize_image, set_seed, find_modules_and_assign_padding_mode, process_prompt_and_add_keyword, save_image, split_grid, free_ram
 from PIL import Image, ImageFilter
 
 
@@ -91,8 +91,12 @@ def process_and_generate(
             mask_image = mask.filter(ImageFilter.GaussianBlur(radius=4))
 
             prompt_options["mask_image"] = mask_image
-
-        prompt_options["image"] = opt["init_img"].resize([opt["W"], opt["H"]])
+        if type(opt["init_img"]) is str:
+            prompt_options["image"] = load_img(
+                opt["init_img"], shape=(opt["W"], opt["H"]))
+        else:
+            prompt_options["image"] = opt["init_img"].resize(
+                [opt["W"], opt["H"]])
         prompt_options["strength"] = opt["strength"]
 
     # generation
