@@ -153,6 +153,14 @@
     "keyword": "AnimeChan Style",
     "prediction": "epsilon"
   },
+  "Pastel Waifu Diffusion": {
+    "type": "diffusers",
+    "repo_id": "andite/pastel-mix",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "mksks style",
+    "prediction": "epsilon"
+  },
   "Inkpunk Diffusion": {
     "type": "diffusers",
     "repo_id": "Envvi/Inkpunk-Diffusion",
@@ -191,6 +199,14 @@
     "requires_hf_login": false,
     "vae": "",
     "keyword": "lvngvncnt",
+    "prediction": "epsilon"
+  },
+  "Modern Art Style": {
+    "type": "diffusers",
+    "repo_id": "theintuitiveye/modernartstyle",
+    "requires_hf_login": false,
+    "vae": "",
+    "keyword": "modernartst",
     "prediction": "epsilon"
   },
   "Corporate Memphis": {
