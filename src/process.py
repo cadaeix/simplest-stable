@@ -96,9 +96,9 @@ def process_and_generate(
         prompt_options["strength"] = opt["strength"]
 
     # generation
-    if progress:
-        progress(
-            0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
+    # if progress:
+    #     progress(
+    #         0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
     images = []
     images_details = []
     batch_name = datetime.now().strftime("%H_%M_%S")
