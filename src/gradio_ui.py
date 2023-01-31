@@ -331,7 +331,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                 "outputs_folder": session_folder,
                 "prediction_type": pipe_info["prediction_type"],
                 "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230129)"
-            }, pipe, False)
+            }, pipe, progress, False)
 
             message = '\n\n'.join(image_detail_list)
             return images, used_seed, message
