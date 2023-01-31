@@ -3,6 +3,7 @@ import random
 import json
 from datetime import datetime
 from typing import List, Optional, Tuple
+import torch
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
 from src.utils import combine_grid, load_img_for_upscale, resize_image, set_seed, find_modules_and_assign_padding_mode, process_prompt_and_add_keyword, save_image, split_grid, free_ram
 from PIL import Image, ImageFilter
@@ -95,8 +96,9 @@ def process_and_generate(
         prompt_options["strength"] = opt["strength"]
 
     # generation
-    progress(
-        0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
+    if progress:
+        progress(
+            0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
     images = []
     images_details = []
     batch_name = datetime.now().strftime("%H_%M_%S")
@@ -134,6 +136,14 @@ def process_and_generate(
         seed += 1
 
     return pipe, images, images_details
+
+
+def generate_higher_res_upscale(image: any, image_name: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:
+    # automatically go for 2x
+    upscale_factor = 2
+
+    image = torch.nn.functional.interpolate(image, size=(int(
+        image.size[0] * upscale_factor) // 8, int(image.size[1] * upscale_factor) // 8), mode="bilinear", antialias=False)
 
 
 def generate_sd_upscale(image: any, image_name: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:
