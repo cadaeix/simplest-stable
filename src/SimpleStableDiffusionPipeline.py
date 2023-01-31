@@ -3,7 +3,7 @@
 import os
 import inspect
 import re
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -52,7 +52,8 @@ class Embedding:
         shape: The shape of the data
         encoded_tokens: A list of token IDs for the encoded tokens
     """
-    def __init__(self, id_token, token, data, encoded_tokens):
+
+    def __init__(self, id_token: int, token: str, data: torch.Tensor, encoded_tokens: List[int]):
         self.id_token = id_token
         self.token = token
         self.data = data
@@ -67,11 +68,12 @@ class EmbeddingDatabase:
         embeddings_paths: A list of paths to the embeddings
         embeddings: A dictionary of embeddings, with token IDs as keys
     """
+
     def __init__(self):
         self.embeddings_paths = []
         self.embeddings = {}
 
-    def split_embedding_and_register(self, data, text_encoder, length):
+    def split_embedding_and_register(self, data: torch.Tensor, text_encoder: CLIPTextModel, length: int):
         """
         Split the given data into chunks, and register them with the text encoder
         """
@@ -86,7 +88,7 @@ class EmbeddingDatabase:
 
         return token_list
 
-    def add_embedding_path(self, learned_embeds_path, id_token=None):
+    def add_embedding_path(self, learned_embeds_path: str, id_token: str = None):
         """
         Add the given path to the list of embedding paths, with the given token
         """
@@ -94,7 +96,7 @@ class EmbeddingDatabase:
             learned_embeds_path.split('.')[0])
         self.embeddings_paths.append([token, learned_embeds_path])
 
-    def add_embedding_to_model(self, learned_embeds_path, tokenizer, text_encoder, id_token):
+    def add_embedding_to_model(self, learned_embeds_path: str, tokenizer: CLIPTokenizer, text_encoder: CLIPTextModel, id_token: str):
         """
         Add the embedding from the given path to the model, using the given tokenizer and text encoder
         """
@@ -151,7 +153,7 @@ plain: /([^\\\[\]():|]|\\.)+/
 """)
 
 
-def get_learned_conditioning_prompt_schedules(prompts, steps):
+def get_learned_conditioning_prompt_schedules(prompts: List[str], steps: int) -> List[List[Tuple[int, str]]]:
     """
     This function takes in a list of prompts and the total number of steps, and returns a list of lists.
     Each sub-list represents the steps at which a prompt should be used, and the corresponding prompt text.
@@ -243,6 +245,7 @@ re_attention = re.compile(
 )
 
 re_break = re.compile(r"\s*\bBREAK\b\s*", re.S)
+
 
 def parse_prompt_attention(text):
     """
@@ -366,7 +369,7 @@ def get_prompts_with_weights(pipe: StableDiffusionPipeline, prompt: List[str], m
     return tokens, weights
 
 
-def pad_tokens_and_weights(tokens, weights, max_length, bos, eos, no_boseos_middle=True, chunk_length=77):
+def pad_tokens_and_weights(tokens: List[List[str]], weights: List[List[float]], max_length: int, bos: str, eos: str, no_boseos_middle: bool = True, chunk_length: int = 77) -> Tuple[List[List[str]], List[List[float]]]:
     r"""
     Pad the tokens (with starting and ending tokens) and weights (with 1.0) to max_length.
     """
@@ -724,12 +727,12 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
 
     def _encode_prompt(
         self,
-        prompt,
-        device,
-        num_images_per_prompt,
-        do_classifier_free_guidance,
-        negative_prompt,
-        max_embeddings_multiples,
+        prompt: Union[str, List[str]],
+        device: torch.device,
+        num_images_per_prompt: int,
+        do_classifier_free_guidance: bool,
+        negative_prompt: Optional[Union[str, List[str]]],
+        max_embeddings_multiples: int = 3,
     ):
         r"""
         Encodes the prompt into text encoder hidden states.
@@ -782,7 +785,13 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
 
         return text_embeddings
 
-    def check_inputs(self, prompt, height, width, strength, callback_steps):
+    def check_inputs(
+            self,
+            prompt: Union[str, List[str]],
+            height: int,
+            width: int,
+            strength: float,
+            callback_steps: int):
         if not isinstance(prompt, str) and not isinstance(prompt, list):
             raise ValueError(
                 f"`prompt` has to be of type `str` or `list` but is {type(prompt)}")
@@ -804,8 +813,12 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 f" {type(callback_steps)}."
             )
 
-
-    def get_timesteps(self, num_inference_steps, strength, device, is_text2img):
+    def get_timesteps(
+            self,
+            num_inference_steps: int,
+            strength: float,
+            device: torch.device,
+            is_text2img: bool):
         if is_text2img:
             return self.scheduler.timesteps.to(device), num_inference_steps
         else:
@@ -830,7 +843,7 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             has_nsfw_concept = None
         return image, has_nsfw_concept
 
-    def decode_latents(self, latents):
+    def decode_latents(self, latents: torch.Tensor):
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample
         image = (image / 2 + 0.5).clamp(0, 1)
@@ -838,7 +851,7 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
         return image
 
-    def prepare_extra_step_kwargs(self, generator, eta):
+    def prepare_extra_step_kwargs(self, generator: Optional[torch.Generator], eta: float):
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
         # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
@@ -857,7 +870,18 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             extra_step_kwargs["generator"] = generator
         return extra_step_kwargs
 
-    def prepare_latents(self, image, timestep, batch_size, height, width, dtype, device, generator, latents=None):
+    def prepare_latents(
+        self,
+        image: Optional[torch.Tensor],
+        timestep: int,
+        batch_size: int,
+        height: int,
+        width: int,
+        dtype: torch.dtype,
+        device: torch.device,
+        generator: Optional[torch.Generator],
+        latents: Optional[torch.Tensor] = None
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[torch.Tensor]]:
         if image is None:
             shape = (
                 batch_size,
@@ -1113,7 +1137,6 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                     change = True
 
             if change:
-                print(last_negative)
                 text_embedding = self._encode_prompt(
                     last_positive,
                     device,
