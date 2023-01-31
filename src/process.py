@@ -1,34 +1,16 @@
-from datetime import datetime
-from typing import List, Tuple
+import importlib
 import random
+import json
+from datetime import datetime
+from typing import List, Optional, Tuple
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
 from src.utils import combine_grid, load_img_for_upscale, resize_image, set_seed, find_modules_and_assign_padding_mode, process_prompt_and_add_keyword, save_image, split_grid, free_ram
 from PIL import Image, ImageFilter
-from diffusers import EulerAncestralDiscreteScheduler, EulerDiscreteScheduler, LMSDiscreteScheduler, DPMSolverSinglestepScheduler, DPMSolverMultistepScheduler
 
-# TODO: move these dicts out of here
-sampler_dict = {
-    "Euler a": {
-        "type": "diffusers",
-        "sampler": EulerAncestralDiscreteScheduler
-    },
-    "Euler": {
-        "type": "diffusers",
-        "sampler": EulerDiscreteScheduler
-    },
-    "KLMS": {
-        "type": "diffusers",
-        "sampler": LMSDiscreteScheduler
-    },
-    "DPMSolver++ (2S) (has issues with img2img)": {
-        "type": "diffusers_DPMSolver",
-        "sampler": DPMSolverSinglestepScheduler
-    },
-    "DPMSolver++ (2M)": {
-        "type": "diffusers_DPMSolver",
-        "sampler": DPMSolverMultistepScheduler
-    }
-}
+
+with open('src/resources/schedulers.json') as schedulerfile:
+    scheduler_dict = json.load(schedulerfile)
+del schedulerfile
 
 res_dict = {"Custom (Select this and put width and height below)": "",
             "Square 512x512 (default, good for most models)": [512, 512],
@@ -38,35 +20,18 @@ res_dict = {"Custom (Select this and put width and height below)": "",
             "Landscape 1152x768 (does not work on free colab)": [1152, 768],
             "Portrait 768x1152 (does not work on free colab)": [768, 1152]}
 
-# TODO: replace with k-diffusion samplers, probably in the pipeline itself
-
 
 def load_sampler(sampler_name: str, model_prediction_type: str, pipe: SimpleStableDiffusionPipeline) -> SimpleStableDiffusionPipeline:
-    sampler = sampler_dict[sampler_name]
+    # TODO: replace with k-diffusion samplers, probably in the pipeline itself
+    scheduler_info = scheduler_dict[sampler_name]
 
-    if sampler["type"] == "diffusers":
-        pipe.scheduler = sampler["sampler"](
-            beta_end=0.012,
-            beta_schedule="scaled_linear",
-            beta_start=0.00085,
-            num_train_timesteps=1000,
-            prediction_type=model_prediction_type,
-            trained_betas=None,
-        )
-    elif sampler["type"] == "diffusers_DPMSolver":
-        pipe.scheduler = sampler["sampler"](
-            beta_start=0.00085,
-            beta_end=0.012,
-            beta_schedule="scaled_linear",
-            num_train_timesteps=1000,
-            trained_betas=None,
-            prediction_type=model_prediction_type,
-            thresholding=False,
-            algorithm_type="dpmsolver++",
-            solver_type="midpoint",
-            lower_order_final=True,
-            solver_order=2
-        )
+    library = importlib.import_module("diffusers")
+    scheduler = getattr(library, scheduler_info["sampler"])
+
+    pipe.scheduler = scheduler(
+        **scheduler_info["params"],
+        prediction_type=model_prediction_type
+    )
 
     return pipe
 
@@ -96,7 +61,12 @@ def load_sampler(sampler_name: str, model_prediction_type: str, pipe: SimpleStab
     # "program_version": "Simple Stable 2.0 (Gradio UI)" or "Simple Stable 2.0 (Notebook)"
 
 
-def process_and_generate(opt: dict, pipe: SimpleStableDiffusionPipeline, display_and_print: bool = False) -> Tuple[SimpleStableDiffusionPipeline, List, List]:
+def process_and_generate(
+        opt: dict,
+        pipe: SimpleStableDiffusionPipeline,
+        # gradio.progress, don't want to import it in this file
+        progress: Optional[any],
+        display_and_print: bool = False) -> Tuple[SimpleStableDiffusionPipeline, List, List]:
 
     # load sampler
     pipe = load_sampler(opt["sampler"], opt["prediction_type"], pipe)
@@ -125,6 +95,8 @@ def process_and_generate(opt: dict, pipe: SimpleStableDiffusionPipeline, display
         prompt_options["strength"] = opt["strength"]
 
     # generation
+    progress(
+        0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
     images = []
     images_details = []
     batch_name = datetime.now().strftime("%H_%M_%S")

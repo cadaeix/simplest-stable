@@ -1,0 +1,77 @@
+{
+  "Euler a": {
+    "sampler": "EulerAncestralDiscreteScheduler",
+    "params": {
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "beta_start": 0.00085,
+      "num_train_timesteps": 1000,
+      "trained_betas": null
+    }
+  },
+  "Euler": {
+    "sampler": "EulerDiscreteScheduler",
+    "params": {
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "beta_start": 0.00085,
+      "num_train_timesteps": 1000,
+      "trained_betas": null
+    }
+  },
+  "KLMS": {
+    "sampler": "LMSDiscreteScheduler",
+    "params": {
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "beta_start": 0.00085,
+      "num_train_timesteps": 1000,
+      "trained_betas": null
+    }
+  },
+  "DPMSolver++ (2S) (has issues with img2img)": {
+    "sampler": "DPMSolverSinglestepScheduler",
+    "params": {
+      "beta_start": 0.00085,
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "num_train_timesteps": 1000,
+      "trained_betas": null,
+      "thresholding": false,
+      "algorithm_type": "dpmsolver++",
+      "solver_type": "midpoint",
+      "lower_order_final": true,
+      "solver_order": 2
+    }
+  },
+  "DPMSolver++ (2M)": {
+    "sampler": "DPMSolverMultistepScheduler",
+    "params": {
+      "beta_start": 0.00085,
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "num_train_timesteps": 1000,
+      "trained_betas": null,
+      "thresholding": false,
+      "algorithm_type": "dpmsolver++",
+      "solver_type": "midpoint",
+      "lower_order_final": true,
+      "solver_order": 2
+    }
+  },
+  "DEIS": {
+    "sampler": "DEISMultistepScheduler",
+    "params": {
+      "beta_start": 0.00085,
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "num_train_timesteps": 1000,
+      "trained_betas": null,
+      "thresholding": false,
+      "algorithm_type": "deis",
+      "solver_type": "midpoint",
+      "lower_order_final": true,
+      "solver_order": 2
+    }
+  }
+}

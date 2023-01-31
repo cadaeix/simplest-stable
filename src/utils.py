@@ -5,6 +5,7 @@ import os
 import random
 import math
 import random
+from typing import List, Tuple
 import requests
 import torch
 import glob
@@ -69,12 +70,21 @@ def free_ram():
     torch.cuda.ipc_collect()
 
 
-def process_embeddings_folder(embeddings_path):
+def process_embeddings_folder(embeddings_path: str) -> List[str]:
     return glob.glob(os.path.join(embeddings_path, "*.pt")) + glob.glob(os.path.join(embeddings_path, "*.bin"))
 
 
 def get_huggingface_cache_path():
     return os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers")
+
+
+def find_vae_files(folderpath: str) -> dict:
+    vae_list = glob.glob(os.path.join(folderpath, "*.vae.pt"))
+    vae_result = {}
+    for vae in vae_list:
+        stemname, filename = os.path.split(vae)
+        vae_result[filename] = vae
+    return vae_result
 
 
 def process_custom_model_glob(globlist):
@@ -101,9 +111,9 @@ def process_custom_model_glob(globlist):
     return results
 
 
-def find_custom_models(path):
+def find_custom_models(path: str) -> Tuple[dict, dict]:
     if not path:
-        return {}
+        return {}, {}
     if not os.path.exists(path):
         print("Could not find path!")
         # return statement
@@ -112,7 +122,7 @@ def find_custom_models(path):
     ckpts = glob.glob(os.path.join(path, "*.ckpt"))
     safetensors = glob.glob(os.path.join(path, "*.safetensors"))
 
-    return {**process_custom_model_glob(ckpts), **process_custom_model_glob(safetensors)}
+    return {**process_custom_model_glob(ckpts), **process_custom_model_glob(safetensors)}, find_vae_files(path)
 
 
 def get_info(name, folderpath, model_dict, custom_model_dict=None):

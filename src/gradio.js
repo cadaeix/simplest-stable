@@ -48,22 +48,34 @@ function handleModelDropdowns() {
   const customModelDropdown = gradioApp().querySelector(
     "div[id$=custom_model_choice]"
   );
+  const customVaeDropdown = gradioApp().querySelector(
+    "div[id$=custom_vae_choice]"
+  );
 
   switch (modelTypeDropdown.value) {
     case "Installed Models":
       setVisibility(downloadModelDropdown, false);
       setVisibility(cachedModelDropdown, true);
       setVisibility(customModelDropdown, false);
+      setVisibility(customVaeDropdown, false);
       break;
     case "Downloadable Models":
       setVisibility(downloadModelDropdown, true);
       setVisibility(cachedModelDropdown, false);
       setVisibility(customModelDropdown, false);
+      setVisibility(customVaeDropdown, false);
       break;
     case "Custom Models":
       setVisibility(downloadModelDropdown, false);
       setVisibility(cachedModelDropdown, false);
       setVisibility(customModelDropdown, true);
+      setVisibility(customVaeDropdown, false);
+      break;
+    case "Load Custom Vae To Current Model":
+      setVisibility(downloadModelDropdown, false);
+      setVisibility(cachedModelDropdown, false);
+      setVisibility(customModelDropdown, false);
+      setVisibility(customVaeDropdown, true);
       break;
   }
 }

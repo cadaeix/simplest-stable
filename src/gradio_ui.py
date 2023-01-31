@@ -2,9 +2,10 @@ import os
 import json
 import random
 from typing import Optional
+from PIL import Image
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
-from src.loading import prepare_pipe, load_embeddings
-from src.process import process_and_generate, res_dict, sampler_dict
+from src.loading import load_vae_file_to_current_pipe, prepare_pipe, load_embeddings
+from src.process import process_and_generate, res_dict, scheduler_dict
 from src.utils import find_custom_models, get_all_cached_hf_models, free_ram
 import gradio as gr
 import gradio.routes
@@ -87,7 +88,7 @@ def advanced_settings():
             with gr.Column():
                 custom_width = gr.Slider(minimum=512, maximum=1152, value=512, step=64,
                                          label="Width (if Custom is selected)", interactive=True, elem_id="custom_width")
-                sampler = gr.Dropdown(choices=list(sampler_dict.keys(
+                sampler = gr.Dropdown(choices=list(scheduler_dict.keys(
                 )), label="Sampler", value="Euler a", elem_id="sampler_choice")
                 with gr.Row():
                     with gr.Column(elem_id="seed_col"):
@@ -132,38 +133,55 @@ def output_section():
 
 
 def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], enable_attention_slicing: bool = False, enable_xformers: bool = False):
-    global pipe, pipe_info, session_folder, model_dict, all_custom_models, all_cached_hf_models
+    global pipe, pipe_info, session_folder, model_dict, all_custom_models, all_cached_hf_models, all_vae_files
 
     with open('src/resources/models.json') as modelfile:
         model_dict = json.load(modelfile)
+    del modelfile
 
-    pipe, pipe_info = prepare_pipe(
-        starting_model_to_load, "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
+    failed_placeholder = Image.open("src/resources/failedgen.png")
+
+    try:
+        pipe, pipe_info = prepare_pipe(
+            starting_model_to_load, "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
+    except Exception as e:
+        print(
+            f"Failed to load selected model for some reason, defaulting to loading Stable Diffusion 1.5.\nError: {e}")
+        pipe, pipe_info = prepare_pipe(
+            "Stable Diffusion 1.5", "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
 
     pipe = load_embeddings_from_folders(
         pipe, embeddings_path, downloaded_embeddings)
 
-    all_custom_models = find_custom_models(custom_models_path)
+    all_custom_models, all_vae_files = find_custom_models(custom_models_path)
     all_cached_hf_models = get_all_cached_hf_models(all_custom_models)
+    model_dropdown_type_choice = ["Installed Models", "Downloadable Models"]
+    if all_custom_models != {}:
+        model_dropdown_type_choice.append("Custom Models")
+        if all_vae_files != {}:
+            model_dropdown_type_choice.append(
+                "Load Custom Vae To Current Model")
 
     def model_selections():
         with gr.Row(elem_id="model_row"):
-            model_dropdown_type = gr.Dropdown(choices=[
-                "Installed Models", "Downloadable Models", "Custom Models"], show_label=False, elem_id="model_dropdown_type")
+            model_dropdown_type = gr.Dropdown(
+                choices=model_dropdown_type_choice, show_label=False, elem_id="model_dropdown_type")
             downloadable_models = gr.Dropdown(choices=list(model_dict.keys(
             )), value="Stable Diffusion 1.5", show_label=False, elem_id="download_model_choice", interactive=True)
             cached_models = gr.Dropdown(choices=list(all_cached_hf_models.keys(
             )), show_label=False, elem_id="cached_model_choice", interactive=True)
             custom_models = gr.Dropdown(choices=list(all_custom_models.keys(
             )), show_label=False, elem_id="custom_model_choice", interactive=True)
+            custom_vae = gr.Dropdown(
+                choices=list(all_vae_files.keys()), show_label=False, elem_id="custom_vae_choice", interactive=True)
             model_submit = gr.Button(
                 value="Load Model", interactive=True, elem_id="model_submit")
         loading_status = gr.Markdown("", elem_id="model_status")
 
-        return model_dropdown_type, downloadable_models, cached_models, custom_models, model_submit, loading_status
+        return model_dropdown_type, downloadable_models, cached_models, custom_models, model_submit, loading_status, custom_vae
 
     def update_model_lists():
-        global all_custom_models, all_cached_hf_models
+        global all_custom_models, all_cached_hf_models, all_vae_files
         all_custom_models = find_custom_models(custom_models_path)
         all_cached_hf_models = get_all_cached_hf_models(all_custom_models)
 
@@ -224,8 +242,8 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             inpaint_show: gr.update(variant=inpaint_button)
         }
 
-    def choose_type_and_load_model(dropdown_type: str, loaded_model_name: str, downloadable_model_name: str, cached_model_name: str, custom_model_name: str, progress=gr.Progress(track_tqdm=True)):
-        global pipe, pipe_info, all_custom_models, all_cached_hf_models, model_dict
+    def choose_type_and_load_model(dropdown_type: str, loaded_model_name: str, downloadable_model_name: str, cached_model_name: str, custom_model_name: str, custom_vae_name: str, progress=gr.Progress(track_tqdm=True)):
+        global pipe, pipe_info, all_custom_models, all_cached_hf_models, all_vae_files, model_dict
 
         if dropdown_type == "Installed Models" and cached_model_name:
             chosen_model_name = cached_model_name
@@ -233,17 +251,32 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             chosen_model_name = downloadable_model_name
         elif dropdown_type == "Custom Models" and custom_model_name:
             chosen_model_name = custom_model_name
+        elif dropdown_type == "Load Custom Vae To Current Model":
+            if loaded_model_name and custom_vae_name not in loaded_model_name:
+                pipe = load_vae_file_to_current_pipe(
+                    pipe, all_vae_files[custom_vae_name])
+                return f"Loaded {custom_vae_name} VAE to current model", f"{loaded_model_name}+{custom_vae_name}"
+            else:
+                return "VAE already loaded", loaded_model_name
         else:
             return "Choice not valid", loaded_model_name
 
         if loaded_model_name == chosen_model_name:
             return "Model already loaded", loaded_model_name
 
-        del pipe
+        if pipe:
+            del pipe
         free_ram()
-        pipe, pipe_info = prepare_pipe(chosen_model_name, dropdown_type, model_dict,
-                                       all_cached_hf_models, all_custom_models, enable_attention_slicing, enable_xformers)
-        return f"{chosen_model_name} loaded", chosen_model_name
+        try:
+            pipe, pipe_info = prepare_pipe(chosen_model_name,
+                                           dropdown_type,
+                                           model_dict,
+                                           all_custom_models,
+                                           all_cached_hf_models,  enable_attention_slicing,
+                                           enable_xformers)
+            return f"{chosen_model_name} loaded", chosen_model_name
+        except Exception as e:
+            return f"Failed to load model, generation will not work. Please try loading another model.\nError: {e}", "Please load another model!"
 
     def generate(mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, model_name, progress=gr.Progress(track_tqdm=True)):
         global pipe, pipe_info
@@ -273,34 +306,37 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             standard_negative = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username"
             negative = standard_negative if negative is None else standard_negative + ", " + negative
 
-        pipe, images, image_detail_list = process_and_generate({
-            "model_name": model_name,
-            "prompt": prompt,
-            "negative": negative if negative != None else "",
-            "init_img": init_img,
-            "mask_image": mask_image,
-            "strength": strength,
-            "number_of_images": number_of_images,
-            "H": height - height % 64,
-            "W": width - width % 64,
-            "steps": steps,
-            "sampler": sampler,
-            "scale": scale,
-            "eta": 0.0,
-            "tiling": "Tiling" in additional_options,
-            "upscale": "SD Upscale" in additional_options,
-            "upscale_strength": upscale_strength if "SD Upscale" in additional_options else None,
-            "detail_scale": 10,
-            "seed": used_seed,
-            "add_keyword": "Don't insert model keyword" not in additional_options,
-            "keyword": pipe_info["keyword"],
-            "outputs_folder": session_folder,
-            "prediction_type": pipe_info["prediction_type"],
-            "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230129)"
-        }, pipe, False)
+        try:
+            pipe, images, image_detail_list = process_and_generate({
+                "model_name": model_name,
+                "prompt": prompt,
+                "negative": negative if negative != None else "",
+                "init_img": init_img,
+                "mask_image": mask_image,
+                "strength": strength,
+                "number_of_images": number_of_images,
+                "H": height - height % 64,
+                "W": width - width % 64,
+                "steps": steps,
+                "sampler": sampler,
+                "scale": scale,
+                "eta": 0.0,
+                "tiling": "Tiling" in additional_options,
+                "upscale": "SD Upscale" in additional_options,
+                "upscale_strength": upscale_strength if "SD Upscale" in additional_options else None,
+                "detail_scale": 10,
+                "seed": used_seed,
+                "add_keyword": "Don't insert model keyword" not in additional_options,
+                "keyword": pipe_info["keyword"],
+                "outputs_folder": session_folder,
+                "prediction_type": pipe_info["prediction_type"],
+                "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230129)"
+            }, pipe, False)
 
-        message = '\n\n'.join(image_detail_list)
-        return images, used_seed, message
+            message = '\n\n'.join(image_detail_list)
+            return images, used_seed, message
+        except Exception as e:
+            return [failed_placeholder], used_seed, f"Error: {e}"
 
     # control flow
     if not os.path.exists(outputs_folder):
@@ -322,11 +358,11 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
 
     load_javascript = LoadJavaScript()
     with gr.Blocks(css=css, title="Simple Stable") as main:
-        current_loaded_model_name = gr.State("Stable Diffusion 1.5")
+        current_loaded_model_name = gr.Markdown("Stable Diffusion 1.5")
         current_mode = gr.State("txt2img")
         last_used_seed = gr.State(-1)
 
-        model_dropdown_type, downloadable_models, cached_models, custom_models, model_submit, loading_status = model_selections()
+        model_dropdown_type, downloadable_models, cached_models, custom_models, model_submit, loading_status, custom_vae = model_selections()
 
         with gr.Row():
             with gr.Column(scale=3):
@@ -343,13 +379,13 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             with gr.Column(scale=2):
                 generate_button, image_output, to_img2img_button, to_inpaint_button, log_output = output_section()
 
-        model_submit.click(choose_type_and_load_model, inputs=[model_dropdown_type, current_loaded_model_name, downloadable_models, cached_models, custom_models], outputs=[
+        model_submit.click(choose_type_and_load_model, inputs=[model_dropdown_type, current_loaded_model_name, downloadable_models, cached_models, custom_models, custom_vae], outputs=[
                            loading_status, current_loaded_model_name], preprocess=False, postprocess=False)
         model_submit.click(update_model_lists_in_gradio, inputs=[], outputs=[
                            cached_models, custom_models])
 
         reuse_seed_button.click(lambda x: x, inputs=[last_used_seed], outputs=[
-                                seed], preprocess=False, postprocess=False)
+                                seed])
         random_seed_button.click(
             lambda: -1, inputs=[], outputs=[seed], preprocess=False, postprocess=False)
 
