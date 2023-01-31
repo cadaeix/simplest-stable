@@ -42,7 +42,7 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
             pipe = load_diffusers_model(model_choice)
         elif model_choice["type"] == "hf-file":
             pipe = download_and_load_non_diffusers_model(
-                model_choice["repo_id"], model_name, model_choice["filename"], model_choice["config_file"], model_choice["vae"])
+                model_choice["repo_id"], model_name, model_choice["filename"], model_choice["config"], model_choice["vae"])
         pipe_info = {
             "keyword": model_choice["keyword"],
             "prediction_type": model_choice["prediction"]
