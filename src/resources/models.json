@@ -154,9 +154,10 @@
     "prediction": "epsilon"
   },
   "Pastel Waifu Diffusion": {
-    "type": "diffusers",
+    "type": "hf-file",
     "repo_id": "andite/pastel-mix",
-    "requires_hf_login": false,
+    "filename": " pastelmix-better-vae-fp16.safetensors",
+    "config": "",
     "vae": "",
     "keyword": "mksks style",
     "prediction": "epsilon"
