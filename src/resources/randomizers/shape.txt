@@ -1,0 +1,209 @@
+120-cell
+16-cell
+24-cell
+30-60-90 triangle
+5-cell
+600-cell
+acute triangle
+ampersand curve
+angle
+aperiogon
+array
+arrow
+astroid
+atriphtaloid
+balbis
+bean curve
+bicorn
+bow curve
+bullet-nose curve
+cardioid
+cartesian oval
+chiliagon
+circle
+cissoid of diocles
+complex quadrilateral
+concave polygon
+concave quadrilateral
+conchoid of de sluze
+cone
+constructible polygon
+convex polygon
+cresent
+cross
+cruciform curve
+cube
+cubic parabola
+cuboid
+curvilinear triangle
+cyclic polygon
+cyclic quadrilateral
+cylinder
+decagon
+decagram
+deltoid curve
+devil's curve
+diamond
+digon
+dihectagon
+division sign
+dodecagon
+dodecagram
+dodecahedron
+ellipse
+ellipse
+ellipsoid
+enneacontagon
+enneadecagon
+enneagram
+enneahectagon
+equiangular polygon
+equilateral polygon
+equilateral triangle
+folium of descartes
+fraction
+freeform shape
+full cone
+full pyramid
+golden triangle
+hallow cylinder
+heart
+hectogon
+helix
+hendecagon
+hendecagram
+heptacontagon
+heptadecagon
+heptagon
+heptagonal triangle
+heptagram
+heptahectagon
+hexacontagon
+hexadecagon
+hexagon
+hexagonal prism
+hexahectagon
+hippopede
+hyperbola
+hyperboloid
+icosagon
+icosahedron
+icosikaidigon
+icosikaihegon
+icosikaiheptagon
+icosikaihexagon
+icosikainneagon
+icosikaioctagon
+icosikaipentagon
+icositetragon
+icostrigon
+isosceles right triangle
+isosceles trapezoid
+isosceles triangle
+kampyle of eudoxus
+kappa curve
+kepler triangle
+kite
+L shape prism
+lemniscate
+lemniscate of bernoulli
+lemniscate of booth
+lemniscate of gerono
+lemoine hexagon
+lemon
+limaçon
+limaçon trisectrix
+line
+line segment
+lozenge
+lrreuglar polygon
+megagon
+minus sign
+monogon
+multiplication sign
+myriagon
+nephroid
+non-polygon shape
+nonagon
+obtuse triangle
+octacontagon
+octadecagon
+octagon
+octagram
+octahectagon
+octahedron
+oval
+ovals of cassini
+parabola
+parallelogram
+partial cone
+partial pyramid
+penrose tile
+pentacontagon
+pentadecagon
+pentagon
+pentagonal prism
+pentagram
+pentagram
+pentahectagon
+plus sign
+point
+polyform
+polyhedron
+prism
+pyramid
+quadrifolium
+quadrilateral
+quarter circle
+quatrefoil
+rational triangle
+ray
+rectangle
+rectangular prism
+regular polygon
+rhomboid
+rhombus
+right strophoid
+right triangle
+ring
+scalene triangle
+section
+sector
+semi circle
+semicubical parabola
+serpentine curve
+shape
+simple polygon
+sphere
+square
+square pyramid
+squircle
+star
+star prism
+star pyramid
+tangential polygon
+tangential quadrilateral
+tesseract
+tetracontagon
+tetradecagon
+tetrahectagon
+tetrahedon
+torus
+trapezium
+trapezoid
+trefoil
+triacontagon
+triacontagon
+trianglar prism
+triangle
+tridecagon
+trident curve
+trifolium curve
+trihectagon
+trisectrix of maclaurin
+tschirnhausen cubic
+unit circle
+unit hyperbola
+vertex
+witch of agnesi
+zentangle

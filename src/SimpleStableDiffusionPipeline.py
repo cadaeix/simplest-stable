@@ -67,11 +67,13 @@ class EmbeddingDatabase:
     A class representing a database of embeddings, with the following attributes:
         embeddings_paths: A list of paths to the embeddings
         embeddings: A dictionary of embeddings, with token IDs as keys
+        loaded: A string of loaded embeddings
     """
 
     def __init__(self):
         self.embeddings_paths = []
         self.embeddings = {}
+        self.loaded = ""
 
     def split_embedding_and_register(self, data: torch.Tensor, text_encoder: CLIPTextModel, length: int):
         """
@@ -702,6 +704,7 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         message = ""
         if len(loaded) > 0:
             message += f"Loaded the following embeddings: {' '.join(loaded)}\n"
+            self.embedding_database.loaded = ', '.join(loaded)
         if len(not_loaded) > 0:
             message += f"Did not load the following embeddings (probably because they're for a different version of Stable Diffusion): {' '.join(not_loaded)}\n"
         if message != "":

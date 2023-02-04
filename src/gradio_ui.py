@@ -1,11 +1,15 @@
+import functools
+from io import BytesIO
 import os
 import json
 import random
+import requests
 from typing import Optional
 from PIL import Image
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
 from src.loading import load_vae_file_to_current_pipe, prepare_pipe, load_embeddings
 from src.process import process_and_generate, res_dict, scheduler_dict
+from src.randomizer import get_random_lists_from_folder, get_default_random_lists_from_folder
 from src.utils import find_custom_models, get_all_cached_hf_models, free_ram
 import gradio as gr
 import gradio.routes
@@ -41,6 +45,13 @@ def load_embeddings_from_folders(pipe: SimpleStableDiffusionPipeline, embeddings
 def return_selected_image_from_gallery(i: int) -> Optional[any]:
     return i["name"] if i else None
 
+
+@functools.lru_cache()
+def get_image_from_url(t):
+    user_agent = {'User-agent': 'gradio-app'}
+    response = requests.get(t, headers=user_agent)
+    return Image.open(BytesIO(response.content))
+
 # gradio parts, don't feel like typing these right now
 
 
@@ -60,6 +71,11 @@ def prompt_section():
 
 
 def img2img_and_inpainting():
+    with gr.Row(elem_id="image_url_input_row"):
+        image_url_input = gr.Textbox(value=None, placeholder="Optional: Put a URL here to load an image below",
+                                     show_label=False, interactive=True, elem_id="image_url_load", visible=False)
+        load_image_button = gr.Button(
+            value="Load Image From URL", elem_id="load_image_button", visible=False)
     input_image = gr.Image(value=None, source="upload", interactive=True,
                            type="pil", visible=False, elem_id="img2img_input")
     inpaint_image = gr.Image(value=None, source="upload", interactive=True,
@@ -68,7 +84,7 @@ def img2img_and_inpainting():
                                  label="img2img strength", interactive=True, visible=False, elem_id="img2img_strength")
     inpaint_strength = gr.Slider(minimum=0.1, maximum=1, value=0.75, step=0.05,
                                  label="inpaint strength", interactive=True, visible=False, elem_id="inpaint_strength")
-    return input_image, inpaint_image, img2img_strength, inpaint_strength
+    return image_url_input, load_image_button, input_image, inpaint_image, img2img_strength, inpaint_strength
 
 
 def image_options():
@@ -128,11 +144,23 @@ def output_section():
                             show_label=False, visible=False, lines=7)
     return generate_button, image_output, to_img2img_button, to_inpaint_button, log_output
 
+
+def loaded_info(message: str):
+    load_info_button = gr.Button(
+        "Reload Information About Currently Loaded Model, Embeddings and Random List")
+    info_box = gr.Textbox(value=message, lines=10, show_label=False)
+    return load_info_button, info_box
+
+
+def tutorial():
+    tutorial_text = gr.Markdown("Work In Progress!")
+    return tutorial_text
+
 # main function
 # xformers takes precedent over attention_slicing
 
 
-def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], enable_attention_slicing: bool = False, enable_xformers: bool = False):
+def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: Optional[str], embeddings_path: Optional[str], downloaded_embeddings: Optional[str], custom_randomizer_folder: Optional[str], enable_attention_slicing: bool = False, enable_xformers: bool = False):
     global pipe, pipe_info, session_folder, model_dict, all_custom_models, all_cached_hf_models, all_vae_files
 
     with open('src/resources/models.json') as modelfile:
@@ -149,6 +177,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             f"Failed to load selected model for some reason, defaulting to loading Stable Diffusion 1.5.\nError: {e}")
         pipe, pipe_info = prepare_pipe(
             "Stable Diffusion 1.5", "Downloadable Models", model_dict, None, None, enable_attention_slicing, enable_xformers)
+        starting_model_to_load = "Stable Diffusion 1.5"
 
     pipe = load_embeddings_from_folders(
         pipe, embeddings_path, downloaded_embeddings)
@@ -161,6 +190,26 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         if all_vae_files != {}:
             model_dropdown_type_choice.append(
                 "Load Custom Vae To Current Model")
+
+    default_randomizers = get_default_random_lists_from_folder(
+        "src/resources/randomizers")
+
+    if custom_randomizer_folder:
+        randomizers = get_random_lists_from_folder(custom_randomizer_folder)
+        randomizers = {**default_randomizers, **randomizers}
+    else:
+        randomizers = default_randomizers
+
+    def load_info_about_currently_loaded_things(model_name: str):
+        randomizers_list = ", ".join(
+            list(randomizers.keys())) if randomizers else "None"
+        embeddings_list = pipe.embedding_database.loaded if embeddings_path else "None"
+
+        message = f"Currently loaded model: {model_name}\n\nLoaded Embeddings: {embeddings_list}\n\nLoaded Random Lists: {randomizers_list}"
+        return message
+
+    info_message = load_info_about_currently_loaded_things(
+        starting_model_to_load)
 
     def model_selections():
         with gr.Row(elem_id="model_row"):
@@ -198,6 +247,45 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             log_output: gr.update(visible=(input is not None)),
         }
 
+    def load_image_from_url(url: str, gen_mode: str):
+        if not url or url == "":
+            return {
+                image_url_input: gr.update(),
+                input_image: gr.update(),
+                inpaint_image: gr.update()
+            }
+        if url.startswith("http"):
+            try:
+                image = get_image_from_url(url)
+            except Exception as e:
+                return {
+                    image_url_input: gr.update(value=f"{url} - Sorry, could not get image from url!"),
+                    input_image: gr.update(),
+                    inpaint_image: gr.update()
+                }
+        else:
+            try:
+                image = Image.open(url)
+            except Exception as e:
+                return {
+                    image_url_input: gr.update(value=f"{url} - Sorry, could not get image from path!"),
+                    input_image: gr.update(),
+                    inpaint_image: gr.update()
+                }
+
+        if gen_mode == "img2img":
+            return {
+                image_url_input: gr.update(),
+                input_image: gr.update(value=image),
+                inpaint_image: gr.update()
+            }
+        elif gen_mode == "inpainting":
+            return {
+                image_url_input: gr.update(),
+                input_image: gr.update(),
+                inpaint_image: gr.update(value=image)
+            }
+
     def show_state(input: str):
         states = {
             "txt2img": [True, False, False],
@@ -217,7 +305,9 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             inpaint_strength: gr.update(visible=states[input][2]),
             txt2img_show: gr.update(variant=txt2img_button),
             img2img_show: gr.update(variant=img2img_button),
-            inpaint_show: gr.update(variant=inpaint_button)
+            inpaint_show: gr.update(variant=inpaint_button),
+            image_url_input: gr.update(visible=(not states[input][0])),
+            load_image_button: gr.update(visible=(not states[input][0]))
         }
 
     def show_state_and_clear_inpaint(input: str):
@@ -239,7 +329,9 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             inpaint_strength: gr.update(visible=states[input][2]),
             txt2img_show: gr.update(variant=txt2img_button),
             img2img_show: gr.update(variant=img2img_button),
-            inpaint_show: gr.update(variant=inpaint_button)
+            inpaint_show: gr.update(variant=inpaint_button),
+            image_url_input: gr.update(visible=(not states[input][0])),
+            load_image_button: gr.update(visible=(not states[input][0]))
         }
 
     def choose_type_and_load_model(dropdown_type: str, loaded_model_name: str, downloadable_model_name: str, cached_model_name: str, custom_model_name: str, custom_vae_name: str, progress=gr.Progress(track_tqdm=True)):
@@ -331,7 +423,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                 "outputs_folder": session_folder,
                 "prediction_type": pipe_info["prediction_type"],
                 "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230129)"
-            }, pipe, progress, False)
+            }, pipe, progress, randomizers, False)
 
             message = '\n\n'.join(image_detail_list)
             return images, used_seed, message
@@ -358,31 +450,38 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
 
     load_javascript = LoadJavaScript()
     with gr.Blocks(css=css, title="Simple Stable") as main:
-        current_loaded_model_name = gr.Markdown("Stable Diffusion 1.5")
+        current_loaded_model_name = gr.Markdown(starting_model_to_load)
         current_mode = gr.State("txt2img")
         last_used_seed = gr.State(-1)
 
         model_dropdown_type, downloadable_models, cached_models, custom_models, model_submit, loading_status, custom_vae = model_selections()
 
-        with gr.Row():
-            with gr.Column(scale=3):
-                txt2img_show, img2img_show, inpaint_show = mode_buttons()
+        with gr.Tab(label="Generation"):
+            with gr.Row():
+                with gr.Column(scale=3):
+                    txt2img_show, img2img_show, inpaint_show = mode_buttons()
 
-                prompt, negative = prompt_section()
+                    prompt, negative = prompt_section()
 
-                number_of_images, resolution = image_options()
+                    number_of_images, resolution = image_options()
 
-                input_image, inpaint_image, img2img_strength, inpaint_strength = img2img_and_inpainting()
+                    image_url_input, load_image_button, input_image, inpaint_image, img2img_strength, inpaint_strength = img2img_and_inpainting()
 
-                custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, reuse_seed_button, random_seed_button = advanced_settings()
+                    custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, reuse_seed_button, random_seed_button = advanced_settings()
 
-            with gr.Column(scale=2):
-                generate_button, image_output, to_img2img_button, to_inpaint_button, log_output = output_section()
+                with gr.Column(scale=2):
+                    generate_button, image_output, to_img2img_button, to_inpaint_button, log_output = output_section()
+        with gr.Tab(label="Info"):
+            tutorial_text = tutorial()
+            load_info_button, info_box = loaded_info(info_message)
 
         model_submit.click(choose_type_and_load_model, inputs=[model_dropdown_type, current_loaded_model_name, downloadable_models, cached_models, custom_models, custom_vae], outputs=[
                            loading_status, current_loaded_model_name], preprocess=False, postprocess=False)
         model_submit.click(update_model_lists_in_gradio, inputs=[], outputs=[
                            cached_models, custom_models])
+
+        load_info_button.click(load_info_about_currently_loaded_things, inputs=[
+                               current_loaded_model_name], outputs=info_box)
 
         reuse_seed_button.click(lambda x: x, inputs=[last_used_seed], outputs=[
                                 seed])
@@ -390,20 +489,23 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             lambda: -1, inputs=[], outputs=[seed], preprocess=False, postprocess=False)
 
         txt2img_show.click(show_state, inputs=[txt2img_show], outputs=[current_mode, input_image, img2img_strength,
-                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show], preprocess=False, postprocess=False)
+                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         img2img_show.click(show_state, inputs=[img2img_show], outputs=[current_mode, input_image, img2img_strength,
-                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show], preprocess=False, postprocess=False)
+                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         inpaint_show.click(show_state, inputs=[inpaint_show], outputs=[current_mode, input_image, img2img_strength,
-                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show], preprocess=False, postprocess=False)
+                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
 
         to_img2img_button.click(show_state, inputs=[img2img_show], outputs=[current_mode, input_image, img2img_strength,
-                                inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show], preprocess=False, postprocess=False)
+                                inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         to_inpaint_button.click(show_state_and_clear_inpaint, inputs=[inpaint_show], outputs=[
-                                current_mode, input_image, img2img_strength, inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show], preprocess=False, postprocess=False)
+                                current_mode, input_image, img2img_strength, inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         to_img2img_button.click(return_selected_image_from_gallery, inputs=[
                                 image_output], outputs=[input_image], _js="findSelectedImageFromGallery")
         to_inpaint_button.click(return_selected_image_from_gallery, inputs=[
                                 image_output], outputs=[inpaint_image], _js="findSelectedImageFromGallery")
+
+        load_image_button.click(load_image_from_url, inputs=[
+                                image_url_input, current_mode], outputs=[image_url_input, input_image, inpaint_image])
 
         generate_button.click(generate, inputs=[current_mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options,
                               upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, current_loaded_model_name], outputs=[image_output, last_used_seed, log_output])

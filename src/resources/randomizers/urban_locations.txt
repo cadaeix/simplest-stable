@@ -1,0 +1,257 @@
+aerary
+aircraft cabin
+airplane
+airport
+airport food court
+airport lounge
+airport terminal
+alcove
+alley
+alleyway
+anatomical theatre
+anechoic chamber
+antechamber
+anteroom
+apartment building
+aquarium
+arcade
+armory
+art gallery
+art museum
+assembly room
+atelier
+attic
+auditorium
+backroom
+bagel shop
+bakery
+ballroom
+bar
+baseball stadium
+basement
+basketball stadium
+bath house
+bathroom
+beach
+beach bar
+bedroom
+beer garden
+billiard room
+bistro
+boardroom
+boiler room
+botanical garden
+boudoir
+bowling alley
+breakfast nook
+breezeway
+brewery
+bridge
+bubble tea shop
+cabin
+café
+cafeteria
+caldarium
+campground
+car
+casino
+castle
+cellar
+cemetery
+champagne bar
+changing room
+chapel
+church
+circus
+city
+cityscape
+classroom
+clean room
+cloakroom
+closet
+cocktail bar
+cold room
+comedy club
+common room
+computer lab
+concert hall
+conference room
+conservatory
+control room
+conversation pit
+corner office
+country dance club
+courtroom
+creperie
+cricket ground
+cry room
+cupcake shop
+dance studio
+darkroom
+den
+dessert shop
+dining room
+disc golf
+dive bar
+donut shop
+dormitory
+drawing room
+dressing room
+electrical room
+emergency room
+engine room
+equipment room
+fallout shelter
+family room
+farm
+field
+fish & chips shop
+fitting room
+food truck
+football stadium
+forest
+foyer
+fried chicken joint
+game room
+garage
+garden
+gas station
+gastropub
+gay bar
+general entertainment
+go kart track
+grocery
+guest room
+gun range
+gym
+harbor
+highway
+historic site
+history museum
+hockey arena
+hot dog joint
+hotel bar
+hotel room
+house
+ice cream shop
+indie theater
+irish pub
+jazz club
+juice bar
+karaoke bar
+kitchen
+laser tag
+laundry room
+library
+lighthouse
+living room
+lobby
+locker room
+loft
+lounge
+mac & cheese joint
+mailroom
+map room
+marina
+market
+mini golf
+monastery
+motel room
+movie theater
+mud room
+museum
+music venue
+national park
+nature preserve
+newsroom
+night market
+nightclub
+nursery
+office
+opera house
+other nightlife
+outdoor sculpture
+panic room
+pantry
+park
+parlor
+pedestrian plaza
+performing arts venue
+petrol station
+piano bar
+pie shop
+pizza place
+planetarium
+playground
+playroom
+plaza
+pool
+pool hall
+pool room
+print room
+pub
+public art
+racetrack
+ramen house
+noodle house
+rec room
+road
+rock club
+roller rink
+sake bar
+salon
+salsa club
+sauna
+scenic lookout
+schoolroom
+science museum
+sculpture garden
+ship
+shop
+shopping center
+shopping mall
+showroom
+sitting room
+skyscraper
+soccer stadium
+souvlaki shop
+speakeasy
+sports bar
+stadium
+staff room
+stockroom
+storm cellar
+street art
+strip club
+studio
+study
+suburb
+sunroom
+supermarket
+taco place
+tea room
+tearoom
+temple
+tennis stadium
+theater
+theme park
+throne room
+tower
+train station
+transmission control room
+tv room
+urban street
+utility room
+vineyard
+waiting room
+washroom
+water closet
+water park
+weight room
+whisky bar
+wine bar
+wine cellar
+winery
+wiring closet
+workshop
+zoo

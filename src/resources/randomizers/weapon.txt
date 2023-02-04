@@ -1,0 +1,104 @@
+axe
+barbed whip
+battle axe
+blade boot
+blade knuckles
+blowgun
+bolas
+bonesaw
+book
+boomerang
+bow
+broadsword
+broomstick
+buckler
+caltrops
+censer
+chakram
+claw
+claymore
+club
+coin
+crossbow
+crystal
+dagger
+dart
+dirk
+disc
+evening star
+falchion
+flail
+flamberge
+fork
+glaive
+great axe
+great sword
+guisarme
+guitar
+halberd
+hammer
+hand wrap
+harp
+harpoon
+hatchet
+javelin
+katana
+knife
+lasso
+long bow
+longsword
+mace
+machete
+mirror shield
+morningstar
+musket
+net
+orb
+parrying dagger
+pendulum
+pike
+pitchfork
+poleaxe
+quarterstaff
+rapier
+razor
+rune
+sabre
+scimitar
+scythe
+shield
+short bow
+short spear
+shortsword
+shovel
+shuriken
+sickle
+sling
+spear
+spike
+spiked chain
+spiked gauntlet
+spiked knuckle
+spiked shield
+spiked staff
+staff
+stick
+stone
+sword
+sword-staff
+syringe
+throwing axe
+throwing dart
+throwing knife
+throwing stars
+tooth
+torch
+tower shield
+tusk
+shell shield
+trident
+walking stick
+wand
+war hammer
+war-spear
+whip

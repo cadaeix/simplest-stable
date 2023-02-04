@@ -1,0 +1,206 @@
+alembic
+altar
+armchair
+armoire
+arrows
+bag
+balance & weights
+ball
+barrel
+beaker
+bed
+bellows
+bells
+bench
+bladder
+blanket
+book
+bottle
+bowl
+box
+box (large)
+branding irons
+brazier
+brazier & charcoal
+bucket
+buffet
+bunks
+butt (large barrel)
+cabinet
+cage
+caldron
+candelabra
+candelabrum
+candle
+candles
+candlestick
+candlesticks
+carafe
+carpet (largish)
+cask
+cassocks
+chains
+chair
+chalk
+chandelier
+char-coal
+chest of drawers
+chime
+clamps
+closet (wardrobe)
+columns
+cool
+couch
+cresset
+cressets
+crote
+crucible
+cruet
+crystal
+cupboard
+curtain
+cushion
+dais
+decanter
+desk
+dish
+drum
+fetters
+fire pit
+fireplace & wood
+fireplace with mantle
+firkin
+flask
+font
+fountain
+fresco
+funnel
+furnace
+gong
+grill
+grindstone
+hamper
+hassock
+herbs
+high stool
+hogshead
+holy symbols
+holy writing
+hooks
+horn
+hourglass
+idol
+idol (largish)
+incense burner
+iron maiden
+jar
+jug
+keg
+kettle
+kneeling bench
+knives
+ladle
+lamp
+large chest
+lectern
+concave lens
+convex lens
+thick lens
+broken lens
+colored lens
+loom
+magic circle
+manacles
+mat
+mattress
+medium chest
+mortar & pestle
+mosaics
+offertory container
+oubliette
+padded arm chair
+padded chair
+pail
+painting
+paintings
+pallet
+pan
+parchment
+pedestal
+pegs
+pentacle
+pentagram
+phial
+pillory
+pillow
+pincers
+pipe (large cask)
+pipette
+pliers
+pot
+prayer rug
+prism
+pulpit
+quill
+quilt
+rack
+rail
+retort
+robes
+rod
+ropes
+rug (small-medium)
+rushes
+sack
+sanctuary
+screen
+scroll tube
+sheet
+shelf
+shrine
+sideboard
+skin
+skull
+sofa
+spatula
+stand
+statue
+stocks
+stool
+strappado
+straw
+stuffed animal
+table
+tank
+tapestry
+thongs
+throne
+thumb screws
+thurible
+tongs
+torches
+trestle
+tripod
+trunk
+tub
+tube
+tun
+tweezers
+unholy symbols
+unholy writing
+urn
+vestments
+vestry
+vial
+vice
+votive light
+wall basin and font
+waterclock
+well
+wheel
+whips
+whistle
+wire
+wood billets
+wooden staff
+workbench

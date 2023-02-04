@@ -1,0 +1,176 @@
+abbey
+aerary
+aircraft cabin
+airport lounge
+alchemy room
+alcove
+altar
+anatomical theatre
+anechoic chamber
+antechamber
+anteroom
+arena
+armory
+assembly room
+atelier
+attic
+audience room
+auditorium
+backroom
+ballroom
+basement
+bath room
+bathroom
+bed chambers
+bedroom
+billiard room
+boardroom
+boiler room
+boudoir
+breakfast nook
+breezeway
+cabin
+cafeteria
+caldarium
+cavern
+cell
+cellar
+changing room
+chantry
+chapel
+class room
+classroom
+clean room
+cloakroom
+closet
+cold room
+common room
+computer lab
+conference room
+conjuring
+conservatory
+control room
+conversation pit
+corner office
+corridor
+court
+courtroom
+crawlspace
+cry room
+darkroom
+den
+dining room
+divination room
+dormitory
+drawing room
+dressing room
+electrical room
+emergency room
+engine room
+entry
+equipment room
+fallout shelter
+family room
+fitting room
+forge
+foyer
+gallery
+game room
+garage
+garden
+gateway
+great hall
+guardroom
+guest room
+gym
+hall
+hallway
+harem
+hotel room
+kennel
+kitchen
+laboratory
+laundry room
+library
+living room
+lobby
+locker room
+loft
+long room
+lounge
+mailroom
+map room
+maze
+meditation room
+monster lair
+motel room
+mud room
+museum
+newsroom
+nursery
+observatory
+office
+panic room
+pantry
+parlor
+party room
+playroom
+pool room
+print room
+prison cell
+psychomanteum
+rec room
+reception
+refectory
+ritual room
+robing room
+room with stairs
+round room
+sacrifice room
+salon
+sanctum
+sauna
+schoolroom
+secret room
+shark room
+showroom
+shrine
+sitting room
+small room
+solar
+spring
+stable
+staff room
+stockroom
+storage
+storm cellar
+studio
+study
+sunroom
+tearoom
+temple
+throne room
+toilet
+toilets
+torture chamber
+torture room
+trading post
+training room
+transmission control room
+trap hallway
+trap room
+treasure room
+trophy room
+tv room
+utility room
+vault
+waiting room
+walk in freezer
+washroom
+water closet
+weight room
+well
+wine cellar
+wiring closet
+workroom
+workshop

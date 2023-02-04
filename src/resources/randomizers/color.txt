@@ -1,0 +1,92 @@
+amaranth
+amber
+amethyst
+apricot
+aquamarine
+azure
+baby blue
+beige
+black
+blue
+blue-green
+blue-violet
+blush
+bronze
+brown
+burgundy
+byzantium
+carmine
+cerise
+cerulean
+champagne
+chartreuse green
+chocolate
+cobalt blue
+coffee
+copper
+coral
+crimson
+cyan
+desert sand
+electric blue
+emerald
+erin
+gold
+gray
+green
+harlequin
+indigo
+infrared
+iridescent
+ivory
+jade
+jungle green
+lavender
+lemon
+lilac
+lime
+magenta
+magenta rose
+maroon
+mauve
+navy blue
+neon
+ochre
+olive
+orange
+orange-red
+orchid
+peach
+pear
+periwinkle
+persian blue
+pink
+plum
+prussian blue
+puce
+purple
+raimbow sprimkle
+rainbow
+raspberry
+red
+red-violet
+rose
+ruby
+salmon
+sangria
+sapphire
+scarlet
+silver
+slate gray
+spring bud
+spring green
+tan
+taupe
+teal
+turquoise
+ultramarine
+ultraviolet
+violet
+viridian
+white
+yellow
