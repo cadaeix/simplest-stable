@@ -38,10 +38,6 @@ select {
     background-color: #000814;
 }
 
-div > label > select {
-    border-color: #000814
-}
-
 /* .dark .border-gray-200 {
     border-color: #000814
 } */
@@ -94,7 +90,7 @@ div > label > select {
 }
 
 #model_dropdown_type {
-    max-width: 25%
+    max-width: 30%
 }
 
 #model_row {
@@ -128,6 +124,25 @@ div > label > select {
     height: 480px !important;
     max-height: 480px !important;
     min-height: 480px !important;
+}
+
+#download_model_choice,
+#cached_model_choice,
+#custom_model_choice,
+#custom_vae_choice {
+    display: none;
+    height: 0px;
+    width: 0px;
+}
+
+#model_dropdown_type,
+#download_model_choice,
+#cached_model_choice,
+#custom_model_choice,
+#custom_vae_choice,
+#resolution_dropdown_choice,
+#sampler_dropdown_choice {
+    border-color: #000814
 }
 
 input[type="range"]{

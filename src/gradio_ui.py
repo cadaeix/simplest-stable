@@ -52,6 +52,7 @@ def get_image_from_url(t):
     response = requests.get(t, headers=user_agent)
     return Image.open(BytesIO(response.content))
 
+
 # gradio parts, don't feel like typing these right now
 
 
@@ -94,7 +95,7 @@ def image_options():
                 value=1, precision=0, label="Number of Images")
         with gr.Column(scale=2):
             resolution = gr.Dropdown(choices=list(res_dict.keys(
-            )), label="Image Resolution", value="Square 512x512 (default, good for most models)")
+            )), label="Image Resolution", value="Square 512x512 (default, good for most models)", elem_id="resolution_dropdown_choice")
     return number_of_images, resolution
 
 
@@ -105,7 +106,7 @@ def advanced_settings():
                 custom_width = gr.Slider(minimum=512, maximum=1152, value=512, step=64,
                                          label="Width (if Custom is selected)", interactive=True, elem_id="custom_width")
                 sampler = gr.Dropdown(choices=list(scheduler_dict.keys(
-                )), label="Sampler", value="Euler a", elem_id="sampler_choice")
+                )), label="Sampler", value="Euler a", elem_id="sampler_dropdown_choice")
                 with gr.Row():
                     with gr.Column(elem_id="seed_col"):
                         seed = gr.Number(value=-1, precision=0,
@@ -133,7 +134,8 @@ def output_section():
     with gr.Row(elem_id="generate_row"):
         generate_button = gr.Button(
             value="Generate", variant="primary", elem_id="generate_button")
-        # interrupt_button = gr.Button(value="Interrupt", variant="secondary", elem_id="generate_button")
+        interrupt_button = gr.Button(
+            value="Interrupt", variant="secondary", elem_id="interrupt_button")
     image_output = gr.Gallery(elem_id="output_gallery")
     with gr.Row(elem_id="edit_row"):
         to_img2img_button = gr.Button(
@@ -142,7 +144,7 @@ def output_section():
             value="inpaint Selected Image", variant="secondary", elem_id="to_inpaint_button", visible=False)
     log_output = gr.Textbox(interactive=False, elem_id="log_output",
                             show_label=False, visible=False, lines=7)
-    return generate_button, image_output, to_img2img_button, to_inpaint_button, log_output
+    return generate_button, interrupt_button, image_output, to_img2img_button, to_inpaint_button, log_output
 
 
 def loaded_info(message: str):
@@ -153,7 +155,8 @@ def loaded_info(message: str):
 
 
 def tutorial():
-    tutorial_text = gr.Markdown("Work In Progress!")
+    tutorial_text = gr.Markdown(
+        "Work In Progress! At some point setting explanations will appear here. Thanks for using Detailed Stable 2.0!")
     return tutorial_text
 
 # main function
@@ -449,7 +452,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         css += file.read() + "\n"
 
     load_javascript = LoadJavaScript()
-    with gr.Blocks(css=css, title="Simple Stable") as main:
+    with gr.Blocks(css=css, title="Detailed Stable 2.0") as main:
         current_loaded_model_name = gr.Markdown(starting_model_to_load)
         current_mode = gr.State("txt2img")
         last_used_seed = gr.State(-1)
@@ -458,7 +461,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
 
         with gr.Tab(label="Generation"):
             with gr.Row():
-                with gr.Column(scale=3):
+                with gr.Column(scale=1):
                     txt2img_show, img2img_show, inpaint_show = mode_buttons()
 
                     prompt, negative = prompt_section()
@@ -469,8 +472,8 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
 
                     custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, reuse_seed_button, random_seed_button = advanced_settings()
 
-                with gr.Column(scale=2):
-                    generate_button, image_output, to_img2img_button, to_inpaint_button, log_output = output_section()
+                with gr.Column(scale=1):
+                    generate_button, interrupt_button, image_output, to_img2img_button, to_inpaint_button, log_output = output_section()
         with gr.Tab(label="Info"):
             tutorial_text = tutorial()
             load_info_button, info_box = loaded_info(info_message)
@@ -484,9 +487,9 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                                current_loaded_model_name], outputs=info_box)
 
         reuse_seed_button.click(lambda x: x, inputs=[last_used_seed], outputs=[
-                                seed])
+                                seed], queue=False)
         random_seed_button.click(
-            lambda: -1, inputs=[], outputs=[seed], preprocess=False, postprocess=False)
+            lambda: -1, inputs=[], outputs=[seed], preprocess=False, postprocess=False, queue=False)
 
         txt2img_show.click(show_state, inputs=[txt2img_show], outputs=[current_mode, input_image, img2img_strength,
                            inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
@@ -507,12 +510,14 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         load_image_button.click(load_image_from_url, inputs=[
                                 image_url_input, current_mode], outputs=[image_url_input, input_image, inpaint_image])
 
-        generate_button.click(generate, inputs=[current_mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options,
-                              upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, current_loaded_model_name], outputs=[image_output, last_used_seed, log_output])
+        generation = generate_button.click(generate, inputs=[current_mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options,
+                                                             upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, current_loaded_model_name], outputs=[image_output, last_used_seed, log_output])
         generate_button.click(has_image, inputs=[image_output], outputs=[
                               to_img2img_button, to_inpaint_button, log_output])
         model_dropdown_type.change(
             None, _js="handleModelDropdowns", inputs=[], outputs=[])
+        interrupt_button.click(
+            fn=None, inputs=[], outputs=[], queue=False, cancels=[generation])
 
     main.queue()
     main.launch(debug=True, inline=True, height=1000)
