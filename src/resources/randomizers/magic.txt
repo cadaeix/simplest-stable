@@ -1,0 +1,636 @@
+Absorb Potion
+Absorb Toxicity
+Absurdity
+Accompaniment
+Acid Arrow
+Acid Fog
+Acute Quintessence
+Acute Senses
+Adhesive Blood
+Adhesive Spit
+Adjust Metabolism
+Aggravate Thundercloud
+Agony
+Air Bubble
+Air Step
+Alarm
+Allure
+Alter Local Gravity
+Alter Self
+Animate Garbage
+Animate Object
+Animate Potion
+Anklecrusher
+Annoyance
+Ant Haul
+Anti-Life Shell
+Anti-Undead Shell
+Antimagic Field
+Aphasia
+Apport
+Aqueous Orb
+Arcane Lock
+Arcane Polarity
+Armor of Ice
+Astral Prison
+Atavism
+Augury
+Aura of Doom
+Automatic Marching Mule
+Automatic Nervous Breakdown
+Aversion
+Babble
+Babbling Curse
+Bane Weapon
+Banishment
+Barbed Chain
+Barrier of Force
+Battering Beam
+Battering Wind
+Become Delicious
+Become Disgusting
+Befuddle
+Bend Fate
+Bestial Speech
+Bind Objects
+Black Hand
+Black Tentancles
+Blight
+Blindness
+Blink
+Blood Jelly
+Blood Tentacles
+Blue Magic
+Body
+Bone Fists
+Break Fingers
+Brown Noise
+Burn Burn
+Burning Gaze
+Burning Hands
+Burrowing Bolt
+Butterfly Hurricane
+Cacophony
+Call Object
+Call to Demon
+Call to the Daring
+Call Vermin
+Calm
+Capture Wind
+Carry Companion
+Cascade of Power
+Catatonia
+Catherine
+Cause Wounds
+Challenge
+Charm
+Charm of the Cods
+Charm of the Dave
+Charm Person
+Charm Spirit
+Chilled Arrow
+Chorus of the Dave
+Circle of Noise
+Claming Blow
+Clawing Shadows
+Clinging Blade
+Clone
+Cloudkill
+Coalescence
+Coldsnap
+Colour Spray
+Command
+Command Coins
+Command Construct
+Command Garbage
+Command Undead
+Compaction
+Compartmentalize Mixture
+Comprehend Language
+Cone of Dense Foam
+Confession
+Conflicting Command
+Confusion
+Conjure Bark
+Conjure Mare
+Consecrate
+Constricting Coils
+Continual Flame
+Control Air
+Control Earth
+Control Fire
+Control Rain
+Control Water
+Corpse Lantern
+Corrosive Slug
+Corrosive Touch
+Corrosive Vomit
+Counterprayer
+Counterspell
+Countless Eyes
+Crabalanche
+Create Armament
+Create Pit
+Create Treasure Map
+Crown of Vermin
+Crusading Disk
+Cube of Spell Splitting
+Cure Mutation
+Cure Wounds
+Curse
+Curse Clam
+Cursing Wink
+Darklight
+Darkness
+Darkworm Colt
+Date Ward
+Daving Fire
+Death Knell
+Death Mask
+Death of the Sun
+Death Scythe
+Deathless
+Decollate
+Deja Reve
+Delayed Noxious Odour Sphere
+Delectable
+Dendrigraphy
+Desecrate
+Dessicate
+Destroy the Past
+Detect Gold
+Detect Magic
+Detect Poison
+Detect Undead
+Detect Water
+Dimension Door
+Dimension Hop
+Disconnect Limb
+Disguise
+Disintegrate
+Dispel Inhibitions
+Dispel Magic
+Dissolve
+Divine Boom
+Dominate
+Doom Song
+Dragon Strike
+Dragon’s Breath
+Draw Heat
+Dream
+Dredge
+Drop
+Duelist's Wings
+Eagle Eye
+Ear Send
+Ear-Piercing Scream
+Earthquake
+Ectoplasmic Hand
+Embed Memory
+Embroider Deed
+Enchant Improvised Weapon
+Endure Elements
+Enervation
+Enfeebling Sigil
+Enlarge
+Ensorcelled Object
+Entangle
+Entangling Smoke
+Enter Chaos
+Eradicate Vermin
+Eruptive Pustiles
+Escape
+Escape from Time
+Ethereal Jaunt
+Etheric Shards
+Excellent Ray of Nudity
+Excise Soul
+Explode Alcohol
+Explode Corpse
+Explosive Rune
+Extract Venom
+Faerie Fire
+Faerie Gold
+False Facade
+False Life
+Fear
+Feast of Ashes
+Feather Fall
+Fester
+Filch
+Find Strike
+Find the Path
+Finger of Death
+Fire Breath
+Fire of Judgement
+Fire Snake
+Fireball
+Fireworks
+Fishhook of Binding
+Flaming Sphere
+Fleeting Temporal Pause
+Flesh to Stone
+Flesh to X
+Flip Person
+Floating Disc
+Floating Disk
+Floral Salvage
+Fly
+Fly Me To The Moon
+Fly Swarm
+Flying Syringe
+Fog
+Fog Cloud
+Fold
+Force Field
+Force Mutation
+Forceful Boor
+Forceful Force
+Forgettable Moment
+Frames of Death
+Freedom of Movement
+Frenzy
+Frostfall
+Garbage Armor
+Gaseous Form
+Gate Sail
+Gaze of Oblivion
+Gelatinous Form
+Geld Animal
+Gentle Repose
+Get Along Gone
+Ghost Mouth
+Ghostbane Dirge
+Ghoul Touch
+Glamour of Servitude
+Glorious Starburst
+God Ear
+Gold on the Ceiling
+Gossip
+Grasping Light
+Gravity Shift
+Grease
+Greater Flick
+Greed
+Gremlin
+Hail to the Dave
+Hair Doll
+Hair Growth
+Hair Panic
+Hallelujah Money
+Hallucinatory Terrain
+Halt Undead
+Hand of the Hound
+Hang 'Em All
+Harmonise
+Haste
+Heal
+Healing of Bat
+Healing Thief
+Hearty Stew
+Heat Metal
+Hell-bent
+Helleportation
+Heroic Leap
+Heroism
+Hex
+Hide From Animals
+Hide From Undead
+Hold
+Holy Smite
+Hone
+Horrible Noise
+Horsebane
+Humoral Tinkering
+Ice Armour
+Ice Breath
+Ice Spears
+Ice-Bridge Step
+Icon of Thorns
+Identify Owner
+Ignite
+Illusion
+Illusory Double
+Illusory Image
+Impossible Noise
+Incinerate
+Incorporeal Chains
+Infantilize
+Inflict Appendage
+Inflict Drunkenness
+Inflict Insanity
+Inflict Pain
+Inflict Withdrawal
+Inflict Wounds
+Insect Swarm
+Interplanetary Teleport
+Invent Drug
+Invisibility
+Invisible Servant
+Involuntary Appetites of the Zombie
+Isolate
+Jet
+Judgement
+Jump
+Kinetic Control
+Knights of Cydonia
+Knock
+Lace
+Landsick
+Law of Death
+Lengthen Limbs
+Lesser Disintegrate
+Levitate
+Liar's Fire
+Lick
+Light
+Light's Own Scourge
+Lightening
+Lightning Bolt
+Lightning Conductor
+Link Objects
+Lipstitch
+Liquefaction of Bone
+Liquefy Gold
+Locate Leyline
+Locate Object
+Locate Plant/Animal
+Lock
+Lock Gaze
+Lock Joints
+Longarm
+Loop of Cutting
+Love Dart
+Mage Armor
+Mage Armour
+Mage Hand
+Magic Circle
+Magic Cramp
+Magic Jar
+Magic Missile
+Magic Mouth
+Magnetise
+Magnificent Sponge
+Magnify
+Mangling Blows
+Manse
+Masquerade
+Mass Frog
+Mass Overdose
+Massage
+Meat Slave
+Melf's Minute Magnetism
+Memory Lapse
+Mending
+Metal Chime
+Mighty Lungs
+Mighty Thews
+Mind Labyrinth
+Mind Reading
+Miniature Sandstorm
+Mirror Image
+Mirror Images
+Mirror Item
+Mirrorwalk
+Mister of Light
+Monkey Fish
+Monsterize
+Moon Lust
+Moustachio Toolio
+Move Enchantment
+Multielemental Spray
+Mummy Dust
+Mutate
+Nailed to the Sky
+Name
+Named Bullet
+Negasonic Ray
+Nullify Personality
+Obedient Stone
+Obey the Beard
+Objectify
+Obliterate
+Olfractory Revelation
+One Man's Trash is Another Man's Treasure
+Open Portal
+Orbiting Spikes
+Pacify
+Package Neatly
+Panopticon
+Paper Automaton
+Paralyze Bird
+Paranoia
+Passwall
+Patch
+Pathclearing Servant
+Perilous Bridge
+Phantasm
+Phantom Limb
+Phobia
+Plant of Peace
+Poison Spray
+Polish
+Polymorph
+Power Word: Blind
+Power Word: Deafen
+Power Word: Death
+Power Word: Silence
+Powerful Presence
+Pratfall
+Primal Prayer Bear
+Primal Rear
+Prismatic Ray
+Profitable Curse
+Prolonged Bombardment
+Promises of Sanctuary
+Protection from Death
+Protection from Elements
+Protection from Evil
+Protection from Spells
+Prying Eyes
+Psychometry
+Pyre
+Query
+Quine
+Rage
+Rain of Fire
+Raise Island
+Raise Skeleton
+Raise Undead
+Raise Zombie
+Randomise Ability
+Randomise HP
+Randomise Monster
+Randomise Object
+Randomise Species
+Randomise Spell
+Rapturous Noise
+Ray of Exhaustion
+Ray of Warping
+Razor Spiral
+Read Fortune
+Read Mind
+Recombine
+Reduce
+Reflection
+Regeneration
+Reincarnate
+Release Me
+Remorse?
+Remove Affliction
+Remove Bones
+Replicating Ammunition
+Repulsion
+Resist Element
+Resonating Command
+Restoration
+Reveal Illusions
+Reverse Emordnilap
+Reverse Gravity
+Ritual Sacrifice
+Roaring Flames
+Roiling Polymorph
+Rolling Spark
+Rot
+Rune of Animation
+Rune of Destruction
+Rune of Light
+Rune of Metal
+Rune of Returning
+Rune of Revenge
+Safe Time
+Sanctuary
+Sanguine Elixir
+Saw or Plant Tree
+Sawtooth Noise
+Scarecrow
+Scorching Ray
+Screaming Teeth
+Sculpt
+Scuttle
+Sebacious Twin
+Second Impression
+See Invisible
+Seek Treasure
+Send to the Future
+Shackle to the Earth
+Shadow Step
+Share Senses
+Shield
+Shocking Grasp
+Shove
+Shrikeblast
+Shrivel
+Shuffle
+Silence
+Silent Signal
+Sketch
+Slam Portal
+Sleep
+Slow
+Slumber
+Snail's Pace
+Song of Distraction
+Song of the Ball
+Song of the Door
+Song of the Unworthy
+Sonorous Seeker
+Sort Items
+Space Hooks
+Speak with Animals
+Speak with Body
+Speak with Dead
+Speak with Gastropod
+Speak with Language
+Speak With Trees
+Spear of Light
+Spell Resistance
+Spider Climb
+Spirit Boating
+Spit Poison
+Spite
+Spitting Stone
+Squelch
+Star Warper
+Steal Size
+Stench of Unknown Origin
+Sticky Skin
+Stinking Cloud
+Stone of Death
+Stone to Flesh
+Stoneskin
+Stunning Barrier
+Sturdy Circle in the Air
+Suggestion
+Summon
+Summon Ass
+Summon Candles
+Summon Cube
+Summon Demon
+Summon Idol
+Summon Kobold
+Summon Monkey
+Summon Monster
+Summon Outsider
+Summon Party
+Summon Storm Bear
+Summon Table Scraps
+Summon Winter
+Suppress Curse
+Suspend Objects
+Swarm of Wasps
+Sword of Infamy
+Sympathetic Resonance
+Synesthesia
+Telekinesis
+Telepathic Link
+Teleport
+Teleport Substance
+Thicken Air
+Thunderclap
+Tip of the Tongue
+Toxicity
+Transfer Exhaustion
+Transposition
+Trifurcate Arms
+True Form
+Twelve Dancing Centipedes
+Ultralucent Paint
+Undetectable Thought Intruder
+Unforgettable Moment
+Unsightly Propagation of Flesh
+Unwilling Shield
+Uproot
+Ventricide
+Verdigris
+Violently Depilate
+Visualize Madness
+Vivgraphy
+Voice on the Wind
+Vomit Twin
+Walk like an Egyptian
+Wall of Distraction
+Wall of Earth
+Wall of Fire
+Wall of Force
+Wandering Flame
+Ward
+Warp Wood
+Water Breathing
+Water to Wine
+Wave of Mutiliation
+Way Down We Go
+Web
+Weightlessness
+Weighty Sphere
+Whirling Staff
+White Hand
+White Noise
+Whiteout Conditions
+Widen Crack
+Wind Scythe
+Wine to Vodka
+Wizard Vision
+Woodbend
+Word Crimes
+Zone of Truth

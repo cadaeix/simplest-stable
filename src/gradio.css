@@ -2,6 +2,24 @@
     max-width: 95%;
 }
 
+/* [type="text"],
+[type="email"],
+[type="url"],
+[type="password"],
+[type="number"],
+[type="date"],
+[type="datetime-local"],
+[type="month"],
+[type="search"],
+[type="tel"],
+[type="time"],
+[type="week"],
+[multiple],
+textarea,
+select {
+	background-color: #27303d !important;
+} */
+
 #img2img_input,
 #inpaint_input,
 #output_gallery,
@@ -20,9 +38,9 @@
     background-color: #000814;
 }
 
-.dark .border-gray-200 {
+/* .dark .border-gray-200 {
     border-color: #000814
-}
+} */
 
 #custom_width > div > div > input,
 #custom_height > div > div > input,
@@ -59,6 +77,12 @@
     min-width: 8em !important;
 }
 
+#load_image_button {
+    height: 2em;
+    max-width: 20%;
+    margin: auto;
+}
+
 #model_submit {
     height: 2em;
     max-width: 8em;
@@ -66,7 +90,7 @@
 }
 
 #model_dropdown_type {
-    max-width: 25%
+    max-width: 30%
 }
 
 #model_row {
@@ -100,6 +124,25 @@
     height: 480px !important;
     max-height: 480px !important;
     min-height: 480px !important;
+}
+
+#download_model_choice,
+#cached_model_choice,
+#custom_model_choice,
+#custom_vae_choice {
+    display: none;
+    height: 0px;
+    width: 0px;
+}
+
+#model_dropdown_type,
+#download_model_choice,
+#cached_model_choice,
+#custom_model_choice,
+#custom_vae_choice,
+#resolution_dropdown_choice,
+#sampler_dropdown_choice {
+    border-color: #000814
 }
 
 input[type="range"]{

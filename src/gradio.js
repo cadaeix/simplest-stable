@@ -25,12 +25,24 @@ function recreateNode(el, withChildren) {
   }
 }
 
-function setVisibility(el, on) {
-  const hidden_element = "hidden_element";
-  if (on & el.classList.contains(hidden_element)) {
-    el.classList.remove(hidden_element);
-  } else if (!on) {
-    el.classList.add(hidden_element);
+// function setVisibility(el, on) {
+//   const hidden_element = "hidden_element";
+//   if (on & el.classList.contains(hidden_element)) {
+//     el.classList.remove(hidden_element);
+//   } else if (!on) {
+//     el.classList.add(hidden_element);
+//   }
+// }
+
+function setVisibilityForDropdowns(el, on) {
+  if (on) {
+    el.style.display = "block";
+    el.style.height = "20px";
+    el.style.width = "100%";
+  } else {
+    el.style.display = "none";
+    el.style.height = "0px";
+    el.style.width = "0px";
   }
 }
 
@@ -54,53 +66,53 @@ function handleModelDropdowns() {
 
   switch (modelTypeDropdown.value) {
     case "Installed Models":
-      setVisibility(downloadModelDropdown, false);
-      setVisibility(cachedModelDropdown, true);
-      setVisibility(customModelDropdown, false);
-      setVisibility(customVaeDropdown, false);
+      setVisibilityForDropdowns(downloadModelDropdown, false);
+      setVisibilityForDropdowns(cachedModelDropdown, true);
+      setVisibilityForDropdowns(customModelDropdown, false);
+      setVisibilityForDropdowns(customVaeDropdown, false);
       break;
     case "Downloadable Models":
-      setVisibility(downloadModelDropdown, true);
-      setVisibility(cachedModelDropdown, false);
-      setVisibility(customModelDropdown, false);
-      setVisibility(customVaeDropdown, false);
+      setVisibilityForDropdowns(downloadModelDropdown, true);
+      setVisibilityForDropdowns(cachedModelDropdown, false);
+      setVisibilityForDropdowns(customModelDropdown, false);
+      setVisibilityForDropdowns(customVaeDropdown, false);
       break;
     case "Custom Models":
-      setVisibility(downloadModelDropdown, false);
-      setVisibility(cachedModelDropdown, false);
-      setVisibility(customModelDropdown, true);
-      setVisibility(customVaeDropdown, false);
+      setVisibilityForDropdowns(downloadModelDropdown, false);
+      setVisibilityForDropdowns(cachedModelDropdown, false);
+      setVisibilityForDropdowns(customModelDropdown, true);
+      setVisibilityForDropdowns(customVaeDropdown, false);
       break;
     case "Load Custom Vae To Current Model":
-      setVisibility(downloadModelDropdown, false);
-      setVisibility(cachedModelDropdown, false);
-      setVisibility(customModelDropdown, false);
-      setVisibility(customVaeDropdown, true);
+      setVisibilityForDropdowns(downloadModelDropdown, false);
+      setVisibilityForDropdowns(cachedModelDropdown, false);
+      setVisibilityForDropdowns(customModelDropdown, false);
+      setVisibilityForDropdowns(customVaeDropdown, true);
       break;
   }
 }
 
-function runOnStart() {
-  const downloadModelDropdown = gradioApp().querySelector(
-    "div[id$=download_model_choice]"
-  );
-  const cachedModelDropdown = gradioApp().querySelector(
-    "div[id$=cached_model_choice]"
-  );
-  const customModelDropdown = gradioApp().querySelector(
-    "div[id$=custom_model_choice]"
-  );
+// function runOnStart() {
+//   const downloadModelDropdown = gradioApp().querySelector(
+//     "div[id$=download_model_choice]"
+//   );
+//   const cachedModelDropdown = gradioApp().querySelector(
+//     "div[id$=cached_model_choice]"
+//   );
+//   const customModelDropdown = gradioApp().querySelector(
+//     "div[id$=custom_model_choice]"
+//   );
 
-  setVisibility(downloadModelDropdown, false);
-  setVisibility(cachedModelDropdown, false);
-  setVisibility(customModelDropdown, false);
-}
+//   setVisibilityForDropdowns(downloadModelDropdown, false);
+//   setVisibilityForDropdowns(cachedModelDropdown, false);
+//   setVisibilityForDropdowns(customModelDropdown, false);
+// }
 
-// run startup javascript after elements load in
-setTimeout(() => {
-  runOnStart();
-}, 100);
-// do it again
-setTimeout(() => {
-  runOnStart();
-}, 1000);
+// // run startup javascript after elements load in
+// setTimeout(() => {
+//   runOnStart();
+// }, 100);
+// // do it again
+// setTimeout(() => {
+//   runOnStart();
+// }, 1000);

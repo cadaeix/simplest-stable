@@ -1,0 +1,125 @@
+abyss
+abyssal deeps
+badlands
+bamboo forest
+barrier reef
+bay
+beach
+bluff
+bog
+boreal forest
+brook
+bush
+canyon
+cave
+cavern
+caverns
+cliff
+coniferous forests
+coral reef
+croplands
+darkness
+deciduous forest
+deep sea
+desert
+downs
+dreamscape
+dryland
+dune
+estuary
+evergreen forest
+fen
+field
+flats
+flower fields
+foothills
+forest
+geothermal area
+glacier
+grassland
+grasslands
+gravel
+grove
+heath
+heights
+hill
+hills
+hollows
+island
+islands
+jungle
+kelp forest
+lake
+lakeside
+lowland
+mangroves
+march
+marsh
+meadow
+mesa
+mixed forest
+moor
+morass
+mound
+mountain
+mountain peak
+mountains
+oasis
+ocean
+palm forest
+peak
+plain
+plains
+plateau
+pond
+prairie
+quagmire
+rainforest
+range
+river
+riverbed
+riverside
+rocky desert
+rocky shore
+salt lake
+salt plains
+sands
+sandy desert
+savanna forest
+savannah
+scrub
+sea
+sea bed
+sea floor
+seabed
+seascape
+shallows
+shoreline
+shrubland
+skies
+sky
+slopes
+slough
+sound
+steppe
+stream
+subterranean area
+swamp
+taiga
+tar pit
+temperate forest
+thicket
+treetops
+tropical
+tropics
+tundra
+underground
+underwater
+valley
+waste
+wasteland
+wetland
+wetlands
+wilderness
+woodland
+woods

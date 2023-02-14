@@ -1,0 +1,1344 @@
+abandoner
+academic
+accountant
+accuser
+achiever
+acolyte
+acrobat,action botanist
+actor
+actuary
+addict
+adept
+adjudicator
+adjuster
+adjutant
+administrator
+admiral
+adonis
+adult
+adventurer
+advisor
+advocate
+aesthetics
+aficionado
+agent
+alchemist
+alien
+allomancer
+ally
+altruist
+alumni
+amateur
+amazon
+ambassador
+analyst
+anarchist
+anchorite
+android
+angel
+angler
+anima
+animal
+animus
+announcer
+anthropologist
+anti-hero
+apex predator
+apocryphal
+apostate
+apostle
+appraiser
+apprentice
+apsych
+arbiter
+arbitor
+arcane inventor
+arcanist
+archaeologist
+archaist
+archeologist
+archer
+archetype
+architect
+archivist
+aristocrat
+armiger
+armsdealer
+artificer
+artillerist
+artisan
+artist
+aspirant
+assassin
+assessor
+assistant
+associate
+astrologer
+astronaut
+astronomer
+athlete
+attorney
+auditor
+augur
+aunt
+author
+authority
+autocrat
+automaton
+avatar
+avenger
+aviator
+babysitter
+bachelor
+bachelorette
+backer
+baker
+bandit
+bandit monk
+banker
+bar
+barbarian
+barber
+bard
+bardtillerist
+baron
+barrister
+bassist
+bassoon
+battle mage
+battle master
+battle priest
+battle priestess
+battlemage
+beast
+beast master
+beastmaster
+beekeeper
+beerbarian
+beggar
+believer
+benefactor
+berserker
+berzerker
+bestower
+betrayed
+biker
+binder
+biochemist
+biocon
+biohacker
+biologist
+biopunk ranger
+bishop
+biter
+black mage
+black towerer
+black widow
+blackguard
+blackhand warrior
+blacksmith
+blade
+blasphemer
+blighted one
+blogger
+blood knight
+blue mage
+boatswain
+body king
+bodyguard
+bohemian
+bon vivant
+bookie
+boss
+botanist
+bounty
+bounty hunter
+boxer
+boy
+bravo
+brawler
+breaker
+brewer
+brewmaster
+brigand
+brigard
+bringer
+broker
+brute
+brute rider
+buccaneer
+bug collector
+builder
+bully
+bum
+bureaucrat
+burglar
+burgler
+bushi
+butcher
+butler
+candlemaker
+cannibal
+cannoneer
+cantor
+capitolist
+captain
+captive
+carbarian
+card reader
+cardinal
+caregiver
+carer
+caretaker
+carpenter
+carrier
+cartographer
+casanova
+castaway
+caster
+cat lady
+catalyst
+cavalier
+cavalryman
+celebrity
+celibate
+cellist
+challenger
+champ
+champion
+chaplain
+charlatan
+chattel
+cheater
+chef
+chemist
+chief
+child
+chiropractor
+circulares
+citizen
+city kid
+city watchman
+cleaner
+cleric
+clerk
+clone
+clown
+coach
+coastguard
+cobbler
+collective unconscious
+collector
+commander
+commissar
+commoner
+communicator
+communist
+companion
+compassionate
+competitor
+comrade
+con
+con artist
+conductor
+confessor
+conjurer
+connoisseur
+conquerer
+conqueror
+conservationist
+conservative
+consort
+construct
+consultant
+consumer
+contender
+convict
+convoker
+cook
+cookie baker
+coordinator
+copyist
+corsair
+councillor
+counselor
+count
+counterfeiter
+courier
+court jester
+cousin
+coward
+cowboy
+crafter
+craftsperson
+creator
+crew
+crewman
+crime fighter
+criminal
+critic
+critter master
+crow friend
+crusader
+cult
+cult leader
+cultist
+cultist of
+curmudgeon
+curser
+cyborg
+cynic
+daemon eater
+damned
+damsel
+dancer
+daredevil
+dark knight
+dealer
+deathknight
+debonaire
+decoy
+deep space technician
+defender
+delegator
+delver
+demigod
+demolisher
+demon blade
+demon dwarf
+demon hunter
+denier
+deputy
+descendent
+deserter
+designer
+desperado
+destroyer
+detective
+detractor
+developer
+deviant
+devil
+devotee
+dictator
+dietitian
+digger
+diletante
+dilettante
+dino-rider
+dinosaur cleric
+diplomat
+disciple
+discipline
+disturber
+diva
+diver
+diviner
+divo
+dockhand
+dockworker
+doctor
+dog catcher
+dominatrix
+donor
+dopelganger
+doppelganger
+double
+double agent
+draconic disciple
+dragon
+dragon knight
+dragonrider
+dragonslayer
+dragoon
+dream raider
+dreamer
+drifter
+driver
+drone
+drugdealer
+druggist
+drugmaker
+druid
+drummer
+drunken master
+duelist
+duke
+dummling
+dunerider
+dungeon hacker
+dungeon inspector
+dwarf
+dynamo
+earl
+eater
+eater of tongues
+eccentric
+ecologist
+economist
+editor
+egalitarian
+egoist
+egomaniac
+elder
+elder being
+elder god
+elderly
+eldritch knight
+electrician
+electrokinetic
+elite
+elitist
+embalmer
+emissary
+emperor
+employee
+emporer
+empress
+enabler
+enchanter
+enchantress
+enemy
+enforcer
+engineer
+ensign
+entertainer
+entrepeneur
+entrepreneur
+environmentalist
+envoy
+epistolemure
+equalizer
+errant
+escaped convict
+escort
+esper
+esquire
+estimator
+eternal
+eugenicist
+evangelist
+everyman
+evil
+evoker
+ex-patriot
+exalted
+examiner
+executioner
+executive
+exemplar
+exile
+exorcist
+experimenter
+expert
+exploration cruiser
+explorer
+exterminator
+extraordinary
+face
+faction agent
+fallen knight
+false witch
+falseman
+fan
+fanatic
+fanged deserter
+farmer
+farmhand
+father
+femme fatale
+fencer
+ferryman
+fiend
+fighter
+figmentalist
+financier
+firefighter
+fisherman
+flagellant
+flautist
+flenser
+flirt
+florist
+foe
+folk
+folk hero
+folk heroine
+follower
+foodie
+fool
+footpad
+for hire
+foreigner
+foreteller
+forger
+forsaken grave
+fortune teller
+friend
+fueldrake
+fugative
+fulgar
+fullsterkur
+functionary
+fungal fellow
+fungal hive colony
+fur trapper
+gallant
+gambler
+gang member
+gangster
+gaoler
+gardener
+gatherer
+gender bender
+general
+genius
+gentleman
+geographer
+geologist
+geomancer
+geriatric
+ghost
+gigolo
+ginfighter
+girl
+girly girl
+giver
+gladiator
+gloop friend
+glutton
+god
+god butcher
+goddess
+godfather
+gold digger
+golem
+golemist
+goliard
+good citizen
+good friend
+good samaritan
+gourmet
+graduate
+grandparent
+grave
+grenadier
+grizzled cop
+grower
+guard
+guardian
+guide
+guild leader
+guild merchant
+guilt
+guitarist
+gunmaker
+gunner
+gunslinger
+guru
+gutter knight
+gutterborn scum
+guttersnipe
+guy with a gun
+hacker
+hackr
+half-djinn
+hand
+handler
+harpist
+harpsichord
+harvester
+hater
+havoc
+head of security
+healer
+heathen
+heavy weight
+hedonist
+hellborn
+hellion
+hellspawn
+helmsman
+helper
+henchman
+herald
+herbalist
+heresiarch
+heretic
+hermit
+hero
+heroine
+herpetologist
+hexblade
+hierophant
+highwayman
+hillbillie
+historian
+hitchhiker
+hitman
+hoarder
+hobbyist
+hobo
+holy knight
+holy medium
+homebody
+homeless
+homunculator
+honor
+honoured
+horde
+host
+hostess
+hothead
+human
+hunter
+hustler
+hydrargent
+iconoclast
+idealist
+idol
+ignoble
+ignoramous
+illusionist
+immoral
+impatient
+imposter
+incarnate of narcissism
+indigent
+infant
+infantry
+inflexible
+influencer
+informant
+ingenue
+inhuman
+initiate
+initiator
+innovator
+inquisitor
+inspector
+inspirer
+instigator
+instructor
+intellectual
+interrogator
+introvert
+intuitive healer
+inventor
+inventor necromancer
+investigator
+investor
+invoker
+iron stomach
+ironclad
+ivory engineer
+jack
+jack of all trades
+jack-of-all-trades
+jailer
+jarl
+jazz bard
+jester
+jock
+jockey
+joker
+journalist
+journeyman
+judge
+juggler
+jujutsuka
+junkie
+kaiju
+keeper
+kickboxer
+killer
+kindred
+king
+kingmaker
+kludger
+knight
+know-it-all
+labourer
+lady
+laggard
+lancer
+law enforcement
+lawgiver
+lawyer
+layer
+lazy
+leader
+learning
+leggionaire
+legislator
+leper
+liability
+liberator
+librarian
+lichador
+lieutenant
+life
+lobbyist
+logistician
+loner
+lord
+loremaster
+loser
+lover
+loyalist
+lumberjack
+luminary
+machine
+machinist
+macho
+mad scientist
+madam
+mage
+mageknight
+magical child
+magician
+magister
+magnetic
+maid
+maiden
+maker
+man
+manager
+maniac of the deep
+manipulator
+manwolf
+many goblins
+map maker
+marauder
+marine
+mariner
+marketer
+marksman
+marshal
+martial
+martial artist
+martyr
+maskmaker
+masochist
+mason
+masquerader
+mass destruction
+master
+mastermind
+mathematician
+matriarch
+maverick
+mechanic
+mechanical man
+mechwarrior
+mediator
+medic
+member
+mentor
+mercenary
+merchant
+merchant-adventurer
+messenger
+messiah
+messy
+metatron
+metrosexual
+microbiologist
+middleman
+miller
+mime
+mimic
+mimic tamer
+mindless
+miner
+minister
+minstrel
+mirror self
+misanthrope
+miser
+mo-ron
+mob
+model
+moldmaker
+monk
+monk of memory
+monkey dad
+monkey man
+monster
+monster hunter
+monster knight
+mortician
+mother
+mother nature
+mother of osk
+motivator
+mountain fiend
+mourner
+mouse
+mover
+mule
+murderer
+muscular puncher
+muse
+musician
+mutant
+mycorrhizan
+mystic
+name dropper
+narcisist
+narrator
+natural disaster
+naturalist
+navigator
+necromancer
+nemesis
+nerd
+networker
+neurologist
+neuroscientist
+nightblade
+nightmare parasite
+nihilist
+ninja
+ninja pirate zombie robot
+noble
+nobody
+nomad
+nonconformist
+novelist
+novice
+npc
+nun
+nurse
+nurturer
+nutritionist
+nuturer
+nymph knight
+nymphomaniac
+oath cursed
+observer
+occultist
+oceanographer
+officer
+ogre
+old
+olympian
+onmyoji
+oozemorph
+operative
+ophidian
+opponent
+optimist
+oracle
+orator
+order
+organiser
+organizer
+orphan
+outcast
+outgoing
+outlander
+outlaw
+outsider
+overlord
+overseer
+owner
+pack rat
+painter
+paladin
+paleontologist
+panel beater
+pantser
+paragon
+paramedic
+parasite
+parasite brain
+paratrooper
+parent
+pariah
+parson
+partisan
+party animal
+passenger
+pathfinder
+pathologist
+patriarch
+patrician
+patriot
+patron
+peacekeeping
+peacemaker
+peasant
+penetant
+penitent
+people's champion
+perfectionist
+performer
+persona
+pervert
+pessimist
+pet owner
+peterpan
+petty sellsword
+phantom
+pharmacist
+philanthropist
+philantropist
+philosopher
+philospher
+phobic
+physical
+physicist
+pianist
+piccolo
+picker
+pickpocket
+pigeon tamer
+pile of snails
+pilgrim
+pillager
+pilot
+pimp
+pioneer
+pirate
+pirate's bride
+pistolero
+pit monk
+plague
+plague doctor
+planner
+planter
+player
+playwrite
+ploughman
+plumber
+poacher
+poet
+pointman
+pole-dancer
+police
+politician
+pollyanna
+pornstar
+possessing weapon
+pot-head
+practitioner
+praetorian
+preacher
+precognitive
+predator
+prepper
+president
+pretender
+priest
+priestess
+prime
+prince
+princess
+princex
+prisoner
+private
+private investigator
+privateer
+prodigy
+producer
+professional
+professional boxer
+professional wrestler
+professor
+profiler
+progenitor
+programmer
+promiscuous
+promoter
+prophet
+prophet of uncomfortable revelations
+prostitute
+protector
+protester
+prototyper
+provocateur
+psion
+psychic
+psychologist
+psychopath
+psychopomp
+puck
+pugilist
+pyrokinetic
+pyromancer
+quack
+quartermaster
+queen
+questioner
+quitter
+rabbi
+raider
+random specialist
+ranger
+rapist
+rat master
+rat-catcher
+reader
+realist
+reaper
+rebel
+rebuilder
+recluse
+recruit
+red mage
+redeemer
+redwall classes
+reformer
+refugee
+regurgitative alchemist
+reincarnator
+reiver
+relationship
+relative
+religion
+remover
+renegade
+renegade-hooker
+renowned
+renunciate
+representative
+rescuer
+researcher
+retaliator
+revenant
+revlotionary
+revolutionary
+rideable brute
+rider
+rifleman
+rigatoni cowboy
+right hand man
+rightful heir
+rival
+road warrior
+robber
+robin hood
+robot
+robot squid
+rogue
+roller knight
+romance
+romantic
+ronin
+root doctor
+rower
+royal aspirant
+royalty
+ruffian
+ruler
+runaway
+rune knight
+runesmith
+rural
+saboteur
+sacrae
+sacrifice
+sacrificial victim
+sage
+sailor
+saint
+sales
+salesman
+samaritan
+samurai
+sanctioned cambion
+sapper
+savant
+savior
+savior child
+sawbones
+saxophone
+scabmettler
+scaled god
+scapegoat
+scar-speaker
+scarecrow
+scavenger
+scavver
+schemer
+scholar
+scientist
+scion
+scoundrel
+scout
+scrapmaster
+scribe
+scrooge
+sculptor
+sealer
+seaman
+seamstress
+searcher
+secret skeleton
+secretary
+sedentary
+seducer
+seductress
+seeker
+seer
+seneschal
+sensei
+sentinel
+sentry
+seraph
+seraphim
+serf
+sergeant
+serial killer
+serpent
+servant
+servitor
+settler
+shadow
+shaman
+shapeshifter
+shepherd
+sheriff
+shieldbreaker
+ship captain
+shiva of guns
+shoemaker
+short sneaky shirtless satanist
+show off
+sidekick
+singer
+sinner
+siren
+skald
+skeptic
+skilled gunfighter
+skindancer
+slave
+slaver
+slayer
+sleuth
+smiter
+smooth talker
+smuggler
+snake-wielder
+snatcher
+sniper
+snitch
+snoop
+socialite
+sociologist
+sojourner
+solarian
+soldier
+somebody
+soothesayer
+sorcerer
+sorceress
+soul mate
+sovereign
+speaker of the burning grove
+specialist
+spell robot
+spell-caster
+spellborn homunculus
+spellbug
+spellhost
+spellshark
+spellslinger
+spellthief
+spiler
+spirit
+spiritualist
+spy
+squaddie
+squire
+stableworker
+stalker
+star
+star child
+statistician
+status seeker
+stealer
+stepmother
+steward
+stone druid
+storyteller
+stranger
+strategist
+street fighter
+street samurai
+street tough
+street urchin
+stress
+stripper
+student
+student of magic
+summoner
+sumo
+super fan
+super human
+super model
+super sentai member
+supermodel
+superstar
+supervisor
+surgeon
+survivalist
+survivor
+sustainer
+swashbuckler
+sweeper
+swindler
+sword
+sword master
+sword-shepherd
+sword-swallower
+swordmaster
+sybarite
+sycophant
+t-man
+tactician
+tailor
+taker
+tamer
+tanner
+tap
+teacher
+tech
+technician
+technomancer
+teenager
+telekinetic
+telepath
+templar
+temptress
+tender
+terpsichorean
+thane
+the hive
+theologian
+theotokos
+therapist
+theurgist
+thief
+thinker
+thoughtless
+thrall
+thrill seeker
+thug
+time knight
+time thief
+tinker
+tinkerer
+toddler
+toon
+torturer
+tough guy
+trader
+tradesman
+traditionalist
+trafficker
+trailblazer
+trainer
+traitor
+tramp
+trapper
+traveler
+traveller
+treasure hunter
+treasurer
+trendsetter
+tribal
+trickster
+troll
+trooper
+truenamer
+truth seeker
+tutor
+tyrant
+umbrant
+uncle
+underdog
+underwriter
+unicorn
+unit
+unsealer
+untouchable
+vagabond
+vagrant
+vampire
+vampire pirate
+vanguard
+vassal
+vault hunter
+veil-piercer
+vermin master
+vessel
+vet
+veteran
+victim
+vigilante
+viking
+vindicator
+vine servant
+violent
+violinist
+virgin
+visionary
+vivisectionist
+vizier
+vocalist
+void monk
+volunteer
+vulture priest
+wagoneer
+waif
+waiter
+waitress
+wanderer
+war party leader
+warden
+warframe
+warlock
+warlord
+warmage
+warrior
+warship
+watchman
+wave-dancing samurai katana duelist
+wayfarer
+weaponmaker
+weather witch
+weaver
+welder
+werewolf
+whaler
+whistleblower
+white mage
+wild one
+windsharp
+winner
+wit
+witch
+witchdoctor
+witcher
+witchwarper
+witness
+wizard
+woman
+woodsman
+workaholic
+worker
+worshipper
+wracketeer
+wraith
+wrecker
+wrench wench
+wrestler
+writer
+xeromancer
+yeoman
+zealot
+zoologist
+zouave

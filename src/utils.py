@@ -5,7 +5,7 @@ import os
 import random
 import math
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import requests
 import torch
 import glob
@@ -17,6 +17,8 @@ from PIL import Image, PngImagePlugin
 from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
+
+from src.randomizer import curly_bracket_randomiser, replace_words_inside_brackets_with_randomizer
 
 
 def mini_model_lookup():  # this is awful, fix this soon
@@ -235,10 +237,12 @@ def login_to_huggingface():
     login(token)
 
 
-def process_prompt_and_add_keyword(prompt, keyword):
-    result = EverythingsPromptRandomizer.random_prompt(prompt)
-    result = EverythingsPromptRandomizer.random_prompt(
-        prompt)  # run it twice because there's some sublists
+def process_prompt_and_add_keyword(prompt: str, keyword: Union[str, list, None], randomizer_dict: dict):
+    # result = EverythingsPromptRandomizer.random_prompt(prompt)
+    # result = EverythingsPromptRandomizer.random_prompt(
+    #     prompt)  # run it twice because there's some sublists
+    result = replace_words_inside_brackets_with_randomizer(
+        prompt, randomizer_dict)
     if type(keyword) is list:
         for kw in keyword:
             kw_strip = kw.strip()
