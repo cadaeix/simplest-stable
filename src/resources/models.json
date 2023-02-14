@@ -128,13 +128,31 @@
     "keyword": "",
     "prediction": "epsilon"
   },
-  "Waifu Diffusion 1.4 (Epoch 1 Test Version)": {
+  "Waifu Diffusion 1.4": {
     "type": "diffusers",
     "repo_id": "hakurei/waifu-diffusion",
     "requires_hf_login": false,
-    "vae": "",
+    "vae": {
+      "type": "hf-file",
+      "repo_id": "hakurei/waifu-diffusion-v1-4",
+      "filename": "vae/kl-f8-anime2.ckpt",
+      "requires_hf_login": false
+    },
     "keyword": "",
     "prediction": "epsilon"
+  },
+  "Waifu Diffusion 1.5 Beta (768)": {
+    "type": "diffusers",
+    "repo_id": "waifu-diffusion/wd-1-5-beta",
+    "requires_hf_login": false,
+    "vae": {
+      "type": "hf-file",
+      "repo_id": "hakurei/waifu-diffusion-v1-4",
+      "filename": "vae/kl-f8-anime2.ckpt",
+      "requires_hf_login": false
+    },
+    "keyword": "",
+    "prediction": "v_prediction"
   },
   "Plat Diffusion (Waifu 1.4 finetune)": {
     "type": "diffusers",
@@ -142,15 +160,6 @@
     "requires_hf_login": false,
     "vae": "",
     "keyword": "",
-    "prediction": "epsilon"
-  },
-  "AnimeChanStyle": {
-    "type": "hf-file",
-    "repo_id": "AdamOswald1/Anime_with_support_for_Gen-Imp_characters",
-    "filename": "AnimeChanStyle-v2.ckpt",
-    "config": "",
-    "vae": "",
-    "keyword": "AnimeChan Style",
     "prediction": "epsilon"
   },
   "Pastel Waifu Diffusion": {

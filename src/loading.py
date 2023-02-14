@@ -41,7 +41,7 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
         if model_choice["type"] == "diffusers":
             pipe = load_diffusers_model(model_choice)
         elif model_choice["type"] == "hf-file":
-            pipe = download_and_load_non_diffusers_model(
+            pipe = download_and_load_non_diffusers_model_from_hf(
                 model_choice["repo_id"], model_name, model_choice["filename"], model_choice["config"], model_choice["vae"])
         pipe_info = {
             "keyword": model_choice["keyword"],
@@ -88,7 +88,7 @@ def load_installed_model_from_hf_cache(model_path: str) -> SimpleStableDiffusion
         model_path, safety_checker=None, requires_safety_checker=False, local_files_only=True, torch_dtype=torch.float16)
 
 
-def download_and_load_non_diffusers_model(repo_id: str, model_name: str, filename: str, config_file: Optional[str], vae_file: Optional[str]) -> SimpleStableDiffusionPipeline:
+def download_and_load_non_diffusers_model_from_hf(repo_id: str, model_name: str, filename: str, config_file: Optional[str], vae_file: Optional[str]) -> SimpleStableDiffusionPipeline:
     hf_cache_folder = get_huggingface_cache_path()
     checkpoint_path = hf_hub_download(repo_id=repo_id, filename=filename)
     if config_file:
@@ -111,7 +111,7 @@ def download_and_load_non_diffusers_model(repo_id: str, model_name: str, filenam
 
 
 def load_diffusers_model(model_choice: str) -> SimpleStableDiffusionPipeline:
-    if model_choice["vae"] != "":
+    if model_choice["vae"] != "" and model_choice["vae"]["type"] == "diffusers":
         if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
             login_to_huggingface()
         vae = AutoencoderKL.from_pretrained(model_choice["vae"]["repo_id"])
@@ -122,7 +122,17 @@ def load_diffusers_model(model_choice: str) -> SimpleStableDiffusionPipeline:
             login_to_huggingface()
         pipe = SimpleStableDiffusionPipeline.from_pretrained(
             model_choice["repo_id"], safety_checker=None, requires_safety_checker=False)
+
+    if model_choice["vae"] != "" and model_choice["vae"]["type"] == "hf-file":
+        pipe = download_and_load_non_diffusers_vae_from_hf(
+            model_choice["vae"], pipe)
     return pipe
+
+
+def download_and_load_non_diffusers_vae_from_hf(vae_choice: str, pipe: SimpleStableDiffusionPipeline) -> SimpleStableDiffusionPipeline:
+    vae = hf_hub_download(
+        repo_id=vae_choice["repo_id"], filename=vae_choice["filename"])
+    return load_vae_file_to_current_pipe(pipe, vae)
 
 
 def load_embeddings(embeddings_folder: str, pipe: SimpleStableDiffusionPipeline) -> SimpleStableDiffusionPipeline:
@@ -160,6 +170,14 @@ def load_vae_file_to_current_pipe(pipe: SimpleStableDiffusionPipeline, vae_file_
     pipe = pipe.to("cuda")
     pipe = pipe.to(torch.float16)
     return pipe
+
+
+def download_and_load_non_hf_model_file():
+    ...  # civitai and other places
+
+
+def download_and_load_non_hf_vae_file():
+    ...  # citivai and other places
 
 
 def load_ckpt_or_safetensors_file_and_cache_as_diffusers(
