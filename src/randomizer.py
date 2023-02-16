@@ -65,9 +65,8 @@ def replace_words_inside_brackets_with_randomizer(prompt: str, list_dict: dict) 
     if not list_dict or list_dict == {}:
         return prompt
 
-    identified_words = get_words_inside_brackets(prompt)
-
     for _ in range(2):  # run this twice as a cheap way to deal with single recursive lists, TODO: do this better
+        identified_words = get_words_inside_brackets(prompt)
         for word in identified_words:
             replacement = get_random_word_from_specified_list(word, list_dict)
             if replacement:
