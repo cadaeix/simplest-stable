@@ -33,7 +33,7 @@ def mini_model_lookup():  # this is awful, fix this soon
             model_name = i[1]["repo_id"]
 
         model_dict_under_urls[model_name] = {
-            "keyword": i[1]["keyword"],
+            "keyword": i[1].get("keyword"),
             "prediction_type": i[1]["prediction"]
         }
 
@@ -248,7 +248,7 @@ def process_prompt_and_add_keyword(prompt: str, keyword: Union[str, list, None],
             kw_strip = kw.strip()
             if kw_strip not in prompt:
                 result = f"({kw_strip}:1), {result}"
-    elif keyword != "" and keyword != None and keyword not in prompt:
+    elif keyword and keyword not in prompt:
         result = f"({keyword}:1), {result}"
     return result
 

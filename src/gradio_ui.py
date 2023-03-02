@@ -422,7 +422,8 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                 "detail_scale": 10,
                 "seed": used_seed,
                 "add_keyword": "Don't insert model keyword" not in additional_options,
-                "keyword": pipe_info["keyword"],
+                "keyword": pipe_info.get("keyword"),
+                "negative_keyword": pipe_info.get("negative_keyword"),
                 "outputs_folder": session_folder,
                 "prediction_type": pipe_info["prediction_type"],
                 "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230129)"

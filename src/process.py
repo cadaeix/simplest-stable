@@ -113,10 +113,10 @@ def process_and_generate(
         set_seed(seed)
         find_modules_and_assign_padding_mode(pipe, tiling_type)
         prompt_options["prompt"] = process_prompt_and_add_keyword(
-            opt["prompt"], opt["keyword"] if opt["add_keyword"] else "", randomizer)
+            opt["prompt"], opt["keyword"] if opt["add_keyword"] else None, randomizer)
         if prompt_options["negative_prompt"]:
             prompt_options["negative_prompt"] = process_prompt_and_add_keyword(
-                opt["negative"], "", randomizer)
+                opt["negative"], opt["negative_keyword"] if opt["add_keyword"] else None, randomizer)
 
         image = pipe(**prompt_options).images[0]
         image_name = f"{batch_name}_{seed}_{index}"

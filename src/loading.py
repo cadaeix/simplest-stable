@@ -1,6 +1,8 @@
 import os
+import subprocess
+import requests
 import torch
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 from omegaconf import OmegaConf
 from huggingface_hub import hf_hub_download
 from IPython.utils import io
@@ -42,10 +44,16 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
             pipe = load_diffusers_model(model_choice)
         elif model_choice["type"] == "hf-file":
             pipe = download_and_load_non_diffusers_model_from_hf(
-                model_choice["repo_id"], model_name, model_choice["filename"], model_choice["config"], model_choice["vae"])
+                model_choice["repo_id"], model_name, model_choice["filename"], model_choice["image_size"], model_choice.get("config"), model_choice.get("vae"))
+        elif model_choice["type"] == "civitai-model":
+            pipe = download_and_load_civitai_model(
+                model_choice["model_id"], model_name, model_choice["filename"], model_choice.get(
+                    "has_config", False), model_choice.get("has_vae", False), model_choice["image_size"]
+            )
         pipe_info = {
-            "keyword": model_choice["keyword"],
-            "prediction_type": model_choice["prediction"]
+            "keyword": model_choice.get("keyword"),
+            "prediction_type": model_choice["prediction"],
+            "negative_keyword": model_choice.get("negative_keyword")
         }
     elif custom_model_dict and model_type == "Custom Models":
         custom_model = custom_model_dict[model_name]
@@ -53,11 +61,15 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
             custom_model["path"], model_name, custom_model["config"], custom_model["vae"])
 
         pipe_info = {
-            "keyword": custom_model["keywords"],
+            "keyword": custom_model.get("keywords"),
             "prediction_type": prediction_type
         }
     else:
         raise ValueError(f"Tried to load {model_name} and failed.")
+
+    if "necessary_embeddings" in model_choice:
+        pipe = download_and_load_necessary_embeddings_for_model(
+            pipe, model_choice.get("necessary_embeddings"))
 
     if enable_xformers:
         pipe.enable_xformers_memory_efficient_attention()
@@ -88,7 +100,7 @@ def load_installed_model_from_hf_cache(model_path: str) -> SimpleStableDiffusion
         model_path, safety_checker=None, requires_safety_checker=False, local_files_only=True, torch_dtype=torch.float16)
 
 
-def download_and_load_non_diffusers_model_from_hf(repo_id: str, model_name: str, filename: str, config_file: Optional[str], vae_file: Optional[str]) -> SimpleStableDiffusionPipeline:
+def download_and_load_non_diffusers_model_from_hf(repo_id: str, model_name: str, filename: str, image_size: int, config_file: Optional[str], vae_file: Optional[str]) -> SimpleStableDiffusionPipeline:
     hf_cache_folder = get_huggingface_cache_path()
     checkpoint_path = hf_hub_download(repo_id=repo_id, filename=filename)
     if config_file:
@@ -96,7 +108,13 @@ def download_and_load_non_diffusers_model_from_hf(repo_id: str, model_name: str,
     else:
         config = None
     if vae_file:
-        vae = hf_hub_download(repo_id=repo_id, filename=vae_file)
+        if isinstance(vae_file, Dict):
+            vae_repo_id = vae_file["repo_id"]
+            vae_filename = vae_file["filename"]
+        elif isinstance(vae_file, str):
+            vae_repo_id = repo_id
+            vae_filename = vae_file
+        vae = hf_hub_download(repo_id=vae_repo_id, filename=vae_filename)
     else:
         vae = None
     pipe, _ = load_ckpt_or_safetensors_file_and_cache_as_diffusers(
@@ -105,13 +123,14 @@ def download_and_load_non_diffusers_model_from_hf(repo_id: str, model_name: str,
         folder_path=hf_cache_folder,
         config_file_path=config,
         vae_file_path=vae,
-        should_cache=True
+        should_cache=True,
+        image_size=image_size
     )
     return pipe
 
 
-def load_diffusers_model(model_choice: str) -> SimpleStableDiffusionPipeline:
-    if model_choice["vae"] != "" and model_choice["vae"]["type"] == "diffusers":
+def load_diffusers_model(model_choice: Dict) -> SimpleStableDiffusionPipeline:
+    if "vae" in model_choice and model_choice["vae"]["type"] == "diffusers":
         if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
             login_to_huggingface()
         vae = AutoencoderKL.from_pretrained(model_choice["vae"]["repo_id"])
@@ -123,7 +142,7 @@ def load_diffusers_model(model_choice: str) -> SimpleStableDiffusionPipeline:
         pipe = SimpleStableDiffusionPipeline.from_pretrained(
             model_choice["repo_id"], safety_checker=None, requires_safety_checker=False)
 
-    if model_choice["vae"] != "" and model_choice["vae"]["type"] == "hf-file":
+    if "vae" in model_choice and model_choice["vae"]["type"] == "hf-file":
         pipe = download_and_load_non_diffusers_vae_from_hf(
             model_choice["vae"], pipe)
     return pipe
@@ -172,12 +191,77 @@ def load_vae_file_to_current_pipe(pipe: SimpleStableDiffusionPipeline, vae_file_
     return pipe
 
 
-def download_and_load_non_hf_model_file():
-    ...  # civitai and other places
+def download_file_with_requests(url: str, filename: str, folder: str = None) -> str:
+    saved_filename = filename if not folder else os.path.join(folder, filename)
+
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(saved_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return saved_filename
 
 
-def download_and_load_non_hf_vae_file():
-    ...  # citivai and other places
+def get_model_file_from_civitai_with_model_id(model_id: str, filename: str, folder: str):
+    url = f"https://civitai.com/api/download/models/{model_id}"
+    file = download_file_with_requests(url, filename, folder)
+    return file
+
+
+def get_config_file_from_civitai_with_model_id(model_id: str, filename: str, folder: str):
+    url = f"https://civitai.com/api/download/models/{model_id}?type=Config"
+    file = download_file_with_requests(url, filename, folder)
+    return file
+
+
+def get_vae_file_from_civitai_with_model_id(model_id: str, filename: str, folder: str):
+    url = f"https://civitai.com/api/download/models/{model_id}?type=VAE"
+    file = download_file_with_requests(url, filename, folder)
+    return file
+
+
+def download_and_load_necessary_embeddings_for_model(pipe, embeddings) -> SimpleStableDiffusionPipeline:
+    embeddings_folder = "non_hf_models/embeddings"
+    download_a_list_of_embeddings(embeddings)
+    return load_embeddings(embeddings_folder, pipe)
+
+
+def download_a_list_of_embeddings(embeddings_folder: str, embeddings_list):
+    for emb in embeddings_list:
+        if not os.path.exists(os.path.join(embeddings_folder, emb["filename"])):
+            if emb.get("type") == "civitai_embedding":
+                get_model_file_from_civitai_with_model_id(
+                    emb["model_id"], emb["filename"], embeddings_folder)
+            else:
+                subprocess.run(
+                    ["wget", "-O", os.path.join(embeddings_folder, emb["filename"]), emb["download_url"]])
+
+
+def download_and_load_civitai_model(model_id: str, model_name: str, filename: str, has_config: bool, has_vae: bool, image_size: int) -> SimpleStableDiffusionPipeline:
+    hf_cache_folder = get_huggingface_cache_path()
+    download_folder = "non_hf_models/models"
+    checkpoint_path = get_model_file_from_civitai_with_model_id(
+        model_id, filename, download_folder)
+    if has_config:
+        config = get_config_file_from_civitai_with_model_id(
+            model_id, filename, download_folder)
+    else:
+        config = None
+    if has_vae:
+        vae = get_vae_file_from_civitai_with_model_id(
+            model_id, filename, download_folder)
+    else:
+        vae = None
+    pipe, _ = load_ckpt_or_safetensors_file_and_cache_as_diffusers(
+        custom_model_path=checkpoint_path,
+        model_name=model_name,
+        folder_path=hf_cache_folder,
+        config_file_path=config,
+        vae_file_path=vae,
+        should_cache=True,
+        image_size=image_size
+    )
+    return pipe
 
 
 def load_ckpt_or_safetensors_file_and_cache_as_diffusers(
@@ -283,6 +367,8 @@ def load_ckpt_or_safetensors_file_and_cache_as_diffusers(
         text_model = convert_open_clip_checkpoint(checkpoint)
         tokenizer = CLIPTokenizer.from_pretrained(
             "stabilityai/stable-diffusion-2", subfolder="tokenizer")
+        feature_extractor = AutoFeatureExtractor.from_pretrained(
+            "CompVis/stable-diffusion-safety-checker")
         safety_checker = StableDiffusionSafetyChecker.from_pretrained(
             "CompVis/stable-diffusion-safety-checker")
         pipe = SimpleStableDiffusionPipeline(
@@ -291,7 +377,7 @@ def load_ckpt_or_safetensors_file_and_cache_as_diffusers(
             tokenizer=tokenizer,
             unet=unet,
             scheduler=scheduler,
-            feature_extractor=None,
+            feature_extractor=feature_extractor,
             safety_checker=safety_checker,
             requires_safety_checker=False
         )

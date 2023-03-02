@@ -26,9 +26,17 @@
     },
     {
       "filename": "v1_charturner.pt",
-      "download_url": "https://huggingface.co/Mousewrites/charTurner/resolve/main/charTurner.pt",
+      "type": "civitai_embedding",
+      "model_id": "8387",
       "version": "1.x",
-      "description": "Character turnaround sheets - by Mousewrites"
+      "description": "Character turnaround sheets, 1.x - by Mousewrites"
+    },
+    {
+      "filename": "v2_charturner.pt",
+      "type": "civitai_embedding",
+      "model_id": "9857",
+      "version": "2.x",
+      "description": "Character turnaround sheets, 2.x - by Mousewrites"
     },
     {
       "filename": "v2_knollingcase.pt",
