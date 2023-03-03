@@ -2,6 +2,7 @@ import os
 import subprocess
 import requests
 import torch
+from tqdm import tqdm
 from typing import Dict, Optional, Tuple
 from omegaconf import OmegaConf
 from huggingface_hub import hf_hub_download
@@ -194,12 +195,27 @@ def load_vae_file_to_current_pipe(pipe: SimpleStableDiffusionPipeline, vae_file_
 
 
 def download_file_with_requests(url: str, filename: str) -> str:
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+    response = requests.get(url, stream=True)
+    total = int(response.headers.get('content-length', 0))
+    with open(filename, 'wb') as file, tqdm(
+        desc="Downloading model",
+        total=total,
+        unit='iB',
+        unit_scale=True,
+        unit_divisor=1024,
+    ) as bar:
+        for data in response.iter_content(chunk_size=8192):
+            size = file.write(data)
+            bar.update(size)
     return filename
+
+# def download_file_with_requests(url: str, filename: str) -> str:
+#     with requests.get(url, stream=True) as r:
+#         r.raise_for_status()
+#         with open(filename, 'wb') as f:
+#             for chunk in r.iter_content(chunk_size=8192):
+#                 f.write(chunk)
+#     return filename
 
 
 def get_model_file_from_civitai_with_model_id(model_id: str, filename: str):
