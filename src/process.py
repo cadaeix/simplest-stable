@@ -137,7 +137,7 @@ def process_and_generate(
             free_ram()
             find_modules_and_assign_padding_mode(pipe, "original")
             saved_image = generate_sd_upscale(
-                image, image_name, opt, pipe, seed, display_and_print)
+                image, image_name, prompt_options["prompt"], prompt_options["negative_prompt"], opt, pipe, seed, display_and_print)
 
         images.append(saved_image)
         images_details.append(settings_info)
@@ -154,7 +154,7 @@ def generate_higher_res_upscale(image: any, image_name: str, opt: dict, pipe: Si
         image.size[0] * upscale_factor) // 8, int(image.size[1] * upscale_factor) // 8), mode="bilinear", antialias=False)
 
 
-def generate_sd_upscale(image: any, image_name: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:
+def generate_sd_upscale(image: any, image_name: str, prompt: str, negative: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:
     tile_w = 704
     tile_h = 704
 
@@ -172,8 +172,8 @@ def generate_sd_upscale(image: any, image_name: str, opt: dict, pipe: SimpleStab
     work_results = []
 
     prompt_options = {
-        "prompt": opt["prompt"],
-        "negative_prompt": None if opt["negative"] == "" else opt["negative"],
+        "prompt": prompt,
+        "negative_prompt": None if negative == "" else negative,
         "strength": opt["upscale_strength"],
         "height": tile_h,
         "width": tile_w,

@@ -142,7 +142,7 @@ def load_diffusers_model(model_choice: Dict) -> SimpleStableDiffusionPipeline:
         if model_choice["requires_hf_login"]:
             login_to_huggingface()
         pipe = SimpleStableDiffusionPipeline.from_pretrained(
-            model_choice["repo_id"], safety_checker=None, requires_safety_checker=False)
+            model_choice["repo_id"], safety_checker=None, requires_safety_checker=False, torch_dtype=torch.float16)
 
     if "vae" in model_choice and model_choice["vae"]["type"] == "hf-file":
         pipe = download_and_load_non_diffusers_vae_from_hf(
@@ -407,7 +407,7 @@ def load_ckpt_or_safetensors_file_and_cache_as_diffusers(
             safety_checker=safety_checker,
             requires_safety_checker=False
         )
-
+        pipe = pipe.to(torch.float16)
     if should_cache:
         pipe.save_pretrained(os.path.join(folder_path, model_name))
 

@@ -102,30 +102,6 @@
     "image_size": 512,
     "description_link": "https://huggingface.co/prompthero/openjourney-v2"
   },
-  "Oldjourney Lite (768)": {
-    "type": "civitai-model",
-    "model_id": "4896",
-    "has_config": true,
-    "has_vae": true,
-    "keyword": "oldjourney",
-    "filename": "OldjourneyLite.ckpt",
-    "prediction": "v_prediction",
-    "image_size": 768,
-    "description": "Midjourney V3 Style - SD 2.x",
-    "description_link": "https://civitai.com/models/4337/oldjourney"
-  },
-  "Oldjourney Ultra (768)": {
-    "type": "civitai-model",
-    "model_id": "4897",
-    "has_config": true,
-    "has_vae": true,
-    "keyword": "oldjourney",
-    "filename": "OldjourneyLite.ckpt",
-    "prediction": "v_prediction",
-    "image_size": 768,
-    "description": "Midjourney V3 Style - SD 2.x",
-    "description_link": "https://civitai.com/models/4337/oldjourney"
-  },
   "seek.art_MEGA": {
     "type": "diffusers",
     "repo_id": "coreco/seek.art_MEGA",
@@ -270,6 +246,17 @@
     "image_size": 512,
     "description_link": "https://huggingface.co/alfredplpl/untitled"
   },
+  "Coloring Book (768)": {
+    "type": "civitai-model",
+    "model_id": "5978",
+    "has_config": true,
+    "filename": "coloringbook.ckpt",
+    "keyword": "COLR_001",
+    "prediction": "v_prediction",
+    "image_size": 768,
+    "description": "Colouring book style - SD 2.x",
+    "description_link": "https://civitai.com/models/5153/coloring-book"
+  },
   "Inkpunk Diffusion": {
     "type": "diffusers",
     "repo_id": "Envvi/Inkpunk-Diffusion",
@@ -279,6 +266,17 @@
     "description": "sketchy colourful style - SD 1.x",
     "image_size": 512,
     "description_link": "https://huggingface.co/Envvi/Inkpunk-Diffusion"
+  },
+  "Vector Art (768)": {
+    "type": "civitai-model",
+    "model_id": "5265",
+    "has_config": true,
+    "filename": "vectorart.ckpt",
+    "keyword": "vector-art",
+    "prediction": "v_prediction",
+    "image_size": 768,
+    "description": "Vector art style - SD 2.x",
+    "description_link": "https://civitai.com/models/4618/vector-art"
   },
   "Vivid Watercolors": {
     "type": "diffusers",
