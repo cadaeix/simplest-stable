@@ -63,11 +63,11 @@
     "image_size": 512,
     "description_link": "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0"
   },
-  "Illuminati Diffusion": {
+  "Illuminati Diffusion (768)": {
     "type": "civitai-model",
     "model_id": "13259",
     "has_config": true,
-    "filename": "illuminati.ckpt",
+    "filename": "illuminati.safetensors",
     "negative_keyword": "v2_illum_nfixer",
     "prediction": "v_prediction",
     "image_size": 768,
@@ -102,11 +102,24 @@
     "image_size": 512,
     "description_link": "https://huggingface.co/prompthero/openjourney-v2"
   },
-  "Oldjourney Lite": {
+  "Oldjourney Lite (768)": {
     "type": "civitai-model",
     "model_id": "4896",
     "has_config": true,
     "has_vae": true,
+    "keyword": "oldjourney",
+    "filename": "OldjourneyLite.ckpt",
+    "prediction": "v_prediction",
+    "image_size": 768,
+    "description": "Midjourney V3 Style - SD 2.x",
+    "description_link": "https://civitai.com/models/4337/oldjourney"
+  },
+  "Oldjourney Ultra (768)": {
+    "type": "civitai-model",
+    "model_id": "4897",
+    "has_config": true,
+    "has_vae": true,
+    "keyword": "oldjourney",
     "filename": "OldjourneyLite.ckpt",
     "prediction": "v_prediction",
     "image_size": 768,

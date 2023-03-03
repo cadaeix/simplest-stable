@@ -117,6 +117,9 @@ def process_and_generate(
         if prompt_options["negative_prompt"]:
             prompt_options["negative_prompt"] = process_prompt_and_add_keyword(
                 opt["negative"], opt["negative_keyword"] if opt["add_keyword"] else None, randomizer)
+        else:
+            prompt_options["negative_prompt"] = process_prompt_and_add_keyword(
+                "", opt["negative_keyword"] if opt["add_keyword"] else None, randomizer)
 
         image = pipe(**prompt_options).images[0]
         image_name = f"{batch_name}_{seed}_{index}"
