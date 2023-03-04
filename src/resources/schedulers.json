@@ -73,5 +73,19 @@
       "lower_order_final": true,
       "solver_order": 2
     }
+  },
+  "UniPC": {
+    "sampler": "UniPCMultistepScheduler",
+    "params": {
+      "beta_start": 0.00085,
+      "beta_end": 0.012,
+      "beta_schedule": "scaled_linear",
+      "num_train_timesteps": 1000,
+      "trained_betas": null,
+      "thresholding": false,
+      "solver_type": "bh2",
+      "lower_order_final": true,
+      "solver_order": 2
+    }
   }
 }

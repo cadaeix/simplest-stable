@@ -8,6 +8,7 @@ from omegaconf import OmegaConf
 from huggingface_hub import hf_hub_download
 from IPython.utils import io
 from safetensors import safe_open
+from src.SimpleStableDiffusionControlNetPipeline import SimpleStableDiffusionControlNetPipeline
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
 from src.utils import (
     find_modules_and_assign_padding_mode,
@@ -29,7 +30,8 @@ from diffusers import (
     AutoencoderKL,
     UNet2DConditionModel,
     DDIMScheduler,
-    DPMSolverMultistepScheduler
+    DPMSolverMultistepScheduler,
+    ControlNetModel
 )
 from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 
@@ -151,6 +153,25 @@ def load_diffusers_model(model_choice: Dict) -> SimpleStableDiffusionPipeline:
     return pipe
 
 
+def load_diffusers_model_with_controlnet(model_choice: Dict, controlnet: ControlNetModel) -> SimpleStableDiffusionPipeline:
+    if "vae" in model_choice and model_choice["vae"]["type"] == "diffusers":
+        if model_choice["requires_hf_login"] or model_choice["vae"]["requires_hf_login"]:
+            login_to_huggingface()
+        vae = AutoencoderKL.from_pretrained(model_choice["vae"]["repo_id"])
+        pipe = SimpleStableDiffusionControlNetPipeline.from_pretrained(
+            model_choice["repo_id"], vae=vae, safety_checker=None, requires_safety_checker=False, controlnet=controlnet, torch_dtype=torch.float16)
+    else:
+        if model_choice["requires_hf_login"]:
+            login_to_huggingface()
+        pipe = SimpleStableDiffusionControlNetPipeline.from_pretrained(
+            model_choice["repo_id"], safety_checker=None, requires_safety_checker=False, controlnet=controlnet, torch_dtype=torch.float16)
+
+    if "vae" in model_choice and model_choice["vae"]["type"] == "hf-file":
+        pipe = download_and_load_non_diffusers_vae_from_hf(
+            model_choice["vae"], pipe)
+    return pipe
+
+
 def download_and_load_non_diffusers_vae_from_hf(vae_choice: str, pipe: SimpleStableDiffusionPipeline) -> SimpleStableDiffusionPipeline:
     vae = hf_hub_download(
         repo_id=vae_choice["repo_id"], filename=vae_choice["filename"])
@@ -208,14 +229,6 @@ def download_file_with_requests(url: str, filename: str) -> str:
             size = file.write(data)
             bar.update(size)
     return filename
-
-# def download_file_with_requests(url: str, filename: str) -> str:
-#     with requests.get(url, stream=True) as r:
-#         r.raise_for_status()
-#         with open(filename, 'wb') as f:
-#             for chunk in r.iter_content(chunk_size=8192):
-#                 f.write(chunk)
-#     return filename
 
 
 def get_model_file_from_civitai_with_model_id(model_id: str, filename: str):

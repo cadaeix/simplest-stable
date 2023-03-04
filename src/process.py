@@ -5,7 +5,18 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 import torch
 from src.SimpleStableDiffusionPipeline import SimpleStableDiffusionPipeline
-from src.utils import combine_grid, load_img, load_img_for_upscale, resize_image, set_seed, find_modules_and_assign_padding_mode, process_prompt_and_add_keyword, save_image, split_grid, free_ram
+from src.utils import (
+    combine_grid,
+    load_img,
+    load_img_for_upscale,
+    resize_image,
+    set_seed,
+    find_modules_and_assign_padding_mode,
+    process_prompt_and_add_keyword,
+    save_image,
+    split_grid,
+    free_ram
+)
 from PIL import Image, ImageFilter
 
 
@@ -73,7 +84,8 @@ def process_and_generate(
     # load sampler
     pipe = load_sampler(opt["sampler"], opt["prediction_type"], pipe)
 
-    tiling_type = "tiling" if opt["tiling"] else "original"
+    if "tiling" in opt:
+        tiling_type = "tiling" if opt["tiling"] else "original"
 
     prompt_options = {
         "prompt": opt["prompt"],
@@ -100,6 +112,9 @@ def process_and_generate(
                 [opt["W"], opt["H"]])
         prompt_options["strength"] = opt["strength"]
 
+    if "controlnet_image" in opt:
+        prompt_options["controlnet_image"] = opt["controlnet_image"]
+
     # generation
     # if progress:
     #     progress(
@@ -111,7 +126,8 @@ def process_and_generate(
     for index in range(opt["number_of_images"]):
         free_ram()
         set_seed(seed)
-        find_modules_and_assign_padding_mode(pipe, tiling_type)
+        if "tiling" in opt:
+            find_modules_and_assign_padding_mode(pipe, tiling_type)
         prompt_options["prompt"] = process_prompt_and_add_keyword(
             opt["prompt"], opt["keyword"] if opt["add_keyword"] else None, randomizer)
         if prompt_options["negative_prompt"]:
@@ -135,7 +151,8 @@ def process_and_generate(
 
         if opt["upscale"]:
             free_ram()
-            find_modules_and_assign_padding_mode(pipe, "original")
+            if "tiling" in opt:
+                find_modules_and_assign_padding_mode(pipe, "original")
             saved_image = generate_sd_upscale(
                 image, image_name, prompt_options["prompt"], prompt_options["negative_prompt"], opt, pipe, seed, display_and_print)
 
