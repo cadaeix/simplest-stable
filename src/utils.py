@@ -203,7 +203,10 @@ def save_image(image, image_name, prompt_options, opt, seed, outputs_folder, pro
     prompt_info = f'Prompt: {prompt_options["prompt"]}' if prompt_options["prompt"] else ""
     negative_info = f'\nNegative: {prompt_options["negative_prompt"]}' if prompt_options["negative_prompt"] else ""
     upscale_options = f'\t\t\tUpscale Strength: {opt["upscale_strength"]}' if is_upscale else ""
-    tiling_options = f'\t\\ttTiling: True' if opt["tiling"] else ""
+    if "tiling" in opt:
+        tiling_options = f'\t\\ttTiling: True' if opt["tiling"] else ""
+    else:
+        tiling_options = ""
 
     settings_info = f'{prompt_info}{negative_info}\nSeed: {seed}\t\t\tSteps: {str(prompt_options["num_inference_steps"])}\t\t\tSampler: {opt["sampler"]}\t\t\tGuidance Scale: {prompt_options["guidance_scale"]}\t\tResolution: {opt["W"]}x{opt["H"]}{upscale_options}{tiling_options}\nModel: {opt["model_name"]}\t\t\tProgram: {program_version}'
 

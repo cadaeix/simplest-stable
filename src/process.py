@@ -217,6 +217,6 @@ def generate_sd_upscale(image: any, image_name: str, prompt: str, negative: str,
                prompt_options, opt, seed, opt["outputs_folder"], opt["program_version"])
 
     if display_and_print:
-        display(save_image)
+        display(final_result)
 
     return final_result
