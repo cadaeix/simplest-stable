@@ -106,7 +106,8 @@ def process_and_generate(
             prompt_options["mask_image"] = mask_image
 
             if opt.get("latent_noise_inpaint"):
-                prompt_options["latent_noise_inpaint"] = True
+                if opt["latent_noise_inpaint"]:
+                    prompt_options["latent_noise_inpaint"] = True
 
         if type(opt["init_img"]) is str:
             prompt_options["image"] = load_img(

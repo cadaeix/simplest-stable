@@ -85,7 +85,9 @@ def img2img_and_inpainting():
                                  label="img2img strength", interactive=True, visible=False, elem_id="img2img_strength")
     inpaint_strength = gr.Slider(minimum=0.1, maximum=1, value=0.75, step=0.05,
                                  label="inpaint strength", interactive=True, visible=False, elem_id="inpaint_strength")
-    return image_url_input, load_image_button, input_image, inpaint_image, img2img_strength, inpaint_strength
+    inpaint_mode = gr.Radio(["Original (edit painted area)", "Latent Noise (replace painted area, set inpaint_strength to about 1)"],
+                            interactive=True, label="Inpaint Mode", elem_id="inpaint_mode")
+    return image_url_input, load_image_button, input_image, inpaint_image, img2img_strength, inpaint_strength, inpaint_mode
 
 
 def image_options():
@@ -306,6 +308,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             img2img_strength: gr.update(visible=states[input][1]),
             inpaint_image: gr.update(visible=states[input][2]),
             inpaint_strength: gr.update(visible=states[input][2]),
+            inpaint_mode: gr.update(visible=states[input][2]),
             txt2img_show: gr.update(variant=txt2img_button),
             img2img_show: gr.update(variant=img2img_button),
             inpaint_show: gr.update(variant=inpaint_button),
@@ -330,6 +333,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             img2img_strength: gr.update(visible=states[input][1]),
             inpaint_image: gr.update(value=None, visible=states[input][2]),
             inpaint_strength: gr.update(visible=states[input][2]),
+            inpaint_mode: gr.update(visible=states[input][2]),
             txt2img_show: gr.update(variant=txt2img_button),
             img2img_show: gr.update(variant=img2img_button),
             inpaint_show: gr.update(variant=inpaint_button),
@@ -373,7 +377,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
         except Exception as e:
             return f"Failed to load model, generation will not work. Please try loading another model.\nError: {e}", "Please load another model!"
 
-    def generate(mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, model_name, progress=gr.Progress(track_tqdm=True)):
+    def generate(mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, model_name, inpaint_mode, progress=gr.Progress(track_tqdm=True)):
         global pipe, pipe_info
 
         progress(0, desc="Starting generation...")
@@ -382,14 +386,17 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             init_img = None
             mask_image = None
             strength = None
+            inpaint_mode = None
         elif mode == "img2img":
             init_img = input_image
             mask_image = None
             strength = img2img_strength
+            inpaint_mode = None
         elif mode == "inpainting":
             init_img = inpaint_image["image"]
             mask_image = inpaint_image["mask"]
             strength = inpaint_strength
+            inpaint_mode = inpaint_mode
 
         negative = negative if negative != None else ""
         used_seed = random.randint(0, 2**32) if seed < 0 else seed
@@ -419,14 +426,14 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                 "tiling": "Tiling" in additional_options,
                 "upscale": "SD Upscale" in additional_options,
                 "upscale_strength": upscale_strength if "SD Upscale" in additional_options else None,
-                "detail_scale": 10,
                 "seed": used_seed,
                 "add_keyword": "Don't insert model keyword" not in additional_options,
                 "keyword": pipe_info.get("keyword"),
                 "negative_keyword": pipe_info.get("negative_keyword"),
                 "outputs_folder": session_folder,
+                "latent_noise_inpaint": inpaint_mode if inpaint_mode == "Latent Noise (replace painted area, set inpaint_strength to about 1)" else None,
                 "prediction_type": pipe_info["prediction_type"],
-                "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230129)"
+                "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230306)"
             }, pipe, progress, randomizers, False)
 
             message = '\n\n'.join(image_detail_list)
@@ -469,7 +476,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
 
                     number_of_images, resolution = image_options()
 
-                    image_url_input, load_image_button, input_image, inpaint_image, img2img_strength, inpaint_strength = img2img_and_inpainting()
+                    image_url_input, load_image_button, input_image, inpaint_image, img2img_strength, inpaint_strength, inpaint_mode = img2img_and_inpainting()
 
                     custom_width, custom_height, steps, sampler, seed, scale, additional_options, upscale_strength, reuse_seed_button, random_seed_button = advanced_settings()
 
@@ -493,16 +500,16 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             lambda: -1, inputs=[], outputs=[seed], preprocess=False, postprocess=False, queue=False)
 
         txt2img_show.click(show_state, inputs=[txt2img_show], outputs=[current_mode, input_image, img2img_strength,
-                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
+                           inpaint_image, inpaint_strength, inpaint_mode, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         img2img_show.click(show_state, inputs=[img2img_show], outputs=[current_mode, input_image, img2img_strength,
-                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
+                           inpaint_image, inpaint_strength, inpaint_mode, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         inpaint_show.click(show_state, inputs=[inpaint_show], outputs=[current_mode, input_image, img2img_strength,
-                           inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
+                           inpaint_image, inpaint_strength, inpaint_mode, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
 
         to_img2img_button.click(show_state, inputs=[img2img_show], outputs=[current_mode, input_image, img2img_strength,
-                                inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
+                                inpaint_image, inpaint_strength, inpaint_mode, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         to_inpaint_button.click(show_state_and_clear_inpaint, inputs=[inpaint_show], outputs=[
-                                current_mode, input_image, img2img_strength, inpaint_image, inpaint_strength, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
+                                current_mode, input_image, img2img_strength, inpaint_image, inpaint_strength, inpaint_mode, txt2img_show, img2img_show, inpaint_show, image_url_input, load_image_button], preprocess=False, postprocess=False)
         to_img2img_button.click(return_selected_image_from_gallery, inputs=[
                                 image_output], outputs=[input_image], _js="findSelectedImageFromGallery")
         to_inpaint_button.click(return_selected_image_from_gallery, inputs=[
@@ -512,7 +519,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                                 image_url_input, current_mode], outputs=[image_url_input, input_image, inpaint_image])
 
         generation = generate_button.click(generate, inputs=[current_mode, prompt, negative, number_of_images, resolution, custom_width, custom_height, steps, sampler, seed, scale, additional_options,
-                                                             upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, current_loaded_model_name], outputs=[image_output, last_used_seed, log_output])
+                                                             upscale_strength, input_image, img2img_strength, inpaint_image, inpaint_strength, current_loaded_model_name, inpaint_mode], outputs=[image_output, last_used_seed, log_output])
         generate_button.click(has_image, inputs=[image_output], outputs=[
                               to_img2img_button, to_inpaint_button, log_output])
         model_dropdown_type.change(
