@@ -161,4 +161,8 @@ cython_debug/
 
 images/
 *.png
+*.pt
+*.ckpt
+*.safetensors
+*.yaml
 private_tooling/
