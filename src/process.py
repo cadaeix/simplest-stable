@@ -104,6 +104,10 @@ def process_and_generate(
             mask_image = mask.filter(ImageFilter.GaussianBlur(radius=4))
 
             prompt_options["mask_image"] = mask_image
+
+            if opt.get("latent_noise_inpaint"):
+                prompt_options["latent_noise_inpaint"] = True
+
         if type(opt["init_img"]) is str:
             prompt_options["image"] = load_img(
                 opt["init_img"], shape=(opt["W"], opt["H"]))
@@ -112,7 +116,8 @@ def process_and_generate(
                 [opt["W"], opt["H"]])
         prompt_options["strength"] = opt["strength"]
 
-    if "controlnet_image" in opt:
+    if "controlnet_model" in opt and "controlnet_image" in opt:
+        prompt_options["controlnet_model"] = opt["controlnet_model"]
         prompt_options["controlnet_image"] = opt["controlnet_image"]
 
     # generation
@@ -195,7 +200,7 @@ def generate_sd_upscale(image: any, image_name: str, prompt: str, negative: str,
         "height": tile_h,
         "width": tile_w,
         "num_inference_steps": opt["steps"],
-        "guidance_scale": opt["detail_scale"] * 2,
+        "guidance_scale": opt["scale"],
         "num_images_per_prompt": 1,
         "eta": opt["eta"]
     }

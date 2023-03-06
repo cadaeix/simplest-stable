@@ -36,7 +36,7 @@ from diffusers import (
 from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 
 
-def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict, custom_model_dict: Optional[dict], cached_model_dict: Optional[dict], enable_attention_slicing: bool = False, enable_xformers: bool = False) -> Tuple[SimpleStableDiffusionPipeline, dict]:
+def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict, custom_model_dict: Optional[dict], cached_model_dict: Optional[dict], enable_attention_slicing: bool = False, enable_xformers: bool = False, to_cuda: bool = True) -> Tuple[SimpleStableDiffusionPipeline, dict]:
     pipe_info = None
 
     if (cached_model_dict and ((model_name in cached_model_dict) or (model_type == "Installed Models"))):
@@ -81,7 +81,8 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
         pipe.enable_attention_slicing()
 
     find_modules_and_assign_padding_mode(pipe, "setup")
-    pipe = pipe.to("cuda")
+    if to_cuda:
+        pipe = pipe.to("cuda")
     # pipe = pipe.to(torch.float16)
     return pipe, pipe_info
 

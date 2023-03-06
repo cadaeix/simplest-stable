@@ -3,7 +3,7 @@
 import os
 import inspect
 import re
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 
 import numpy as np
 import torch
@@ -11,7 +11,7 @@ import torch
 import diffusers
 import PIL
 from diffusers import SchedulerMixin, StableDiffusionPipeline
-from diffusers.models import AutoencoderKL, UNet2DConditionModel
+from diffusers.models import AutoencoderKL, UNet2DConditionModel, ControlNetModel
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput, StableDiffusionSafetyChecker
 from diffusers.utils import deprecate, logging
 from packaging import version
@@ -662,6 +662,7 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             )
             self.__init__additional__()
             self.embedding_database = EmbeddingDatabase()
+            self.controlnet = None
 
     else:
 
@@ -686,11 +687,42 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             )
             self.__init__additional__()
             self.embedding_database = EmbeddingDatabase()
+            self.controlnet = None
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
             setattr(self, "vae_scale_factor", 2 **
                     (len(self.vae.config.block_out_channels) - 1))
+
+    def prepare_controlnet_image(self, image, width, height, batch_size, num_images_per_prompt, device, dtype):
+        if not isinstance(image, torch.Tensor):
+            if isinstance(image, PIL.Image.Image):
+                image = [image]
+
+            if isinstance(image[0], PIL.Image.Image):
+                image = [
+                    np.array(i.resize((width, height), resample=PIL_INTERPOLATION["lanczos"]))[None, :] for i in image
+                ]
+                image = np.concatenate(image, axis=0)
+                image = np.array(image).astype(np.float32) / 255.0
+                image = image.transpose(0, 3, 1, 2)
+                image = torch.from_numpy(image)
+            elif isinstance(image[0], torch.Tensor):
+                image = torch.cat(image, dim=0)
+
+        image_batch_size = image.shape[0]
+
+        if image_batch_size == 1:
+            repeat_by = batch_size
+        else:
+            # image batch size is the same as prompt batch size
+            repeat_by = num_images_per_prompt
+
+        image = image.repeat_interleave(repeat_by, dim=0)
+
+        image = image.to(device=device, dtype=dtype)
+
+        return image
 
     def load_embeddings(self):
         loaded = []
@@ -788,6 +820,36 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
 
         return text_embeddings
 
+    def prepare_controlnet_image(self, image, width, height, batch_size, num_images_per_prompt, device, dtype):
+        if not isinstance(image, torch.Tensor):
+            if isinstance(image, PIL.Image.Image):
+                image = [image]
+
+            if isinstance(image[0], PIL.Image.Image):
+                image = [
+                    np.array(i.resize((width, height), resample=PIL_INTERPOLATION["lanczos"]))[None, :] for i in image
+                ]
+                image = np.concatenate(image, axis=0)
+                image = np.array(image).astype(np.float32) / 255.0
+                image = image.transpose(0, 3, 1, 2)
+                image = torch.from_numpy(image)
+            elif isinstance(image[0], torch.Tensor):
+                image = torch.cat(image, dim=0)
+
+        image_batch_size = image.shape[0]
+
+        if image_batch_size == 1:
+            repeat_by = batch_size
+        else:
+            # image batch size is the same as prompt batch size
+            repeat_by = num_images_per_prompt
+
+        image = image.repeat_interleave(repeat_by, dim=0)
+
+        image = image.to(device=device, dtype=dtype)
+
+        return image
+
     def check_inputs(
             self,
             prompt: Union[str, List[str]],
@@ -883,7 +945,8 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         dtype: torch.dtype,
         device: torch.device,
         generator: Optional[torch.Generator],
-        latents: Optional[torch.Tensor] = None
+        latents: Optional[torch.Tensor] = None,
+        mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[torch.Tensor]]:
         if image is None:
             shape = (
@@ -910,13 +973,34 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             # scale the initial noise by the standard deviation required by the scheduler
             latents = latents * self.scheduler.init_noise_sigma
             return latents, None, None
-        else:
+        elif mask is None:
             init_latent_dist = self.vae.encode(image).latent_dist
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)
             init_latents_orig = init_latents
             shape = init_latents.shape
+
+            # add noise to latents using the timesteps
+            if device.type == "mps":
+                noise = torch.randn(shape, generator=generator,
+                                    device="cpu", dtype=dtype).to(device)
+            else:
+                noise = torch.randn(shape, generator=generator,
+                                    device=device, dtype=dtype)
+            latents = self.scheduler.add_noise(init_latents, noise, timestep)
+            return latents, init_latents_orig, noise
+        else:  # experimentally completely replacing the masked area with latent noise
+            init_latent_dist = self.vae.encode(image).latent_dist
+            init_latents = init_latent_dist.sample(generator=generator)
+            init_latents = 0.18215 * init_latents
+            init_latents = torch.cat([init_latents] * batch_size, dim=0)
+            init_latents_orig = init_latents
+            shape = init_latents.shape
+            noise_latents = torch.randn(
+                shape, generator=generator, device=device, dtype=dtype)
+
+            init_latents = (noise_latents * (1-mask)) + (init_latents * (mask))
 
             # add noise to latents using the timesteps
             if device.type == "mps":
@@ -951,6 +1035,12 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: Optional[int] = 1,
+        controlnet_model: Optional[ControlNetModel] = None,
+        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
+                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        cross_attention_kwargs: Optional[Dict[str, Any]] = None,
+        controlnet_conditioning_scale: float = 1.0,
+        latent_noise_inpaint: bool = False,
         **kwargs,
     ):
         r"""
@@ -1040,17 +1130,19 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
         # corresponds to doing no classifier free guidance.
         do_classifier_free_guidance = guidance_scale > 1.0
 
-        # # 3. Encode input prompt
-        # text_embeddings = self._encode_prompt(
-        #     prompt,
-        #     device,
-        #     num_images_per_prompt,
-        #     do_classifier_free_guidance,
-        #     negative_prompt,
-        #     max_embeddings_multiples,
-        # )
-        # dtype = text_embeddings.dtype
-        # moving input prompt slightly later for scheduling
+        if controlnet_model and controlnet_image:
+            controlnet_model.to("cuda")
+            c_image = self.prepare_controlnet_image(
+                controlnet_image,
+                width,
+                height,
+                batch_size * num_images_per_prompt,
+                num_images_per_prompt,
+                device,
+                controlnet_model.dtype,
+            )
+        else:
+            c_image = None
 
         # 5. set timesteps
         self.scheduler.set_timesteps(num_inference_steps, device=device)
@@ -1095,15 +1187,16 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
 
         # 6. Prepare latent variables
         latents, init_latents_orig, noise = self.prepare_latents(
-            image,
-            latent_timestep,
-            batch_size * num_images_per_prompt,
-            height,
-            width,
-            dtype,
-            device,
-            generator,
-            latents,
+            image=image,
+            timestep=latent_timestep,
+            batch_size=batch_size * num_images_per_prompt,
+            height=height,
+            width=width,
+            dtype=dtype,
+            device=device,
+            generator=generator,
+            latents=latents,
+            mask=mask if latent_noise_inpaint else None
         )
 
         # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
@@ -1144,9 +1237,31 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                     max_embeddings_multiples
                 )
 
-            # predict the noise residual
-            noise_pred = self.unet(latent_model_input, t,
-                                   encoder_hidden_states=text_embedding).sample
+            if controlnet_model and controlnet_image:
+                down_block_res_samples, mid_block_res_sample = controlnet_model(
+                    latent_model_input,
+                    t,
+                    encoder_hidden_states=text_embedding,
+                    controlnet_cond=c_image,
+                    return_dict=False,
+                )
+
+                down_block_res_samples = [
+                    down_block_res_sample * controlnet_conditioning_scale
+                    for down_block_res_sample in down_block_res_samples
+                ]
+                mid_block_res_sample *= controlnet_conditioning_scale
+
+                # predict the noise residual
+                noise_pred = self.unet(latent_model_input, t,
+                                       encoder_hidden_states=text_embedding,
+                                       cross_attention_kwargs=cross_attention_kwargs,
+                                       down_block_additional_residuals=down_block_res_samples,
+                                       mid_block_additional_residual=mid_block_res_sample,).sample
+            else:
+                # predict the noise residual
+                noise_pred = self.unet(latent_model_input, t,
+                                       encoder_hidden_states=text_embedding).sample
 
             # perform guidance
             if do_classifier_free_guidance:
@@ -1171,18 +1286,28 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
                 if is_cancelled_callback is not None and is_cancelled_callback():
                     return None
 
-        # 9. Post-processing
-        image = self.decode_latents(latents)
+        if hasattr(self, "final_offload_hook") and self.final_offload_hook is not None:
+            self.unet.to("cpu")
+            if controlnet_model:
+                controlnet_model.to("cpu")
+            torch.cuda.empty_cache()
 
-        # 10. Run safety checker
-        # image, has_nsfw_concept = self.run_safety_checker(image, device, text_embeddings.dtype)
+        if output_type == "latent":
+            image = latents
+            has_nsfw_concept = None
+        elif output_type == "pil":
+            # 8. Post-processing
+            image = self.decode_latents(latents)
 
-        # 11. Convert to PIL
-        if output_type == "pil":
+            # 10. Convert to PIL
             image = self.numpy_to_pil(image)
+        else:
+            # 8. Post-processing
+            image = self.decode_latents(latents)
 
-        # if not return_dict:
-        #     return image, has_nsfw_concept
+        # Offload last model to CPU
+        if hasattr(self, "final_offload_hook") and self.final_offload_hook is not None:
+            self.final_offload_hook.offload()
 
         return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=False)
 
@@ -1205,6 +1330,10 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: Optional[int] = 1,
+        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
+                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        cross_attention_kwargs: Optional[Dict[str, Any]] = None,
+        controlnet_conditioning_scale: float = 1.0,
         **kwargs,
     ):
         r"""
@@ -1281,7 +1410,10 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
-            **kwargs,
+            controlnet_image=controlnet_image,
+            cross_attention_kwargs=cross_attention_kwargs,
+            controlnet_conditioning_scale=controlnet_conditioning_scale
+            ** kwargs,
         )
 
     def img2img(
@@ -1302,6 +1434,10 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: Optional[int] = 1,
+        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
+                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        cross_attention_kwargs: Optional[Dict[str, Any]] = None,
+        controlnet_conditioning_scale: float = 1.0,
         **kwargs,
     ):
         r"""
@@ -1378,7 +1514,10 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
-            **kwargs,
+            controlnet_image=controlnet_image,
+            cross_attention_kwargs=cross_attention_kwargs,
+            controlnet_conditioning_scale=controlnet_conditioning_scale
+            ** kwargs,
         )
 
     def inpaint(
@@ -1400,6 +1539,11 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: Optional[int] = 1,
+        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
+                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        cross_attention_kwargs: Optional[Dict[str, Any]] = None,
+        controlnet_conditioning_scale: float = 1.0,
+        latent_noise_inpaint: bool = False,
         **kwargs,
     ):
         r"""
@@ -1481,5 +1625,9 @@ class SimpleStableDiffusionPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
-            **kwargs,
+            controlnet_image=controlnet_image,
+            cross_attention_kwargs=cross_attention_kwargs,
+            controlnet_conditioning_scale=controlnet_conditioning_scale,
+            latent_noise_inpaint=latent_noise_inpaint,
+            ** kwargs,
         )
