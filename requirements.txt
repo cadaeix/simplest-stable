@@ -1,4 +1,5 @@
 diffusers==0.14.0
+git+https://github.com/huggingface/accelerate.git
 transformers==4.26.1
 scipy==1.10.0
 omegaconf==2.3.0
