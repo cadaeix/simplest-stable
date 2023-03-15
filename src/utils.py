@@ -73,7 +73,7 @@ def free_ram():
 
 
 def process_embeddings_folder(embeddings_path: str) -> List[str]:
-    return glob.glob(os.path.join(embeddings_path, "*.pt")) + glob.glob(os.path.join(embeddings_path, "*.bin"))
+    return glob.glob(os.path.join(embeddings_path, "*.pt")) + glob.glob(os.path.join(embeddings_path, "*.bin")) + glob.glob(os.path.join(embeddings_path, "*.safetensors"))
 
 
 def get_huggingface_cache_path():
