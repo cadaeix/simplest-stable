@@ -7,16 +7,17 @@ from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 
 import numpy as np
 import torch
+from safetensors import safe_open
+import lark
 
-import diffusers
 import PIL
+import diffusers
 from diffusers import SchedulerMixin, StableDiffusionPipeline
 from diffusers.models import AutoencoderKL, UNet2DConditionModel, ControlNetModel
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput, StableDiffusionSafetyChecker
-from diffusers.utils import deprecate, logging
-from packaging import version
+from diffusers.utils import logging
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
-import lark
+from packaging import version
 
 try:
     from diffusers.utils import PIL_INTERPOLATION
@@ -102,7 +103,22 @@ class EmbeddingDatabase:
         """
         Add the embedding from the given path to the model, using the given tokenizer and text encoder
         """
-        loaded_embeds = torch.load(learned_embeds_path, map_location="cuda")
+        _, extension = os.path.splitext(learned_embeds_path)
+        if extension == ".safetensors":
+            # loaded_embeds = safetensors.torch.load_file(
+            #     learned_embeds_path, device="cpu")
+            loaded_embeds = {}
+            with safe_open(learned_embeds_path, framework="pt", device="cuda") as f:
+                for key in f.keys():
+                    loaded_embeds[key] = f.get_tensor(key)
+            del f
+        elif extension in [".pt", ".bin"]:
+            loaded_embeds = torch.load(
+                learned_embeds_path, map_location="cuda")
+        else:
+            raise Exception(
+                f"Couldn't identify {id_token} as a textual inversion embedding or diffuser concept.")
+
         # textual inversion embeddings
         if 'string_to_param' in loaded_embeds:
             param_dict = loaded_embeds['string_to_param']
@@ -390,8 +406,7 @@ def pad_tokens_and_weights(tokens: List[List[str]], weights: List[List[float]], 
             else:
                 for j in range(max_embeddings_multiples):
                     w.append(1.0)  # weight for starting token in this chunk
-                    w += weights[i][j * (chunk_length - 2)
-                                         : min(len(weights[i]), (j + 1) * (chunk_length - 2))]
+                    w += weights[i][j * (chunk_length - 2)                                    : min(len(weights[i]), (j + 1) * (chunk_length - 2))]
                     w.append(1.0)  # weight for ending token in this chunk
                 w += [1.0] * (weights_length - len(w))
             weights[i] = w[:]
