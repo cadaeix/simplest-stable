@@ -152,7 +152,7 @@
     "description_link": "https://huggingface.co/Sygil/Sygil-Diffusion",
     "category": "general artistic models"
   },
-  "Vintedois Diffusion": {
+  "Vintedois Diffusion v1": {
     "type": "diffusers",
     "repo_id": "22h/vintedois-diffusion-v0-1",
     "requires_hf_login": false,
@@ -161,6 +161,17 @@
     "description": "General artistic model for simple prompts - SD 1.x ",
     "image_size": 512,
     "description_link": "https://huggingface.co/22h/vintedois-diffusion-v0-1",
+    "category": "general artistic models"
+  },
+  "Vintedois Diffusion v2": {
+    "type": "diffusers",
+    "repo_id": "22h/vintedois-diffusion-v0-2",
+    "requires_hf_login": false,
+    "keyword": "estilovintedois",
+    "prediction": "epsilon",
+    "description": "General artistic model for simple prompts - SD 1.x ",
+    "image_size": 512,
+    "description_link": "https://huggingface.co/22h/vintedois-diffusion-v0-2",
     "category": "general artistic models"
   },
   "Analog Diffusion": {
