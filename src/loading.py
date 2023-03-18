@@ -38,6 +38,7 @@ from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 
 def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict, custom_model_dict: Optional[dict], cached_model_dict: Optional[dict], enable_attention_slicing: bool = False, enable_xformers: bool = False, to_cuda: bool = True) -> Tuple[SimpleStableDiffusionPipeline, dict]:
     pipe_info = None
+    model_choice = None
 
     if (cached_model_dict and ((model_name in cached_model_dict) or (model_type == "Installed Models"))):
         pipe_info = cached_model_dict[model_name]
@@ -71,7 +72,7 @@ def prepare_pipe(model_name: str, model_type: str, downloadable_model_dict: dict
     else:
         raise ValueError(f"Tried to load {model_name} and failed.")
 
-    if "necessary_embeddings" in model_choice:
+    if model_choice and "necessary_embeddings" in model_choice:
         pipe = download_and_load_necessary_embeddings_for_model(
             pipe, model_choice.get("necessary_embeddings"))
 
