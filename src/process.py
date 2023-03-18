@@ -79,7 +79,8 @@ def process_and_generate(
         # gradio.progress, don't want to import it in this file
         progress: Optional[any],
         randomizer: dict,
-        display_and_print: bool = False) -> Tuple[SimpleStableDiffusionPipeline, List, List]:
+        display_and_print: bool = False,
+        save_settings_as_text: Optional[bool] = True) -> Tuple[SimpleStableDiffusionPipeline, List, List]:
 
     # load sampler
     pipe = load_sampler(opt["sampler"], opt["prediction_type"], pipe)
@@ -125,6 +126,9 @@ def process_and_generate(
     # if progress:
     #     progress(
     #         0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
+
+    saved_settings = {"settings": opt, "prompts": []}
+
     images = []
     images_details = []
     batch_name = datetime.now().strftime("%H_%M_%S")
@@ -164,7 +168,13 @@ def process_and_generate(
 
         images.append(saved_image)
         images_details.append(settings_info)
+        saved_settings["prompts"].append(
+            [prompt_options["prompt"], prompt_options["negative_prompt"]])
         seed += 1
+
+    if save_settings_as_text:
+        with open(f"{opt['outputs_folder']}/{batch_name}_settings.txt", "w+", encoding="utf-8") as f:
+            json.dump(saved_settings, f, ensure_ascii=False, indent=4)
 
     return pipe, images, images_details
 
