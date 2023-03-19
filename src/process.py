@@ -76,11 +76,11 @@ def load_sampler(sampler_name: str, model_prediction_type: str, pipe: SimpleStab
 def process_and_generate(
         opt: dict,
         pipe: SimpleStableDiffusionPipeline,
-        # gradio.progress, don't want to import it in this file
-        progress: Optional[any],
-        randomizer: dict,
-        display_and_print: bool = False,
-        save_settings_as_text: Optional[bool] = True) -> Tuple[SimpleStableDiffusionPipeline, List, List]:
+        **kwargs) -> Tuple[SimpleStableDiffusionPipeline, List, List]:
+
+    randomizer = kwargs.get("randomizer", {})
+    display_and_print = kwargs.get("display_and_print", False)
+    save_settings_as_text = kwargs.get("save_settings_as_text", False)
 
     # load sampler
     pipe = load_sampler(opt["sampler"], opt["prediction_type"], pipe)
@@ -121,11 +121,6 @@ def process_and_generate(
     if "controlnet_model" in opt and "controlnet_image" in opt:
         prompt_options["controlnet_model"] = opt["controlnet_model"]
         prompt_options["controlnet_image"] = opt["controlnet_image"]
-
-    # generation
-    # if progress:
-    #     progress(
-    #         0, desc=f'Preparing to generate {opt["number_of_images"]} number of image(s)...')
 
     saved_settings = {"settings": opt, "prompts": []}
 
