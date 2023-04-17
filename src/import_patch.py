@@ -1,6 +1,19 @@
 
 
 def patch_import_errors():
+    import PIL._util
+    if not hasattr(PIL._util, 'is_directory'):
+        import os
+        from pathlib import Path
+
+        def is_path(f):
+            return isinstance(f, (bytes, str, Path))
+
+        def is_directory(f):
+            return is_path(f) and os.path.isdir(f)
+
+        PIL._util.is_directory = is_directory
+
     import PIL.Image
     if not hasattr(PIL.Image, 'Resampling'):
         PIL.Image.Resampling = PIL.Image
