@@ -409,7 +409,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
             negative = standard_negative if negative is None else standard_negative + ", " + negative
 
         try:
-            pipe, images, image_detail_list = process_and_generate({
+            pipe, images, image_detail_list = process_and_generate(opt={
                 "model_name": model_name,
                 "prompt": prompt,
                 "negative": negative if negative != None else "",
@@ -434,7 +434,7 @@ def main(starting_model_to_load: str, outputs_folder: str, custom_models_path: O
                 "latent_noise_inpaint": inpaint_mode if inpaint_mode == "Latent Noise (replace painted area, set inpaint_strength to about 1)" else None,
                 "prediction_type": pipe_info["prediction_type"],
                 "program_version": "Simple Stable 2.0 (Gradio UI, pre-release 20230306)"
-            }, pipe, progress, randomizers, False)
+            }, pipe=pipe, progress=None, randomizer=randomizers, display_and_print=False, save_settings_as_text=True)
 
             message = '\n\n'.join(image_detail_list)
             return images, used_seed, message

@@ -167,6 +167,10 @@ def process_and_generate(
             [prompt_options["prompt"], prompt_options["negative_prompt"]])
         seed += 1
 
+    if "controlnet_model" in opt and "controlnet_image" in opt:
+        saved_settings["settings"]["controlnet_model"] = type(
+            opt["controlnet_model"]).__name__
+        saved_settings["settings"]["controlnet_image"] = "too lazy to save the image url right now, to fix"
     if save_settings_as_text:
         with open(f"{opt['outputs_folder']}/{batch_name}_settings.txt", "w+", encoding="utf-8") as f:
             json.dump(saved_settings, f, ensure_ascii=False, indent=4)

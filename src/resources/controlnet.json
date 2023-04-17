@@ -1,0 +1,73 @@
+{
+  "epsilon": {
+    "canny": {
+      "url": "lllyasviel/control_v11p_sd15_canny",
+      "preprocessor_from_pretrained": false,
+      "preprocessor": "CannyDetector"
+    },
+
+    "depth": {
+      "url": "lllyasviel/control_v11f1p_sd15_depth",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "MidasDetector"
+    },
+    "openpose": {
+      "url": "lllyasviel/control_v11p_sd15_openpose",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "OpenposeDetector"
+    },
+    "scribble": {
+      "url": "llyasviel/control_v11p_sd15_scribble",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "HEDdetector"
+    },
+    "softedge": {
+      "url": "lllyasviel/control_v11p_sd15_softedge",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "HEDdetector"
+    },
+    "lineart": {
+      "url": "lllyasviel/control_v11p_sd15_lineart",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "LineartDetector"
+    },
+    "anime lineart (1.x only)": {
+      "url": "lllyasviel/control_v11p_sd15s2_lineart_anime",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "AnimeLineartDetector"
+    }
+  },
+  "v_prediction": {
+    "canny": {
+      "url": "thibaud/controlnet-sd21-canny-diffusers",
+      "preprocessor_from_pretrained": false,
+      "preprocessor": "CannyDetector"
+    },
+
+    "depth": {
+      "url": "thibaud/controlnet-sd21-depth-diffusers",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "MidasDetector"
+    },
+    "openpose": {
+      "url": "thibaud/controlnet-sd21-openposev2-diffusers",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "OpenposeDetector"
+    },
+    "scribble": {
+      "url": "thibaud/controlnet-sd21-scribble-diffusers",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "HEDdetector"
+    },
+    "softedge": {
+      "url": "thibaud/controlnet-sd21-hed-diffusers",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "HEDdetector"
+    },
+    "lineart": {
+      "url": "thibaud/controlnet-sd21-lineart-diffusers",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "LineartDetector"
+    }
+  }
+}

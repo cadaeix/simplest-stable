@@ -438,7 +438,7 @@ def load_ckpt_or_safetensors_file_and_cache_as_diffusers(
             safety_checker=safety_checker,
             requires_safety_checker=False
         )
-        pipe = pipe.to(torch.float16)
+        # pipe = pipe.to(torch.float16)
     if should_cache:
         pipe.save_pretrained(os.path.join(folder_path, model_name))
 
