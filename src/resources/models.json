@@ -369,6 +369,19 @@
     ],
     "category": "anime style models"
   },
+  "Collage Diffusion": {
+    "type": "hf-file",
+    "repo_id": "wavymulder/collage-diffusion",
+    "filename": " collage-1.0.safetensors",
+    "config": "",
+    "requires_hf_login": false,
+    "keyword": "collage style",
+    "prediction": "epsilon",
+    "description": "Collage style - SD 1.x",
+    "image_size": 512,
+    "description_link": "https://huggingface.co/wavymulder/collage-diffusion",
+    "category": "artistic style models"
+  },
   "Coloring Book (768)": {
     "type": "civitai-model",
     "model_id": "5978",
@@ -381,6 +394,17 @@
     "description_link": "https://civitai.com/models/5153/coloring-book",
     "category": "artistic style models"
   },
+  "Graphic Art (768)": {
+    "type": "diffusers",
+    "repo_id": "n6ai/graphic-art",
+    "requires_hf_login": false,
+    "keyword": "",
+    "prediction": "epsilon",
+    "description": "graphic design - SD 2.x",
+    "image_size": 768,
+    "description_link": "https://civitai.com/models/7884/graphic-art",
+    "category": "artistic style models"
+  },
   "Inkpunk Diffusion": {
     "type": "diffusers",
     "repo_id": "Envvi/Inkpunk-Diffusion",
@@ -390,6 +414,18 @@
     "description": "sketchy colourful style - SD 1.x",
     "image_size": 512,
     "description_link": "https://huggingface.co/Envvi/Inkpunk-Diffusion",
+    "category": "artistic style models"
+  },
+  "Pulp Diffusion (768)": {
+    "type": "civitai-model",
+    "model_id": "8783",
+    "has_config": true,
+    "filename": "pulp_diffusion.safetensors",
+    "keyword": "pulp-diffusion",
+    "prediction": "v_prediction",
+    "image_size": 768,
+    "description": "pulp sci fi cover style - SD 2.x",
+    "description_link": "https://civitai.com/models/4618/vector-art",
     "category": "artistic style models"
   },
   "Vector Art (768)": {
