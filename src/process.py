@@ -124,7 +124,7 @@ def process_and_generate(
         if "controlnet_conditioning_scale" in opt:
             prompt_options["controlnet_conditioning_scale"] = opt["controlnet_conditioning_scale"]
 
-    saved_settings = {"settings": opt, "prompts": []}
+    saved_settings = {"settings": opt.copy(), "prompts": []}
 
     images = []
     images_details = []
