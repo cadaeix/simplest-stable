@@ -395,14 +395,15 @@
     "category": "artistic style models"
   },
   "Graphic Art (768)": {
-    "type": "diffusers",
-    "repo_id": "n6ai/graphic-art",
-    "requires_hf_login": false,
-    "keyword": "",
-    "prediction": "epsilon",
-    "description": "graphic design - SD 2.x",
+    "type": "civitai-model",
+    "model_id": "19546",
+    "has_config": true,
+    "filename": "graphicart.safetensors",
+    "keyword": "graphic-art",
+    "prediction": "v_prediction",
     "image_size": 768,
-    "description_link": "https://civitai.com/models/7884/graphic-art",
+    "description": "Vector art style - SD 2.x",
+    "description_link": "https://civitai.com/models/4618/vector-art",
     "category": "artistic style models"
   },
   "Inkpunk Diffusion": {
@@ -571,6 +572,18 @@
     "description": "Furry style - SD 1.x",
     "image_size": 512,
     "description_link": "https://huggingface.co/lunarfish/furrydiffusion",
+    "category": "media style models"
+  },
+  "Pony Diffusion": {
+    "type": "diffusers",
+    "repo_id": "AstraliteHeart/pony-diffusion-v4",
+    "requires_hf_login": false,
+    "keyword": "derpibooru_p_95",
+    "negative_keyword": "derpibooru_p_low",
+    "prediction": "epsilon",
+    "description": "My Little Pony style - SD 1.x",
+    "image_size": 512,
+    "description_link": "https://huggingface.co/AstraliteHeart/pony-diffusion-v4",
     "category": "media style models"
   }
 }
