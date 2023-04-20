@@ -218,19 +218,24 @@
   },
   "Anything v4.0": {
     "type": "diffusers",
-    "repo_id": "andite/anything-v4.0",
+    "repo_id": "TareHimself/anything-v4.0",
     "requires_hf_login": false,
-    "vae": {
-      "type": "hf-file",
-      "repo_id": "andite/anything-v4.0",
-      "filename": "anything-v4.0.vae.pt",
-      "requires_hf_login": false
-    },
     "prediction": "epsilon",
     "description": "Anime style, further merged/finetuned on 3.0 by different people - SD 1.x",
     "image_size": 512,
-    "description_link": "https://huggingface.co/AdamOswald1/Anything-Preservation",
+    "description_link": "https://huggingface.co/andite/anything-v4.0",
     "category": "anime style (danbooru tag) models"
+  },
+  "AbyssOrangeMix3": {
+    "type": "civitai-model",
+    "model_id": "11814",
+    "filename": "aom3.safetensors",
+    "keyword": "",
+    "prediction": "epsilon",
+    "image_size": 512,
+    "description": "Anime style, popular model merge - 1.x",
+    "description_link": "https://civitai.com/api/download/models/11814",
+    "category": "artistic style models"
   },
   "Dreamlike Anime": {
     "type": "diffusers",
@@ -472,6 +477,17 @@
     "description": "Trained on Disco Diffusion outputs - SD 2.x (768)",
     "image_size": 768,
     "description_link": "https://huggingface.co/kabachuha/gigafractal2-diffusion",
+    "category": "artistic style models"
+  },
+  "Tensorfunk": {
+    "type": "civitai-model",
+    "model_id": "48244",
+    "filename": "tensorfunk.ckpt",
+    "keyword": "tensorfunk",
+    "prediction": "epsilon",
+    "image_size": 512,
+    "description": "incoherent detalied early AI art generation style, inspired by  VQGAN+CLiP, Disco Diffusion, JAX diffusion, Midjourney v1 and v2, Deepdream - SD 1.x",
+    "description_link": "https://civitai.com/models/43600/tensorfunk",
     "category": "artistic style models"
   },
   "Van Gogh Diffusion": {
