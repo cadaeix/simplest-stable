@@ -17,7 +17,7 @@
       "preprocessor": "OpenposeDetector"
     },
     "scribble": {
-      "url": "llyasviel/control_v11p_sd15_scribble",
+      "url": "lllyasviel/control_v11p_sd15_scribble",
       "preprocessor_from_pretrained": true,
       "preprocessor": "HEDdetector"
     },
