@@ -18,7 +18,7 @@ from src import EverythingsPromptRandomizer
 from collections import namedtuple
 from packaging import version
 
-from src.randomizer import curly_bracket_randomiser, replace_words_inside_brackets_with_randomizer
+from src.randomizer import replace_words_inside_brackets_with_randomizer
 
 
 def mini_model_lookup():  # this is awful, fix this soon
@@ -245,7 +245,7 @@ def process_prompt_and_add_keyword(prompt: str, keyword: Union[str, list, None],
     # result = EverythingsPromptRandomizer.random_prompt(
     #     prompt)  # run it twice because there's some sublists
     result = replace_words_inside_brackets_with_randomizer(
-        prompt, randomizer_dict)
+        prompt, randomizer_dict, max_depth=10, depth=10)
     if type(keyword) is list:
         for kw in keyword:
             kw_strip = kw.strip()
