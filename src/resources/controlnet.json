@@ -5,7 +5,6 @@
       "preprocessor_from_pretrained": false,
       "preprocessor": "CannyDetector"
     },
-
     "depth": {
       "url": "lllyasviel/control_v11f1p_sd15_depth",
       "preprocessor_from_pretrained": true,
@@ -35,6 +34,16 @@
       "url": "lllyasviel/control_v11p_sd15s2_lineart_anime",
       "preprocessor_from_pretrained": true,
       "preprocessor": "AnimeLineartDetector"
+    },
+    "shuffle (1.x only)": {
+      "url": "lllyasviel/control_v11e_sd15_shuffle",
+      "preprocessor_from_pretrained": false,
+      "preprocessor": "ContentShuffleDetector"
+    },
+    "openpose with hands and face (1.x only)": {
+      "url": "lllyasviel/control_v11p_sd15_openpose",
+      "preprocessor_from_pretrained": true,
+      "preprocessor": "OpenposeDetector"
     }
   },
   "v_prediction": {
@@ -68,6 +77,14 @@
       "url": "thibaud/controlnet-sd21-lineart-diffusers",
       "preprocessor_from_pretrained": true,
       "preprocessor": "LineartDetector"
+    },
+    "aesthetic (2.x only)": {
+      "url": "krea/aesthetic-controlnet",
+      "preprocessor_from_pretrained": false,
+      "preprocessor": "CannyDetector"
+    },
+    "color (2.x only)": {
+      "url": "thibaud/controlnet-sd21-color-diffusers"
     }
   }
 }
