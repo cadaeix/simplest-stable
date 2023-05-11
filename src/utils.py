@@ -245,7 +245,7 @@ def process_prompt_and_add_keyword(prompt: str, keyword: Union[str, list, None],
     # result = EverythingsPromptRandomizer.random_prompt(
     #     prompt)  # run it twice because there's some sublists
     result = replace_words_inside_brackets_with_randomizer(
-        prompt, randomizer_dict, max_depth=10, depth=10)
+        prompt, randomizer_dict, max_depth=10, depth=0)
     if type(keyword) is list:
         for kw in keyword:
             kw_strip = kw.strip()
