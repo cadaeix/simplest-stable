@@ -34,10 +34,6 @@ def get_default_random_lists_from_folder(folderpath: str) -> dict:
     return results
 
 
-# thanks curio and gpt 4!
-# Function to read all .txt files in a folder and store their contents as lists
-
-
 def get_random_lists_from_folder(folderpath: str) -> dict:
     results = {}
     for root, _, files in os.walk(folderpath):
@@ -54,7 +50,7 @@ def get_random_lists_from_folder(folderpath: str) -> dict:
 
     return results
 
-
+# thanks curio and gpt 4!
 # Function to get a random word from the specified list, if it exists in the dictionary
 
 
