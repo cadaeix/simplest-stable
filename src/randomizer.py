@@ -40,22 +40,20 @@ def get_default_random_lists_from_folder(folderpath: str) -> dict:
 
 def get_random_lists_from_folder(folderpath: str) -> dict:
     results = {}
-
-    # Iterate over all .txt files in the folder and its subfolders
-    for filepath in Path(folderpath).rglob("*.txt"):
-        # Read the contents of each file, splitting by lines
-        with filepath.open(encoding='utf-8') as listfile:
-            randomlist = listfile.read().splitlines()
-
-        # Skip empty files
-        if not len(randomlist):
-            continue
-
-        # Get the relative file path without the extension and convert it to a POSIX path
-        text_file = filepath.relative_to(folderpath).with_suffix('').as_posix()
-        results[f"<{text_file}>"] = randomlist
+    for root, _, files in os.walk(folderpath):
+        for file in files:
+            if file.endswith(".txt"):
+                with open(os.path.join(root, file), encoding='utf-8') as listfile:
+                    randomlist = [line.rstrip() for line in listfile]
+                if not len(randomlist):
+                    continue
+                text_file = os.path.join(root, file).replace(
+                    folderpath, '').strip(os.sep)
+                text_file = text_file.replace(os.sep, "/")[:-4]
+                results[f"<{text_file}>"] = randomlist
 
     return results
+
 
 # Function to get a random word from the specified list, if it exists in the dictionary
 
