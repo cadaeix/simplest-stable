@@ -45,6 +45,16 @@
     "description_link": "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0",
     "category": "general artistic models"
   },
+  "Lyriel": {
+    "type": "civitai-model",
+    "model_id": "72396",
+    "filename": "lyriel.safetensors",
+    "prediction": "epsilon",
+    "image_size": 512,
+    "description": "General artistic model finetune of 1.5 - SD 1.x",
+    "description_link": "https://civitai.com/models/22922/lyriel",
+    "category": "general artistic models"
+  },
   "Openjourney V2 Beta": {
     "type": "diffusers",
     "repo_id": "prompthero/openjourney-v2",
