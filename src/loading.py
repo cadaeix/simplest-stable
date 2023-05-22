@@ -202,9 +202,19 @@ def download_a_list_of_embeddings(embeddings_folder: str, embeddings_list):
 def load_embeddings(embeddings_folder: str, pipe: SimpleStableDiffusionPipeline) -> SimpleStableDiffusionPipeline:
     if embeddings_folder and os.path.exists(embeddings_folder):
         emb_list = process_embeddings_folder(embeddings_folder)
+        loaded_embeddings = []
+        unloaded_embeddings = []
 
         for emb_path in emb_list:
             token = os.path.basename(emb_path.split('.')[0])
-            pipe.load_textual_inversion(emb_path, token=token)
+            try:
+                pipe.load_textual_inversion(emb_path, token=token)
+                loaded_embeddings.append(token)
+            except Exception as e:
+                unloaded_embeddings.append(token)
+                pass
+
+        print(f"Loaded embeddings:{loaded_embeddings}")
+        print(f"Not loaded embeddings:{unloaded_embeddings}")
 
     return pipe
