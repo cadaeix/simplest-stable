@@ -13,34 +13,11 @@ import json
 import PIL
 import numpy as np
 import torch.nn as nn
-from PIL import Image, PngImagePlugin
-from src import EverythingsPromptRandomizer
+from PIL import Image, PngImagePlugin, ImageOps
 from collections import namedtuple
 from packaging import version
 
 from src.randomizer import replace_words_inside_brackets_with_randomizer
-
-
-def mini_model_lookup():  # this is awful, fix this soon
-    with open('src/resources/models.json') as modelfile:
-        model_dict = json.load(modelfile)
-
-    model_dict_under_urls = {}
-    for i in model_dict.items():
-        if i[1]["type"] == "hf-file":
-            model_name = i[0]
-        elif i[1]["type"] == "diffusers":
-            model_name = i[1]["repo_id"]
-
-        model_dict_under_urls[model_name] = {
-            "keyword": i[1].get("keyword"),
-            "prediction_type": i[1]["prediction"]
-        }
-
-    return model_dict_under_urls
-
-
-model_dict_under_urls = mini_model_lookup()
 
 try:
     from diffusers.utils import PIL_INTERPOLATION
@@ -62,6 +39,20 @@ except ImportError:
             "nearest": PIL.Image.NEAREST,
         }
 
+
+def color_controlnet_preprocess(image):
+    image_size = image.size
+    image = image.resize(
+        [image_size[0]//64, image_size[1]//64], resample=Image.BICUBIC)
+    image = image.resize([image_size[0], image_size[1]],
+                         resample=Image.NEAREST)
+    return image
+
+
+def invert_controlnet_preprocess(image):
+    return ImageOps.invert(image)
+
+
 Grid = namedtuple("Grid", ["tiles", "tile_w",
                   "tile_h", "image_w", "image_h", "overlap"])
 
@@ -78,96 +69,6 @@ def process_embeddings_folder(embeddings_path: str) -> List[str]:
 
 def get_huggingface_cache_path():
     return os.path.join(os.path.expanduser('~'), ".cache", "huggingface", "diffusers")
-
-
-def find_vae_files(folderpath: str) -> dict:
-    vae_list = glob.glob(os.path.join(folderpath, "*.vae.pt"))
-    vae_result = {}
-    for vae in vae_list:
-        stemname, filename = os.path.split(vae)
-        vae_result[filename] = vae
-    return vae_result
-
-
-def process_custom_model_glob(globlist):
-    results = {}
-    for file in globlist:
-        stemname, filename = os.path.split(file)
-        basename, _ = os.path.splitext(filename)
-        config = os.path.join(stemname, f"{basename}.yaml") if os.path.exists(
-            os.path.join(stemname, f"{basename}.yaml")) else None
-        vae = os.path.join(stemname, f"{basename}.vae.pt") if os.path.exists(
-            os.path.join(stemname, f"{basename}.vae.pt")) else None
-        kw = re.search(r"\[(.*?)\]", basename)
-        if kw:
-            kw = kw.group(0).replace('[', '').replace(']', '')
-            kw = kw.split(',')
-
-        results[basename] = {
-            "path": file,
-            "config": config,
-            "vae": vae,
-            "keywords": kw
-        }
-
-    return results
-
-
-def find_custom_models(path: str) -> Tuple[dict, dict]:
-    if not path:
-        return {}, {}
-    if not os.path.exists(path):
-        print("Could not find path!")
-        # return statement
-
-    # assume ones without yamls are v1/epsilon
-    ckpts = glob.glob(os.path.join(path, "*.ckpt"))
-    safetensors = glob.glob(os.path.join(path, "*.safetensors"))
-
-    return {**process_custom_model_glob(ckpts), **process_custom_model_glob(safetensors)}, find_vae_files(path)
-
-
-def get_info(name, folderpath, model_dict, custom_model_dict=None):
-    if name in model_dict:
-        return model_dict[name]
-    elif custom_model_dict and name in custom_model_dict:
-        prediction_type = get_prediction_type_from_diffusers_cache(folderpath)
-        return {
-            'keyword': custom_model_dict[name]["keywords"],
-            'prediction_type': prediction_type
-        }
-    else:
-        prediction_type = get_prediction_type_from_diffusers_cache(folderpath)
-        return {
-            'keyword': "",
-            'prediction_type': prediction_type
-        }
-
-
-def get_prediction_type_from_diffusers_cache(folderpath):
-    with open(os.path.join(folderpath, "scheduler", "scheduler_config.json")) as jsonfile:
-        model_json = json.load(jsonfile)
-    if "prediction_type" not in model_json:
-        prediction_type = "epsilon"
-    else:
-        prediction_type = model_json["prediction_type"]
-
-    return prediction_type
-
-
-def check_saved_models(custom_model_dict=None):
-    folderpath = os.path.join(os.path.expanduser(
-        '~'), ".cache", "huggingface", "diffusers", "*", "model_index.json")
-
-    result = {}
-    for model_folderpath in glob.glob(folderpath):
-        folderpath, _ = os.path.split(model_folderpath)
-        _, name = os.path.split(folderpath)
-        info = get_info(name, folderpath,
-                        model_dict_under_urls, custom_model_dict)
-        info["path"] = folderpath
-        result[name] = info
-    return result
 
 
 def check_cached_models(custom_model_dict=None):

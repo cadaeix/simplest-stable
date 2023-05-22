@@ -1,48 +1,16 @@
 {
-  "Stable Diffusion 1.4": {
-    "type": "diffusers",
-    "repo_id": "CompVis/stable-diffusion-v1-4",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "description": "Stable Diffusion 1.4, base model",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/CompVis/stable-diffusion-v1-4",
-    "category": "base models"
-  },
   "Stable Diffusion 1.5": {
     "type": "diffusers",
     "repo_id": "runwayml/stable-diffusion-v1-5",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Stable Diffusion 1.5, base model",
     "image_size": 512,
     "description_link": "https://huggingface.co/runwayml/stable-diffusion-v1-5",
     "category": "base models"
   },
-  "Stable Diffusion 2.0 (512)": {
-    "type": "diffusers",
-    "repo_id": "stabilityai/stable-diffusion-2-base",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "description": "Stable Diffusion 2.0, base model, 512x512 pixels and above",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/stabilityai/stable-diffusion-2",
-    "category": "base models"
-  },
-  "Stable Diffusion 2.0 (768)": {
-    "type": "diffusers",
-    "repo_id": "stabilityai/stable-diffusion-2",
-    "requires_hf_login": false,
-    "prediction": "v_prediction",
-    "description": "Stable Diffusion 2.0, base model, 768x768 pixels and above",
-    "image_size": 768,
-    "description_link": "https://huggingface.co/stabilityai/stable-diffusion-2",
-    "category": "base models"
-  },
   "Stable Diffusion 2.1 (512)": {
     "type": "diffusers",
     "repo_id": "stabilityai/stable-diffusion-2-1-base",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Stable Diffusion 2.1, base model, 512x512 pixels and above",
     "image_size": 512,
@@ -52,7 +20,6 @@
   "Stable Diffusion 2.1 (768)": {
     "type": "diffusers",
     "repo_id": "stabilityai/stable-diffusion-2-1",
-    "requires_hf_login": false,
     "prediction": "v_prediction",
     "description": "Stable Diffusion 2.1, base model, 768x768 pixels and above",
     "image_size": 768,
@@ -62,7 +29,6 @@
   "Mitsua Diffusion One": {
     "type": "diffusers",
     "repo_id": "Mitsua/mitsua-diffusion-one",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Model trained from scratch using only public domain/CC0 or opt-in images, low quality but improving with each iteration - SD 1.x",
     "image_size": 512,
@@ -72,7 +38,6 @@
   "Dreamlike Diffusion": {
     "type": "diffusers",
     "repo_id": "dreamlike-art/dreamlike-diffusion-1.0",
-    "requires_hf_login": false,
     "keyword": "dreamlikeart",
     "prediction": "epsilon",
     "description": "General artistic model finetune of 1.5 - SD 1.x ",
@@ -80,56 +45,13 @@
     "description_link": "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0",
     "category": "general artistic models"
   },
-  "Illuminati Diffusion (768)": {
-    "type": "civitai-model",
-    "model_id": "13259",
-    "has_config": true,
-    "filename": "illuminati.safetensors",
-    "negative_keyword": "illum_nfixer",
-    "prediction": "v_prediction",
-    "image_size": 768,
-    "description": "General artistic model, trained with noise offset for darker dramatic pictures - SD 2.x",
-    "description_link": "https://civitai.com/models/11193/illuminati-diffusion-v11",
-    "necessary_embeddings": [
-      {
-        "filename": "illum_nfixer.pt",
-        "type": "civitai_embedding",
-        "model_id": "15921",
-        "version": "2.x",
-        "description": "Negative fixer for Illuminati Diffusion"
-      }
-    ],
-    "category": "general artistic models"
-  },
-  "Openjourney": {
-    "type": "diffusers",
-    "repo_id": "prompthero/openjourney",
-    "requires_hf_login": false,
-    "keyword": "mdjrny-v4 style",
-    "prediction": "epsilon",
-    "description": "Midjourney V4 style - SD 1.x",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/prompthero/openjourney",
-    "category": "general artistic models"
-  },
   "Openjourney V2 Beta": {
     "type": "diffusers",
     "repo_id": "prompthero/openjourney-v2",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Midjourney V4 style - SD 1.x",
     "image_size": 512,
     "description_link": "https://huggingface.co/prompthero/openjourney-v2",
-    "category": "general artistic models"
-  },
-  "seek.art_MEGA": {
-    "type": "diffusers",
-    "repo_id": "coreco/seek.art_MEGA",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "description": "General artistic model finetune of 1.5 - SD 1.x",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/coreco/seek.art_MEGA",
     "category": "general artistic models"
   },
   "seek.art_MEGA 2.0": {
@@ -142,42 +64,9 @@
     "description_link": "https://civitai.com/models/1315/seekart-mega",
     "category": "general artistic models"
   },
-  "Sygil Diffusion": {
-    "type": "diffusers",
-    "repo_id": "Sygil/Sygil-Diffusion",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "description": "General model with 'namespaces' for specific prompting, see link - SD 1.x ",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/Sygil/Sygil-Diffusion",
-    "category": "general artistic models"
-  },
-  "Vintedois Diffusion v1": {
-    "type": "diffusers",
-    "repo_id": "22h/vintedois-diffusion-v0-1",
-    "requires_hf_login": false,
-    "keyword": "estilovintedois",
-    "prediction": "epsilon",
-    "description": "General artistic model for simple prompts - SD 1.x ",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/22h/vintedois-diffusion-v0-1",
-    "category": "general artistic models"
-  },
-  "Vintedois Diffusion v2": {
-    "type": "diffusers",
-    "repo_id": "22h/vintedois-diffusion-v0-2",
-    "requires_hf_login": false,
-    "keyword": "estilovintedois",
-    "prediction": "epsilon",
-    "description": "General artistic model for simple prompts - SD 1.x ",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/22h/vintedois-diffusion-v0-2",
-    "category": "general artistic models"
-  },
   "Analog Diffusion": {
     "type": "diffusers",
     "repo_id": "wavymulder/Analog-Diffusion",
-    "requires_hf_login": false,
     "keyword": "analog style",
     "prediction": "epsilon",
     "description": "Analog photograph style - SD 1.x",
@@ -188,7 +77,6 @@
   "Dreamlike Photoreal": {
     "type": "diffusers",
     "repo_id": "dreamlike-art/dreamlike-photoreal-2.0",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Photorealism by Dreamlike - SD 1.x",
     "image_size": 512,
@@ -199,7 +87,7 @@
     "type": "hf-file",
     "repo_id": "Dunkindont/Foto-Assisted-Diffusion-FAD_V0",
     "filename": "FAD-foto-assisted-diffusion_V0.safetensors",
-    "requires_hf_login": false,
+    "save_as": "FAD.safetensors",
     "prediction": "epsilon",
     "description": "modern HDR photography style - SD 1.x",
     "image_size": 512,
@@ -209,7 +97,6 @@
   "Anything v3.0": {
     "type": "diffusers",
     "repo_id": "AdamOswald1/Anything-Preservation",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Anime style - SD 1.x",
     "image_size": 512,
@@ -218,8 +105,7 @@
   },
   "Anything v4.0": {
     "type": "diffusers",
-    "repo_id": "TareHimself/anything-v4.0",
-    "requires_hf_login": false,
+    "repo_id": "andite/anything-v4.0",
     "prediction": "epsilon",
     "description": "Anime style, further merged/finetuned on 3.0 by different people - SD 1.x",
     "image_size": 512,
@@ -240,7 +126,6 @@
   "Dreamlike Anime": {
     "type": "diffusers",
     "repo_id": "dreamlike-art/dreamlike-anime-1.0",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Anime style - SD 1.x ",
     "image_size": 512,
@@ -251,7 +136,6 @@
     "type": "hf-file",
     "repo_id": "hakurei/waifu-diffusion-v1-3",
     "filename": "wd-v1-3-float16.ckpt",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Anime style - SD 1.x",
     "image_size": 512,
@@ -261,7 +145,6 @@
   "Waifu Diffusion 1.4": {
     "type": "diffusers",
     "repo_id": "hakurei/waifu-diffusion",
-    "requires_hf_login": false,
     "vae": {
       "type": "hf-file",
       "repo_id": "hakurei/waifu-diffusion-v1-4",
@@ -277,7 +160,6 @@
   "Waifu Diffusion 1.5 Beta (768)": {
     "type": "diffusers",
     "repo_id": "waifu-diffusion/wd-1-5-beta2",
-    "requires_hf_login": false,
     "vae": {
       "type": "hf-file",
       "repo_id": "hakurei/waifu-diffusion-v1-4",
@@ -293,7 +175,6 @@
   "Plat Diffusion (Waifu 1.4 finetune)": {
     "type": "diffusers",
     "repo_id": "p1atdev/plat-diffusion",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Anime style, finetuned over Waifu Diffusion 1.4 - SD 2.x (512)",
     "image_size": 512,
@@ -312,74 +193,11 @@
     "description_link": "https://huggingface.co/andite/pastel-mix",
     "category": "anime style (danbooru tag) models"
   },
-  "OpenNiji": {
-    "type": "diffusers",
-    "repo_id": "Korakoe/OpenNiji-V2",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "description": "Anime style, trained on Nijijourney/anime Midjourney - SD 1.x",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/Korakoe/OpenNiji-V2",
-    "category": "anime style (danbooru tag) models"
-  },
-  "Untitled": {
-    "type": "hf-file",
-    "repo_id": "alfredplpl/untitled",
-    "filename": "untitled.safetensors",
-    "config": "",
-    "prediction": "v_prediction",
-    "negative_keyword": [
-      "untitled_nfixer",
-      "untitled_nfixer_next",
-      "wdbadprompt"
-    ],
-    "description": "Anime Style, danbooru tag alternative to Anything and Waifu Diffusion - SD 2.x",
-    "image_size": 768,
-    "description_link": "https://huggingface.co/alfredplpl/untitled",
-    "necessary_embeddings": [
-      {
-        "filename": "untitled_nfixer.pt",
-        "download_url": "https://huggingface.co/alfredplpl/untitled/resolve/main/embeddings/negative/nfixer.pt"
-      },
-      {
-        "filename": "untitled_nfixer_next.pt",
-        "download_url": "https://huggingface.co/alfredplpl/untitled/resolve/main/embeddings/negative/nfixernext.pt"
-      },
-      {
-        "filename": "wdbadprompt.pt",
-        "download_url": "https://huggingface.co/alfredplpl/untitled/resolve/main/embeddings/negative/wdbadprompt.pt"
-      }
-    ],
-    "category": "anime style (danbooru tag) models"
-  },
-  "Picasso Diffusion": {
-    "type": "diffusers",
-    "repo_id": "alfredplpl/picasso-diffusion-1-1",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "keyword": "anime",
-    "negative_keyword": ["picasso_nfixer", "picasso_nfixer_next"],
-    "description": "Anime style, non-danbooru alternative to Anything and Waifu Diffusion  - SD 2.x",
-    "image_size": 768,
-    "description_link": "https://huggingface.co/alfredplpl/picasso-diffusion-1-1/blob/main/README_en.md",
-    "necessary_embeddings": [
-      {
-        "filename": "picasso_nfixer.pt",
-        "download_url": "https://huggingface.co/alfredplpl/picasso-diffusion-1-1/resolve/main/embeddings/negative/nfixer.pt"
-      },
-      {
-        "filename": "picasso_nfixer_next.pt",
-        "download_url": "https://huggingface.co/alfredplpl/picasso-diffusion-1-1/resolve/main/embeddings/negative/nfixernext.pt"
-      }
-    ],
-    "category": "anime style models"
-  },
   "Collage Diffusion": {
     "type": "hf-file",
     "repo_id": "wavymulder/collage-diffusion",
     "filename": " collage-1.0.safetensors",
     "config": "",
-    "requires_hf_login": false,
     "keyword": "collage style",
     "prediction": "epsilon",
     "description": "Collage style - SD 1.x",
@@ -414,7 +232,6 @@
   "Inkpunk Diffusion": {
     "type": "diffusers",
     "repo_id": "Envvi/Inkpunk-Diffusion",
-    "requires_hf_login": false,
     "keyword": "nvinkpunk",
     "prediction": "epsilon",
     "description": "sketchy colourful style - SD 1.x",
@@ -449,7 +266,6 @@
   "Vivid Watercolors": {
     "type": "diffusers",
     "repo_id": "Evel/VividWatercolors",
-    "requires_hf_login": false,
     "keyword": "wtrcolor style",
     "prediction": "epsilon",
     "description": "vivid watercolors style - SD 1.x",
@@ -457,21 +273,9 @@
     "description_link": "https://huggingface.co/Evel/VividWatercolors",
     "category": "artistic style models"
   },
-  "Future Diffusion": {
-    "type": "diffusers",
-    "repo_id": "nitrosocke/Future-Diffusion",
-    "requires_hf_login": false,
-    "keyword": "future style",
-    "prediction": "epsilon",
-    "description": "Futuristic images - SD 2.x (512)",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/nitrosocke/Future-Diffusion",
-    "category": "artistic style models"
-  },
   "Gigafractal Diffusion (768)": {
     "type": "diffusers",
     "repo_id": "kabachuha/gigafractal2-diffusion",
-    "requires_hf_login": false,
     "keyword": "gigafractal artstyle",
     "prediction": "v_prediction",
     "description": "Trained on Disco Diffusion outputs - SD 2.x (768)",
@@ -493,7 +297,6 @@
   "Van Gogh Diffusion": {
     "type": "diffusers",
     "repo_id": "dallinmackay/Van-Gogh-diffusion",
-    "requires_hf_login": false,
     "keyword": "lvngvncnt",
     "prediction": "epsilon",
     "description": "Van Gogh Style - SD 1.x ",
@@ -504,7 +307,6 @@
   "Modern Art Style": {
     "type": "diffusers",
     "repo_id": "theintuitiveye/modernartstyle",
-    "requires_hf_login": false,
     "keyword": "modernartst",
     "prediction": "epsilon",
     "description": "Modern Art Style - SD 1.x",
@@ -517,7 +319,6 @@
     "repo_id": "jinofcoolnes/corporate_memphis",
     "filename": "Corporate_MemphisCorporate_Memphis_step_15000.ckpt",
     "config": "",
-    "requires_hf_login": false,
     "keyword": "Corporate_Memphis",
     "prediction": "epsilon",
     "description": "Flat geometric corporate style, you can add 'digital illustration' to the keyword - SD 1.x",
@@ -528,7 +329,6 @@
   "Pokemon Diffusion": {
     "type": "diffusers",
     "repo_id": "justinpinkney/pokemon-stable-diffusion",
-    "requires_hf_login": false,
     "prediction": "epsilon",
     "description": "Pokemon style - SD 1.x",
     "image_size": 512,
@@ -538,7 +338,6 @@
   "Robo Diffusion": {
     "type": "diffusers",
     "repo_id": "nousr/robo-diffusion",
-    "requires_hf_login": false,
     "keyword": "nousr robot",
     "prediction": "epsilon",
     "description": "Robots - SD 1.x",
@@ -549,7 +348,6 @@
   "Classic Animation Diffusion": {
     "type": "diffusers",
     "repo_id": "nitrosocke/classic-anim-diffusion",
-    "requires_hf_login": false,
     "keyword": "classic disney style",
     "prediction": "epsilon",
     "description": "Classic Disney movie style - SD 1.x",
@@ -560,7 +358,6 @@
   "Modern Animation Diffusion": {
     "type": "diffusers",
     "repo_id": "nitrosocke/mo-di-diffusion",
-    "requires_hf_login": false,
     "keyword": "modern disney style",
     "prediction": "epsilon",
     "description": "Modern CGI Disney style - SD 1.x",
@@ -571,7 +368,6 @@
   "Ghibli Diffusion": {
     "type": "diffusers",
     "repo_id": "nitrosocke/Ghibli-Diffusion",
-    "requires_hf_login": false,
     "keyword": "ghibli style",
     "prediction": "epsilon",
     "description": "Ghibli anime style - SD 1.x",
@@ -582,7 +378,6 @@
   "Furry Diffusion": {
     "type": "diffusers",
     "repo_id": "lunarfish/furrydiffusion",
-    "requires_hf_login": false,
     "keyword": "furry",
     "prediction": "epsilon",
     "description": "Furry style - SD 1.x",
@@ -593,7 +388,6 @@
   "Pony Diffusion": {
     "type": "diffusers",
     "repo_id": "AstraliteHeart/pony-diffusion-v4",
-    "requires_hf_login": false,
     "keyword": "derpibooru_p_95",
     "negative_keyword": "derpibooru_p_low",
     "prediction": "epsilon",
