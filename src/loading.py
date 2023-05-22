@@ -52,7 +52,7 @@ def prepare_pipe_from_presets(model_choice: dict, enable_attention_slicing: bool
 
     if model_choice["type"] == "diffusers":
         pipe = load_diffusers_from_repo_id(model_choice["repo_id"])
-    elif model_choice["type"] == "hf_file":
+    elif model_choice["type"] == "hf-file":
         filepath = download_file_from_hf(
             model_choice["repo_id"], model_choice["filename"], f'{model_download_folder}{model_choice.get("save_as", model_choice["filename"])}')
         pipe = load_ckpt(filepath)
