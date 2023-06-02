@@ -312,16 +312,6 @@
     "description_link": "https://huggingface.co/andite/pastel-mix",
     "category": "anime style (danbooru tag) models"
   },
-  "OpenNiji": {
-    "type": "diffusers",
-    "repo_id": "Korakoe/OpenNiji-V2",
-    "requires_hf_login": false,
-    "prediction": "epsilon",
-    "description": "Anime style, trained on Nijijourney/anime Midjourney - SD 1.x",
-    "image_size": 512,
-    "description_link": "https://huggingface.co/Korakoe/OpenNiji-V2",
-    "category": "anime style (danbooru tag) models"
-  },
   "Untitled": {
     "type": "hf-file",
     "repo_id": "alfredplpl/untitled",
