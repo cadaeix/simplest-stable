@@ -253,12 +253,12 @@
     "type": "civitai-model",
     "model_id": "8783",
     "has_config": true,
-    "filename": "pulp_diffusion.safetensors",
+    "filename": "pulp_diffusion.ckpt",
     "keyword": "pulp-diffusion",
     "prediction": "v_prediction",
     "image_size": 768,
     "description": "pulp sci fi cover style - SD 2.x",
-    "description_link": "https://civitai.com/models/4618/vector-art",
+    "description_link": "https://civitai.com/models/7475",
     "category": "artistic style models"
   },
   "Vector Art (768)": {
