@@ -112,7 +112,7 @@ def process_and_generate(
 
         if type(opt["init_img"]) is str:
             prompt_options["image"] = load_img(
-                opt["init_img"], shape=(opt["W"], opt["H"]))
+                opt["init_img"], shape=(opt["W"], opt["H"]), add_noise=opt.get("add_blur_and_noise", False))
         else:
             prompt_options["image"] = opt["init_img"].resize(
                 [opt["W"], opt["H"]])
@@ -132,7 +132,7 @@ def process_and_generate(
     seed = random.randint(0, 2**32) if opt["seed"] < 0 else opt["seed"]
     for index in range(opt["number_of_images"]):
         free_ram()
-        set_seed(seed)
+        set_seed(seed, display_and_print)
         if "tiling" in opt:
             find_modules_and_assign_padding_mode(pipe, tiling_type)
         prompt_options["prompt"] = process_prompt_and_add_keyword(
@@ -156,12 +156,13 @@ def process_and_generate(
 
         saved_image = image
 
-        if opt["upscale"]:
+        if opt.get("upscale", "none") != "none":
             free_ram()
             if "tiling" in opt:
                 find_modules_and_assign_padding_mode(pipe, "original")
-            saved_image = generate_sd_upscale(
-                image, image_name, prompt_options["prompt"], prompt_options["negative_prompt"], opt, pipe, seed, display_and_print)
+            if opt["upscale"] == "tiling":
+                saved_image = generate_sd_upscale(
+                    image, image_name, prompt_options["prompt"], prompt_options["negative_prompt"], opt, pipe, seed, display_and_print)
 
         images.append(saved_image)
         images_details.append(settings_info)
@@ -180,12 +181,35 @@ def process_and_generate(
     return pipe, images, images_details
 
 
-def generate_higher_res_upscale(image: any, image_name: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:
+def generate_higher_res_upscale(image: any, image_name: str, prompt: str, negative: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:
     # automatically go for 2x
     upscale_factor = 2
 
     image = torch.nn.functional.interpolate(image, size=(int(
         image.size[0] * upscale_factor) // 8, int(image.size[1] * upscale_factor) // 8), mode="bilinear", antialias=False)
+
+    prompt_options = {
+        "prompt": prompt,
+        "negative_prompt": None if negative == "" else negative,
+        "image": image,
+        "strength": opt["upscale_strength"],
+        "height": image.size[1],
+        "width": image.size[0],
+        "num_inference_steps": opt["steps"],
+        "guidance_scale": opt["scale"],
+        "num_images_per_prompt": 1,
+        "eta": opt["eta"]
+    }
+
+    result = pipe(**prompt_options).images[0]
+
+    save_image(result, f"{image_name}_upscale",
+               prompt_options, opt, seed, opt["outputs_folder"], opt["program_version"])
+
+    if display_and_print:
+        display(result)
+
+    return result
 
 
 def generate_sd_upscale(image: any, image_name: str, prompt: str, negative: str, opt: dict, pipe: SimpleStableDiffusionPipeline, seed: int, display_and_print: bool = False) -> any:

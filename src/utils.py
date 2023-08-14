@@ -13,7 +13,7 @@ import json
 import PIL
 import numpy as np
 import torch.nn as nn
-from PIL import Image, PngImagePlugin, ImageOps
+from PIL import Image, PngImagePlugin, ImageOps, ImageFilter
 from collections import namedtuple
 from packaging import version
 
@@ -157,28 +157,34 @@ def process_prompt_and_add_keyword(prompt: str, keyword: Union[str, list, None],
     return result
 
 
-def set_seed(seed):
+def set_seed(seed, display_text=True):
     seed = random.randint(0, 2**32) if seed < 0 else seed
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    print(f"Using the seed {seed}")
+    if display_text:
+        print(f"Using the seed {seed}")
     return seed
 
 
-def load_img(path, shape):
+def load_img(path, shape, add_noise = False):
     if path.startswith('http://') or path.startswith('https://'):
-        image = Image.open(requests.get(path, stream=True).raw).convert('RGB')
+        image = PIL.Image.open(requests.get(path, stream=True).raw).convert('RGB')
     else:
         if os.path.isdir(path):
             files = [file for file in os.listdir(path) if file.endswith(
                 '.png') or file .endswith('.jpg')]
             path = os.path.join(path, random.choice(files))
             print(f"Chose random init image {path}")
-        image = Image.open(path).convert('RGB')
+        image = PIL.Image.open(path).convert('RGB')
     image = image.resize(shape, resample=PIL_INTERPOLATION["lanczos"])
+    if add_noise:
+      image = image.filter(ImageFilter.GaussianBlur(radius=20))
     image = np.array(image).astype(np.float16) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
+    if add_noise:
+      noise = np.random.normal(loc=0, scale=1, size=image.shape)
+      image = np.clip((image + noise*0.3),0,1)
     image = torch.from_numpy(image)
     return 2.*image - 1.
 
