@@ -99,6 +99,11 @@ def process_and_generate(
         "eta": opt["eta"]
     }
 
+    for _, module in pipe.unet.named_modules():
+        if hasattr(module, "set_lora_layer"):
+            if module.lora_layer != None:
+                prompt_options["cross_attention_kwargs"] = {"scale":pipe._lora_scale}
+
     if opt["init_img"] != None:  # img2img
         if opt["mask_image"] != None:  # inpainting
             mask = opt["mask_image"].resize([opt["W"], opt["H"]])
