@@ -198,7 +198,8 @@ def generate_higher_res_upscale(image: any, image_name: str, prompt: str, negati
         "num_inference_steps": opt["steps"],
         "guidance_scale": opt["scale"],
         "num_images_per_prompt": 1,
-        "eta": opt["eta"]
+        "eta": opt["eta"],
+        "cross_attention_kwargs": {"scale":pipe._lora_scale},
     }
 
     result = pipe(**prompt_options).images[0]
