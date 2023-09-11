@@ -96,9 +96,13 @@ def process_and_generate(
         "num_inference_steps": opt["steps"],
         "guidance_scale": opt["scale"],
         "num_images_per_prompt": 1,
-        "eta": opt["eta"],
-        "cross_attention_kwargs": {"scale":pipe._lora_scale}
+        "eta": opt["eta"]
     }
+
+    for _, module in pipe.unet.named_modules():
+        if hasattr(module, "set_lora_layer"):
+            if module.lora_layer != None:
+                prompt_options["cross_attention_kwargs"] = {"scale":pipe._lora_scale}
 
     if opt["init_img"] != None:  # img2img
         if opt["mask_image"] != None:  # inpainting
@@ -199,8 +203,7 @@ def generate_higher_res_upscale(image: any, image_name: str, prompt: str, negati
         "num_inference_steps": opt["steps"],
         "guidance_scale": opt["scale"],
         "num_images_per_prompt": 1,
-        "eta": opt["eta"],
-        "cross_attention_kwargs": {"scale":pipe._lora_scale}
+        "eta": opt["eta"]
     }
 
     result = pipe(**prompt_options).images[0]
@@ -240,8 +243,7 @@ def generate_sd_upscale(image: any, image_name: str, prompt: str, negative: str,
         "num_inference_steps": opt["steps"],
         "guidance_scale": opt["scale"],
         "num_images_per_prompt": 1,
-        "eta": opt["eta"],
-        "cross_attention_kwargs": {"scale":pipe._lora_scale}
+        "eta": opt["eta"]
     }
 
     for i in range(batch_count):
