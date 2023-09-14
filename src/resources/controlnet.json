@@ -153,6 +153,12 @@
     },
     "fallback": false
   },
+  "qr monster (1.x only)": {
+    "epsilon": {
+      "url": "monster-labs/control_v1p_sd15_qrcode_monster"
+    },
+    "fallback": false
+  },
   "aesthetic (2.x only)": {
     "v_prediction": {
       "url": "krea/aesthetic-controlnet",
