@@ -279,7 +279,7 @@ giant salamander
 giant water bug
 gibbon
 Gigantopithecus
-gilmonster
+gila monster
 giraffe
 giraffe beetle
 glass frog
@@ -353,7 +353,6 @@ horse
 horsefly
 horseshoe crab
 house centipede
-house centipede
 house hippo
 housecat
 housefly
@@ -361,7 +360,6 @@ hoverfly
 howler monkey
 Humboldt squid
 hummingbird
-hummingbird hawk-moth
 hummingbird hawk-moth
 humpback whale
 Hupehsuchus
@@ -436,7 +434,7 @@ mandrill
 maned wolf
 mantis
 mantis shrimp
-mantray
+manta ray
 marabou stork
 marine iguana
 marmoset
@@ -455,7 +453,7 @@ mole
 mole crab
 mole cricket
 mole lizard
-molmola
+mola mola
 monarch butterfly
 mongoose
 monitor lizard
@@ -523,7 +521,7 @@ peacock spider
 peanut-headed lanternfly
 pelecinid wasp
 pelican
-pelicspider
+pelican spider
 penguin
 peregrine falcon
 periscope spider
@@ -569,7 +567,7 @@ pug
 pygmy hippo
 pygmy seahorse
 pygmy sperm whale
-pyjamsquid
+pyjama squid
 python
 quail
 Quetzalcoatlus
@@ -621,22 +619,22 @@ scorpionfish
 scorpionfly
 seagull
 seahorse
-seanemone
-seangel
-sebutterfly
+sea anemone
+sea angel
+sea butterfly
 secretarybird
-sehare
-selily
-selion
-sepen
-sepig
-serobin
-sescorpion
-sesnake
-sespider
-sesquirt
-seturtle
-seurchin
+sea hare
+sea lily
+sea lion
+sea pen
+sea pig
+sea robin
+sea scorpion
+sea snake
+sea spider
+sea squirt
+sea turtle
+sea urchin
 Sharovipteryx
 sheep
 shipworm
