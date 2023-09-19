@@ -155,7 +155,8 @@
   },
   "qr monster (1.x only)": {
     "epsilon": {
-      "url": "monster-labs/control_v1p_sd15_qrcode_monster"
+      "url": "monster-labs/control_v1p_sd15_qrcode_monster",
+      "subfolder": "v2"
     },
     "fallback": false
   },

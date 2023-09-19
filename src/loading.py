@@ -1,5 +1,3 @@
-
-
 import os
 import subprocess
 import requests
@@ -13,52 +11,93 @@ from src.utils import (
     find_modules_and_assign_padding_mode,
     get_huggingface_cache_path,
     login_to_huggingface,
-    process_embeddings_folder
+    process_embeddings_folder,
 )
 from src.scripts.convert_from_ckpt import (
     convert_ldm_vae_checkpoint_from_file,
 )
 
 
-def prepare_pipe_from_filepath(filepath: str, enable_attention_slicing: bool = False, enable_xformers: bool = False, to_cuda: bool = True) -> SimpleStableDiffusionPipeline:
+def prepare_pipe_from_filepath(
+    filepath: str,
+    enable_attention_slicing: bool = False,
+    enable_xformers: bool = False,
+    to_cuda: bool = True,
+) -> SimpleStableDiffusionPipeline:
     # TODO: check integrity of filepath
     pipe = load_ckpt(filepath)
     pipe = prepare_pipe_options(
-        pipe, enable_attention_slicing, enable_xformers, to_cuda)
+        pipe, enable_attention_slicing, enable_xformers, to_cuda
+    )
 
     pipe_info = {
         "prediction_type": pipe.scheduler.prediction_type,
-        "image_size": pipe.vae.config.sample_size
+        "image_size": pipe.vae.config.sample_size,
     }
 
     return pipe, pipe_info
 
 
-def prepare_pipe_from_diffusers_repo_id(repo_id: str, enable_attention_slicing: bool = False, enable_xformers: bool = False, to_cuda: bool = True) -> SimpleStableDiffusionPipeline:
-    pipe = load_diffusers_from_repo_id(repo_id)
+def prepare_pipe_from_diffusers_repo_id(
+    repo_id: str,
+    enable_attention_slicing: bool = False,
+    enable_xformers: bool = False,
+    to_cuda: bool = True,
+    subfolder: Optional[str] = None,
+) -> SimpleStableDiffusionPipeline:
+    pipe_options = {
+        "pretrained_model_name_or_path": repo_id,
+        "torch_dtype": torch.float16,
+        "requires_safety_checker": False,
+    }
+    if subfolder:
+        pipe_options["subfolder"] = subfolder
+
+    pipe = SimpleStableDiffusionPipeline.from_pretrained(**pipe_options)
     pipe = prepare_pipe_options(
-        pipe, enable_attention_slicing, enable_xformers, to_cuda)
+        pipe, enable_attention_slicing, enable_xformers, to_cuda
+    )
 
     pipe_info = {
         "prediction_type": pipe.scheduler.prediction_type,
-        "image_size": pipe.vae.config.sample_size
+        "image_size": pipe.vae.config.sample_size,
     }
 
     return pipe, pipe_info
 
 
-def prepare_pipe_from_presets(model_choice: dict, enable_attention_slicing: bool = False, enable_xformers: bool = False, to_cuda: bool = True) -> SimpleStableDiffusionPipeline:
+def load_diffusers_from_repo_id(repo_id: str) -> SimpleStableDiffusionPipeline:
+    # takes a diffusers repo id
+    return SimpleStableDiffusionPipeline.from_pretrained(
+        repo_id,
+        safety_checker=None,
+        requires_safety_checker=False,
+        torch_dtype=torch.float16,
+    )
+
+
+def prepare_pipe_from_presets(
+    model_choice: dict,
+    enable_attention_slicing: bool = False,
+    enable_xformers: bool = False,
+    to_cuda: bool = True,
+) -> SimpleStableDiffusionPipeline:
     model_download_folder = "non_hf_downloads/"
 
     if model_choice["type"] == "diffusers":
         pipe = load_diffusers_from_repo_id(model_choice["repo_id"])
     elif model_choice["type"] == "hf-file":
         filepath = download_file_from_hf(
-            model_choice["repo_id"], model_choice["filename"], f'{model_download_folder}{model_choice.get("save_as", model_choice["filename"])}')
+            model_choice["repo_id"],
+            model_choice["filename"],
+            f'{model_download_folder}{model_choice.get("save_as", model_choice["filename"])}',
+        )
         pipe = load_ckpt(filepath)
     elif model_choice["type"] == "civitai-model":
         filepath = get_model_file_from_civitai_with_model_id(
-            model_choice["model_id"], f"{model_download_folder}{model_choice['filename']}")
+            model_choice["model_id"],
+            f"{model_download_folder}{model_choice['filename']}",
+        )
         pipe = load_ckpt(filepath)
 
     if "vae" in model_choice:
@@ -66,23 +105,31 @@ def prepare_pipe_from_presets(model_choice: dict, enable_attention_slicing: bool
             vae_filepath = download_file_from_hf()
         elif model_choice["vae"]["type"] == "civitai":
             vae_filepath = get_vae_file_from_civitai_with_model_id(
-                model_choice["model_id"], f"{model_download_folder}{model_choice['filename']}")
+                model_choice["model_id"],
+                f"{model_download_folder}{model_choice['filename']}",
+            )
         pipe = load_vae_file_to_current_pipe(pipe, vae_filepath)
 
     pipe = prepare_pipe_options(
-        pipe, enable_attention_slicing, enable_xformers, to_cuda)
+        pipe, enable_attention_slicing, enable_xformers, to_cuda
+    )
 
     pipe_info = {
         "keyword": model_choice.get("keyword"),
         "prediction_type": model_choice["prediction"],
         "negative_keyword": model_choice.get("negative_keyword"),
-        "image_size": model_choice["image_size"]
+        "image_size": model_choice["image_size"],
     }
 
     return pipe, pipe_info
 
 
-def prepare_pipe_options(pipe: SimpleStableDiffusionPipeline, enable_attention_slicing: bool = False, enable_xformers: bool = False, to_cuda: bool = True) -> SimpleStableDiffusionPipeline:
+def prepare_pipe_options(
+    pipe: SimpleStableDiffusionPipeline,
+    enable_attention_slicing: bool = False,
+    enable_xformers: bool = False,
+    to_cuda: bool = True,
+) -> SimpleStableDiffusionPipeline:
     if enable_xformers:
         pipe.enable_xformers_memory_efficient_attention()
     elif enable_attention_slicing:
@@ -95,18 +142,16 @@ def prepare_pipe_options(pipe: SimpleStableDiffusionPipeline, enable_attention_s
     return pipe
 
 
-def load_diffusers_from_repo_id(repo_id: str) -> SimpleStableDiffusionPipeline:
-    # takes a diffusers repo id
-    return SimpleStableDiffusionPipeline.from_pretrained(
-        repo_id, safety_checker=None, requires_safety_checker=False, torch_dtype=torch.float16)
-
-
 def load_ckpt(ckpt_link: str) -> SimpleStableDiffusionPipeline:
     # takes a huggingface link or a filepath to a ckpt/safetensors
-    return SimpleStableDiffusionPipeline.from_ckpt(ckpt_link, torch_dtype=torch.float16, load_safety_checker=False)
+    return SimpleStableDiffusionPipeline.from_ckpt(
+        ckpt_link, torch_dtype=torch.float16, load_safety_checker=False
+    )
 
 
-def load_vae_file_to_current_pipe(pipe: SimpleStableDiffusionPipeline, vae_file_path: str) -> SimpleStableDiffusionPipeline:
+def load_vae_file_to_current_pipe(
+    pipe: SimpleStableDiffusionPipeline, vae_file_path: str
+) -> SimpleStableDiffusionPipeline:
     vae_config = dict(
         sample_size=pipe.vae.sample_size,
         in_channels=pipe.vae.in_channels,
@@ -119,10 +164,14 @@ def load_vae_file_to_current_pipe(pipe: SimpleStableDiffusionPipeline, vae_file_
     )
 
     vae_ckpt = torch.load(vae_file_path, map_location="cuda")
-    vae_dict_1 = {k: v for k, v in vae_ckpt["state_dict"].items(
-    ) if k[0:4] != "loss" and k not in {"model_ema.decay", "model_ema.num_updates"}}
+    vae_dict_1 = {
+        k: v
+        for k, v in vae_ckpt["state_dict"].items()
+        if k[0:4] != "loss" and k not in {"model_ema.decay", "model_ema.num_updates"}
+    }
     converted_vae_checkpoint = convert_ldm_vae_checkpoint_from_file(
-        vae_dict_1, vae_config)
+        vae_dict_1, vae_config
+    )
 
     vae = AutoencoderKL(**vae_config)
     vae.load_state_dict(converted_vae_checkpoint)
@@ -132,16 +181,17 @@ def load_vae_file_to_current_pipe(pipe: SimpleStableDiffusionPipeline, vae_file_
     pipe = pipe.to(torch.float16)
     return pipe
 
+
 # functions for downloading files
 
 
 def download_file_with_requests(url: str, filename: str) -> str:
     response = requests.get(url, stream=True)
-    total = int(response.headers.get('content-length', 0))
-    with open(filename, 'wb') as file, tqdm(
+    total = int(response.headers.get("content-length", 0))
+    with open(filename, "wb") as file, tqdm(
         desc="Downloading model",
         total=total,
-        unit='iB',
+        unit="iB",
         unit_scale=True,
         unit_divisor=1024,
     ) as bar:
@@ -151,10 +201,16 @@ def download_file_with_requests(url: str, filename: str) -> str:
     return filename
 
 
-def download_file_from_hf(repo_id: str, filename_to_download: str, filename_to_save_as: str) -> str:
+def download_file_from_hf(
+    repo_id: str, filename_to_download: str, filename_to_save_as: str
+) -> str:
     # returns the filepath to the downloaded file for load_ckpt
     # was initially set up for hf_hub_download, but that doesn't let you rename files, and from_ckpt doesn't like underscores, and i was too lazy to fix the model file
-    return download_file_with_requests(f"https://huggingface.co/{repo_id}/resolve/main/{filename_to_download}", filename_to_save_as)
+    return download_file_with_requests(
+        f"https://huggingface.co/{repo_id}/resolve/main/{filename_to_download}",
+        filename_to_save_as,
+    )
+
 
 # civitai functions
 
@@ -185,6 +241,7 @@ def get_vae_file_from_civitai_with_model_id(model_id: str, filename: str):
     else:
         return filename
 
+
 ###
 
 
@@ -193,20 +250,29 @@ def download_a_list_of_embeddings(embeddings_folder: str, embeddings_list):
         if not os.path.exists(os.path.join(embeddings_folder, emb["filename"])):
             if emb.get("type") == "civitai_embedding":
                 get_model_file_from_civitai_with_model_id(
-                    emb["model_id"], os.path.join(embeddings_folder, emb["filename"]))
+                    emb["model_id"], os.path.join(embeddings_folder, emb["filename"])
+                )
             else:
                 subprocess.run(
-                    ["wget", "-O", os.path.join(embeddings_folder, emb["filename"]), emb["download_url"]])
+                    [
+                        "wget",
+                        "-O",
+                        os.path.join(embeddings_folder, emb["filename"]),
+                        emb["download_url"],
+                    ]
+                )
 
 
-def load_embeddings(embeddings_folder: str, pipe: SimpleStableDiffusionPipeline) -> SimpleStableDiffusionPipeline:
+def load_embeddings(
+    embeddings_folder: str, pipe: SimpleStableDiffusionPipeline
+) -> SimpleStableDiffusionPipeline:
     if embeddings_folder and os.path.exists(embeddings_folder):
         emb_list = process_embeddings_folder(embeddings_folder)
         loaded_embeddings = []
         unloaded_embeddings = []
 
         for emb_path in emb_list:
-            token = os.path.basename(emb_path.split('.')[0])
+            token = os.path.basename(emb_path.split(".")[0])
             try:
                 pipe.load_textual_inversion(emb_path, token=token)
                 loaded_embeddings.append(token)
@@ -217,4 +283,25 @@ def load_embeddings(embeddings_folder: str, pipe: SimpleStableDiffusionPipeline)
         print(f"Loaded embeddings:{loaded_embeddings}")
         print(f"Not loaded embeddings:{unloaded_embeddings}")
 
+    return pipe
+
+
+def attach_lora_to_pipe_from_drive_or_huggingface(
+    lora_filepath_or_huggingface_repo_id: str,
+    pipe: SimpleStableDiffusionPipeline,
+    lora_weight: float = 0.5,
+) -> SimpleStableDiffusionPipeline:
+    pipe.load_lora_weights(lora_filepath_or_huggingface_repo_id)
+    pipe._lora_scale = lora_weight
+    find_modules_and_assign_padding_mode(pipe, "setup")
+    return pipe
+
+
+def attach_lora_from_civitai(
+    civitai_model_id: int, pipe: SimpleStableDiffusionPipeline, lora_weight: float = 0.5
+) -> SimpleStableDiffusionPipeline:
+    lora_filepath = get_model_file_from_civitai_with_model_id(civitai_model_id)
+    pipe.load_lora_weights(lora_filepath)
+    pipe._lora_scale = lora_weight
+    find_modules_and_assign_padding_mode(pipe, "setup")
     return pipe

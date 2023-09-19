@@ -16,20 +16,28 @@ from transformers import CLIPImageProcessor, CLIPTextModel, CLIPTokenizer
 from diffusers import DiffusionPipeline
 from diffusers.configuration_utils import FrozenDict
 from diffusers.image_processor import VaeImageProcessor
-from diffusers.loaders import FromSingleFileMixin, LoraLoaderMixin, TextualInversionLoaderMixin
+from diffusers.loaders import (
+    FromSingleFileMixin,
+    LoraLoaderMixin,
+    TextualInversionLoaderMixin,
+)
 from diffusers.models import AutoencoderKL, UNet2DConditionModel, ControlNetModel
 from diffusers.models.modeling_utils import ModelMixin
+
 # from diffusers.multicontrolnet import MultiControlNetModel
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput, StableDiffusionSafetyChecker
+from diffusers.pipelines.stable_diffusion import (
+    StableDiffusionPipelineOutput,
+    StableDiffusionSafetyChecker,
+)
 from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.utils.torch_utils import randn_tensor
 from diffusers.utils import (
     PIL_INTERPOLATION,
     deprecate,
     is_accelerate_available,
     is_accelerate_version,
     logging,
-    randn_tensor,
-    BaseOutput
+    BaseOutput,
 )
 
 # TODO: will remove these two when these are in the diffusers pip package
@@ -51,7 +59,9 @@ class MultiControlNetModel(ModelMixin):
             `ControlNetModel` as a list.
     """
 
-    def __init__(self, controlnets: Union[List[ControlNetModel], Tuple[ControlNetModel]]):
+    def __init__(
+        self, controlnets: Union[List[ControlNetModel], Tuple[ControlNetModel]]
+    ):
         super().__init__()
         self.nets = nn.ModuleList(controlnets)
 
@@ -69,7 +79,9 @@ class MultiControlNetModel(ModelMixin):
         guess_mode: bool = False,
         return_dict: bool = True,
     ) -> Union[ControlNetOutput, Tuple]:
-        for i, (image, scale, controlnet) in enumerate(zip(controlnet_cond, conditioning_scale, self.nets)):
+        for i, (image, scale, controlnet) in enumerate(
+            zip(controlnet_cond, conditioning_scale, self.nets)
+        ):
             down_samples, mid_sample = controlnet(
                 sample,
                 timestep,
@@ -90,11 +102,14 @@ class MultiControlNetModel(ModelMixin):
             else:
                 down_block_res_samples = [
                     samples_prev + samples_curr
-                    for samples_prev, samples_curr in zip(down_block_res_samples, down_samples)
+                    for samples_prev, samples_curr in zip(
+                        down_block_res_samples, down_samples
+                    )
                 ]
                 mid_block_res_sample += mid_sample
 
         return down_block_res_samples, mid_block_res_sample
+
 
 # ------------------------------------------------------------------------------
 
@@ -102,7 +117,8 @@ class MultiControlNetModel(ModelMixin):
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
 # from Automatic's webui
-schedule_parser = lark.Lark(r"""
+schedule_parser = lark.Lark(
+    r"""
 !start: (prompt | /[][():]/+)*
 prompt: (emphasized | scheduled | alternate | plain | WHITESPACE)*
 !emphasized: "(" prompt ")"
@@ -113,10 +129,13 @@ alternate: "[" prompt ("|" prompt)+ "]"
 WHITESPACE: /\s+/
 plain: /([^\\\[\]():|]|\\.)+/
 %import common.SIGNED_NUMBER -> NUMBER
-""")
+"""
+)
 
 
-def get_learned_conditioning_prompt_schedules(prompts: List[str], steps: int) -> List[List[Tuple[int, str]]]:
+def get_learned_conditioning_prompt_schedules(
+    prompts: List[str], steps: int
+) -> List[List[Tuple[int, str]]]:
     """
     This function takes in a list of prompts and the total number of steps, and returns a list of lists.
     Each sub-list represents the steps at which a prompt should be used, and the corresponding prompt text.
@@ -144,7 +163,8 @@ def get_learned_conditioning_prompt_schedules(prompts: List[str], steps: int) ->
                 l.append(tree.children[-1])
 
             def alternate(self, tree):
-                l.extend(range(1, steps+1))
+                l.extend(range(1, steps + 1))
+
         CollectSteps().visit(tree)
         return sorted(set(l))
 
@@ -164,7 +184,8 @@ def get_learned_conditioning_prompt_schedules(prompts: List[str], steps: int) ->
                     else:
                         for gen in x:
                             yield from flatten(gen)
-                return ''.join(flatten(args))
+
+                return "".join(flatten(args))
 
             def plain(self, args):
                 yield args[0].value
@@ -172,6 +193,7 @@ def get_learned_conditioning_prompt_schedules(prompts: List[str], steps: int) ->
             def __default__(self, data, children, meta):
                 for child in children:
                     yield from child
+
         return AtStep().transform(tree)
 
     def get_schedule(prompt):
@@ -180,6 +202,7 @@ def get_learned_conditioning_prompt_schedules(prompts: List[str], steps: int) ->
         except lark.exceptions.LarkError as e:
             if 0:
                 import traceback
+
                 traceback.print_exc()
             return [[steps, prompt]]
         return [[t, at_step(t, tree)] for t in collect_steps(steps, tree)]
@@ -300,7 +323,9 @@ def parse_prompt_attention(text):
     return res
 
 
-def get_prompts_with_weights(pipe: DiffusionPipeline, prompt: List[str], max_length: int):
+def get_prompts_with_weights(
+    pipe: DiffusionPipeline, prompt: List[str], max_length: int
+):
     r"""
     Tokenize a list of prompts and return its tokens with weights of each token.
 
@@ -332,22 +357,27 @@ def get_prompts_with_weights(pipe: DiffusionPipeline, prompt: List[str], max_len
         weights.append(text_weight)
     if truncated:
         logger.warning(
-            "Prompt was truncated. Try to shorten the prompt or increase max_embeddings_multiples")
+            "Prompt was truncated. Try to shorten the prompt or increase max_embeddings_multiples"
+        )
     return tokens, weights
 
 
-def pad_tokens_and_weights(tokens, weights, max_length, bos, eos, pad, no_boseos_middle=True, chunk_length=77):
+def pad_tokens_and_weights(
+    tokens, weights, max_length, bos, eos, pad, no_boseos_middle=True, chunk_length=77
+):
     r"""
     Pad the tokens (with starting and ending tokens) and weights (with 1.0) to max_length.
     """
     max_embeddings_multiples = (max_length - 2) // (chunk_length - 2)
-    weights_length = max_length if no_boseos_middle else max_embeddings_multiples * chunk_length
+    weights_length = (
+        max_length if no_boseos_middle else max_embeddings_multiples * chunk_length
+    )
     for i in range(len(tokens)):
-        tokens[i] = [bos] + tokens[i] + [pad] * \
-            (max_length - 1 - len(tokens[i]) - 1) + [eos]
+        tokens[i] = (
+            [bos] + tokens[i] + [pad] * (max_length - 1 - len(tokens[i]) - 1) + [eos]
+        )
         if no_boseos_middle:
-            weights[i] = [1.0] + weights[i] + [1.0] * \
-                (max_length - 1 - len(weights[i]))
+            weights[i] = [1.0] + weights[i] + [1.0] * (max_length - 1 - len(weights[i]))
         else:
             w = []
             if len(weights[i]) == 0:
@@ -355,8 +385,12 @@ def pad_tokens_and_weights(tokens, weights, max_length, bos, eos, pad, no_boseos
             else:
                 for j in range(max_embeddings_multiples):
                     w.append(1.0)  # weight for starting token in this chunk
-                    w += weights[i][j * (chunk_length - 2)
-                                         : min(len(weights[i]), (j + 1) * (chunk_length - 2))]
+                    w += weights[i][
+                        j
+                        * (chunk_length - 2) : min(
+                            len(weights[i]), (j + 1) * (chunk_length - 2)
+                        )
+                    ]
                     w.append(1.0)  # weight for ending token in this chunk
                 w += [1.0] * (weights_length - len(w))
             weights[i] = w[:]
@@ -379,8 +413,9 @@ def get_unweighted_text_embeddings(
         text_embeddings = []
         for i in range(max_embeddings_multiples):
             # extract the i-th chunk
-            text_input_chunk = text_input[:, i * (chunk_length - 2): (
-                i + 1) * (chunk_length - 2) + 2].clone()
+            text_input_chunk = text_input[
+                :, i * (chunk_length - 2) : (i + 1) * (chunk_length - 2) + 2
+            ].clone()
 
             # cover the head and the tail by the starting and the ending tokens
             text_input_chunk[:, 0] = text_input[0, 0]
@@ -439,22 +474,26 @@ def get_weighted_text_embeddings(
         skip_weighting (`bool`, *optional*, defaults to `False`):
             Skip the weighting. When the parsing is skipped, it is forced True.
     """
-    max_length = (pipe.tokenizer.model_max_length - 2) * \
-        max_embeddings_multiples + 2
+    max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2
     if isinstance(prompt, str):
         prompt = [prompt]
 
     if not skip_parsing:
         prompt_tokens, prompt_weights = get_prompts_with_weights(
-            pipe, prompt, max_length - 2)
+            pipe, prompt, max_length - 2
+        )
         if uncond_prompt is not None:
             if isinstance(uncond_prompt, str):
                 uncond_prompt = [uncond_prompt]
             uncond_tokens, uncond_weights = get_prompts_with_weights(
-                pipe, uncond_prompt, max_length - 2)
+                pipe, uncond_prompt, max_length - 2
+            )
     else:
         prompt_tokens = [
-            token[1:-1] for token in pipe.tokenizer(prompt, max_length=max_length, truncation=True).input_ids
+            token[1:-1]
+            for token in pipe.tokenizer(
+                prompt, max_length=max_length, truncation=True
+            ).input_ids
         ]
         prompt_weights = [[1.0] * len(token) for token in prompt_tokens]
         if uncond_prompt is not None:
@@ -462,23 +501,23 @@ def get_weighted_text_embeddings(
                 uncond_prompt = [uncond_prompt]
             uncond_tokens = [
                 token[1:-1]
-                for token in pipe.tokenizer(uncond_prompt, max_length=max_length, truncation=True).input_ids
+                for token in pipe.tokenizer(
+                    uncond_prompt, max_length=max_length, truncation=True
+                ).input_ids
             ]
             uncond_weights = [[1.0] * len(token) for token in uncond_tokens]
 
     # round up the longest length of tokens to a multiple of (model_max_length - 2)
     max_length = max([len(token) for token in prompt_tokens])
     if uncond_prompt is not None:
-        max_length = max(max_length, max(
-            [len(token) for token in uncond_tokens]))
+        max_length = max(max_length, max([len(token) for token in uncond_tokens]))
 
     max_embeddings_multiples = min(
         max_embeddings_multiples,
         (max_length - 1) // (pipe.tokenizer.model_max_length - 2) + 1,
     )
     max_embeddings_multiples = max(1, max_embeddings_multiples)
-    max_length = (pipe.tokenizer.model_max_length - 2) * \
-        max_embeddings_multiples + 2
+    max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2
 
     # pad the length of tokens and weights
     bos = pipe.tokenizer.bos_token_id
@@ -494,8 +533,7 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,
         chunk_length=pipe.tokenizer.model_max_length,
     )
-    prompt_tokens = torch.tensor(
-        prompt_tokens, dtype=torch.long, device=pipe.device)
+    prompt_tokens = torch.tensor(prompt_tokens, dtype=torch.long, device=pipe.device)
     if uncond_prompt is not None:
         uncond_tokens, uncond_weights = pad_tokens_and_weights(
             uncond_tokens,
@@ -508,7 +546,8 @@ def get_weighted_text_embeddings(
             chunk_length=pipe.tokenizer.model_max_length,
         )
         uncond_tokens = torch.tensor(
-            uncond_tokens, dtype=torch.long, device=pipe.device)
+            uncond_tokens, dtype=torch.long, device=pipe.device
+        )
 
     # get the embeddings
     text_embeddings = get_unweighted_text_embeddings(
@@ -518,7 +557,8 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,
     )
     prompt_weights = torch.tensor(
-        prompt_weights, dtype=text_embeddings.dtype, device=text_embeddings.device)
+        prompt_weights, dtype=text_embeddings.dtype, device=text_embeddings.device
+    )
     if uncond_prompt is not None:
         uncond_embeddings = get_unweighted_text_embeddings(
             pipe,
@@ -527,26 +567,37 @@ def get_weighted_text_embeddings(
             no_boseos_middle=no_boseos_middle,
         )
         uncond_weights = torch.tensor(
-            uncond_weights, dtype=uncond_embeddings.dtype, device=uncond_embeddings.device)
+            uncond_weights,
+            dtype=uncond_embeddings.dtype,
+            device=uncond_embeddings.device,
+        )
 
     # assign weights to the prompts and normalize in the sense of mean
     # TODO: should we normalize by chunk or in a whole (current implementation)?
     if (not skip_parsing) and (not skip_weighting):
-        previous_mean = text_embeddings.float().mean(
-            axis=[-2, -1]).to(text_embeddings.dtype)
+        previous_mean = (
+            text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)
+        )
         text_embeddings *= prompt_weights.unsqueeze(-1)
-        current_mean = text_embeddings.float().mean(
-            axis=[-2, -1]).to(text_embeddings.dtype)
-        text_embeddings *= (previous_mean /
-                            current_mean).unsqueeze(-1).unsqueeze(-1)
+        current_mean = (
+            text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)
+        )
+        text_embeddings *= (previous_mean / current_mean).unsqueeze(-1).unsqueeze(-1)
         if uncond_prompt is not None:
-            previous_mean = uncond_embeddings.float().mean(
-                axis=[-2, -1]).to(uncond_embeddings.dtype)
+            previous_mean = (
+                uncond_embeddings.float()
+                .mean(axis=[-2, -1])
+                .to(uncond_embeddings.dtype)
+            )
             uncond_embeddings *= uncond_weights.unsqueeze(-1)
-            current_mean = uncond_embeddings.float().mean(
-                axis=[-2, -1]).to(uncond_embeddings.dtype)
-            uncond_embeddings *= (previous_mean /
-                                  current_mean).unsqueeze(-1).unsqueeze(-1)
+            current_mean = (
+                uncond_embeddings.float()
+                .mean(axis=[-2, -1])
+                .to(uncond_embeddings.dtype)
+            )
+            uncond_embeddings *= (
+                (previous_mean / current_mean).unsqueeze(-1).unsqueeze(-1)
+            )
 
     if uncond_prompt is not None:
         return text_embeddings, uncond_embeddings
@@ -568,8 +619,10 @@ def preprocess_mask(mask, batch_size, scale_factor=8):
         mask = mask.convert("L")
         w, h = mask.size
         w, h = (x - x % 8 for x in (w, h))  # resize to integer multiple of 8
-        mask = mask.resize((w // scale_factor, h // scale_factor),
-                           resample=PIL_INTERPOLATION["nearest"])
+        mask = mask.resize(
+            (w // scale_factor, h // scale_factor),
+            resample=PIL_INTERPOLATION["nearest"],
+        )
         mask = np.array(mask).astype(np.float32) / 255.0
         mask = np.tile(mask, (4, 1, 1))
         mask = np.vstack([mask[None]] * batch_size)
@@ -592,7 +645,8 @@ def preprocess_mask(mask, batch_size, scale_factor=8):
         h, w = mask.shape[-2:]
         h, w = (x - x % 8 for x in (h, w))  # resize to integer multiple of 8
         mask = torch.nn.functional.interpolate(
-            mask, (h // scale_factor, w // scale_factor))
+            mask, (h // scale_factor, w // scale_factor)
+        )
         return mask
 
 
@@ -643,7 +697,10 @@ class SimpleStableDiffusionPipeline(
         super().__init__()
         safety_checker = None
 
-        if hasattr(scheduler.config, "steps_offset") and scheduler.config.steps_offset != 1:
+        if (
+            hasattr(scheduler.config, "steps_offset")
+            and scheduler.config.steps_offset != 1
+        ):
             deprecation_message = (
                 f"The configuration file of this scheduler: {scheduler} is outdated. `steps_offset`"
                 f" should be set to 1 instead of {scheduler.config.steps_offset}. Please make sure "
@@ -652,13 +709,17 @@ class SimpleStableDiffusionPipeline(
                 " it would be very nice if you could open a Pull request for the `scheduler/scheduler_config.json`"
                 " file"
             )
-            deprecate("steps_offset!=1", "1.0.0",
-                      deprecation_message, standard_warn=False)
+            deprecate(
+                "steps_offset!=1", "1.0.0", deprecation_message, standard_warn=False
+            )
             new_config = dict(scheduler.config)
             new_config["steps_offset"] = 1
             scheduler._internal_dict = FrozenDict(new_config)
 
-        if hasattr(scheduler.config, "clip_sample") and scheduler.config.clip_sample is True:
+        if (
+            hasattr(scheduler.config, "clip_sample")
+            and scheduler.config.clip_sample is True
+        ):
             deprecation_message = (
                 f"The configuration file of this scheduler: {scheduler} has not set the configuration `clip_sample`."
                 " `clip_sample` should be set to False in the configuration file. Please make sure to update the"
@@ -666,8 +727,9 @@ class SimpleStableDiffusionPipeline(
                 " future versions. If you have downloaded this checkpoint from the Hugging Face Hub, it would be very"
                 " nice if you could open a Pull request for the `scheduler/scheduler_config.json` file"
             )
-            deprecate("clip_sample not set", "1.0.0",
-                      deprecation_message, standard_warn=False)
+            deprecate(
+                "clip_sample not set", "1.0.0", deprecation_message, standard_warn=False
+            )
             new_config = dict(scheduler.config)
             new_config["clip_sample"] = False
             scheduler._internal_dict = FrozenDict(new_config)
@@ -688,11 +750,16 @@ class SimpleStableDiffusionPipeline(
         #         " checker. If you do not want to use the safety checker, you can pass `'safety_checker=None'` instead."
         #     )
 
-        is_unet_version_less_0_9_0 = hasattr(unet.config, "_diffusers_version") and version.parse(
+        is_unet_version_less_0_9_0 = hasattr(
+            unet.config, "_diffusers_version"
+        ) and version.parse(
             version.parse(unet.config._diffusers_version).base_version
-        ) < version.parse("0.9.0.dev0")
-        is_unet_sample_size_less_64 = hasattr(
-            unet.config, "sample_size") and unet.config.sample_size < 64
+        ) < version.parse(
+            "0.9.0.dev0"
+        )
+        is_unet_sample_size_less_64 = (
+            hasattr(unet.config, "sample_size") and unet.config.sample_size < 64
+        )
         if is_unet_version_less_0_9_0 and is_unet_sample_size_less_64:
             deprecation_message = (
                 "The configuration file of the unet has set the default `sample_size` to smaller than"
@@ -705,8 +772,9 @@ class SimpleStableDiffusionPipeline(
                 " checkpoint from the Hugging Face Hub, it would be very nice if you could open a Pull request for"
                 " the `unet/config.json` file"
             )
-            deprecate("sample_size<64", "1.0.0",
-                      deprecation_message, standard_warn=False)
+            deprecate(
+                "sample_size<64", "1.0.0", deprecation_message, standard_warn=False
+            )
             new_config = dict(unet.config)
             new_config["sample_size"] = 64
             unet._internal_dict = FrozenDict(new_config)
@@ -719,11 +787,9 @@ class SimpleStableDiffusionPipeline(
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
-        self.vae_scale_factor = 2 ** (
-            len(self.vae.config.block_out_channels) - 1)
+        self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
 
-        self.image_processor = VaeImageProcessor(
-            vae_scale_factor=self.vae_scale_factor)
+        self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
         self.controlnet = None
 
     def enable_vae_slicing(self):
@@ -771,7 +837,8 @@ class SimpleStableDiffusionPipeline(
             from accelerate import cpu_offload
         else:
             raise ImportError(
-                "`enable_sequential_cpu_offload` requires `accelerate v0.14.0` or higher")
+                "`enable_sequential_cpu_offload` requires `accelerate v0.14.0` or higher"
+            )
 
         device = torch.device(f"cuda:{gpu_id}")
 
@@ -784,8 +851,9 @@ class SimpleStableDiffusionPipeline(
             cpu_offload(cpu_offloaded_model, device)
 
         if self.safety_checker is not None:
-            cpu_offload(self.safety_checker,
-                        execution_device=device, offload_buffers=True)
+            cpu_offload(
+                self.safety_checker, execution_device=device, offload_buffers=True
+            )
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.enable_model_cpu_offload
     def enable_model_cpu_offload(self, gpu_id=0):
@@ -799,7 +867,8 @@ class SimpleStableDiffusionPipeline(
             from accelerate import cpu_offload_with_hook
         else:
             raise ImportError(
-                "`enable_model_cpu_offload` requires `accelerate v0.17.0` or higher.")
+                "`enable_model_cpu_offload` requires `accelerate v0.17.0` or higher."
+            )
 
         device = torch.device(f"cuda:{gpu_id}")
 
@@ -811,11 +880,13 @@ class SimpleStableDiffusionPipeline(
         hook = None
         for cpu_offloaded_model in [self.text_encoder, self.unet, self.vae]:
             _, hook = cpu_offload_with_hook(
-                cpu_offloaded_model, device, prev_module_hook=hook)
+                cpu_offloaded_model, device, prev_module_hook=hook
+            )
 
         if self.safety_checker is not None:
             _, hook = cpu_offload_with_hook(
-                self.safety_checker, device, prev_module_hook=hook)
+                self.safety_checker, device, prev_module_hook=hook
+            )
 
         # We'll offload the last model manually.
         self.final_offload_hook = hook
@@ -891,7 +962,8 @@ class SimpleStableDiffusionPipeline(
                 prompt = self.maybe_convert_prompt(prompt, self.tokenizer)
                 if do_classifier_free_guidance and negative_prompt_embeds is None:
                     negative_prompt = self.maybe_convert_prompt(
-                        negative_prompt, self.tokenizer)
+                        negative_prompt, self.tokenizer
+                    )
 
             prompt_embeds1, negative_prompt_embeds1 = get_weighted_text_embeddings(
                 pipe=self,
@@ -908,14 +980,17 @@ class SimpleStableDiffusionPipeline(
         # duplicate text embeddings for each generation per prompt, using mps friendly method
         prompt_embeds = prompt_embeds.repeat(1, num_images_per_prompt, 1)
         prompt_embeds = prompt_embeds.view(
-            bs_embed * num_images_per_prompt, seq_len, -1)
+            bs_embed * num_images_per_prompt, seq_len, -1
+        )
 
         if do_classifier_free_guidance:
             bs_embed, seq_len, _ = negative_prompt_embeds.shape
             negative_prompt_embeds = negative_prompt_embeds.repeat(
-                1, num_images_per_prompt, 1)
+                1, num_images_per_prompt, 1
+            )
             negative_prompt_embeds = negative_prompt_embeds.view(
-                bs_embed * num_images_per_prompt, seq_len, -1)
+                bs_embed * num_images_per_prompt, seq_len, -1
+            )
             prompt_embeds = torch.cat([negative_prompt_embeds, prompt_embeds])
 
         return prompt_embeds
@@ -933,15 +1008,17 @@ class SimpleStableDiffusionPipeline(
     ):
         if height % 8 != 0 or width % 8 != 0:
             raise ValueError(
-                f"`height` and `width` have to be divisible by 8 but are {height} and {width}.")
+                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
+            )
 
         if strength < 0 or strength > 1:
             raise ValueError(
-                f"The value of strength should in [0.0, 1.0] but is {strength}")
+                f"The value of strength should in [0.0, 1.0] but is {strength}"
+            )
 
         if (callback_steps is None) or (
-            callback_steps is not None and (not isinstance(
-                callback_steps, int) or callback_steps <= 0)
+            callback_steps is not None
+            and (not isinstance(callback_steps, int) or callback_steps <= 0)
         ):
             raise ValueError(
                 f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
@@ -957,9 +1034,12 @@ class SimpleStableDiffusionPipeline(
             raise ValueError(
                 "Provide either `prompt` or `prompt_embeds`. Cannot leave both `prompt` and `prompt_embeds` undefined."
             )
-        elif prompt is not None and (not isinstance(prompt, str) and not isinstance(prompt, list)):
+        elif prompt is not None and (
+            not isinstance(prompt, str) and not isinstance(prompt, list)
+        ):
             raise ValueError(
-                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}")
+                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
+            )
 
         if negative_prompt is not None and negative_prompt_embeds is not None:
             raise ValueError(
@@ -981,21 +1061,21 @@ class SimpleStableDiffusionPipeline(
         else:
             # get the original timestep using init_timestep
             init_timestep = min(
-                int(num_inference_steps * strength), num_inference_steps)
+                int(num_inference_steps * strength), num_inference_steps
+            )
 
             t_start = max(num_inference_steps - init_timestep, 0)
-            timesteps = self.scheduler.timesteps[t_start *
-                                                 self.scheduler.order:]
+            timesteps = self.scheduler.timesteps[t_start * self.scheduler.order :]
 
             return timesteps, num_inference_steps - t_start
 
     def run_safety_checker(self, image, device, dtype):
         if self.safety_checker is not None:
             safety_checker_input = self.feature_extractor(
-                self.numpy_to_pil(image), return_tensors="pt").to(device)
+                self.numpy_to_pil(image), return_tensors="pt"
+            ).to(device)
             image, has_nsfw_concept = self.safety_checker(
-                images=image, clip_input=safety_checker_input.pixel_values.to(
-                    dtype)
+                images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
             )
         else:
             has_nsfw_concept = None
@@ -1015,15 +1095,17 @@ class SimpleStableDiffusionPipeline(
         # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
         # and should be between [0, 1]
 
-        accepts_eta = "eta" in set(inspect.signature(
-            self.scheduler.step).parameters.keys())
+        accepts_eta = "eta" in set(
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
 
         # check if the scheduler accepts generator
         accepts_generator = "generator" in set(
-            inspect.signature(self.scheduler.step).parameters.keys())
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
         if accepts_generator:
             extra_step_kwargs["generator"] = generator
         return extra_step_kwargs
@@ -1044,8 +1126,12 @@ class SimpleStableDiffusionPipeline(
     ):
         if image is None:
             batch_size = batch_size * num_images_per_prompt
-            shape = (batch_size, num_channels_latents, height //
-                     self.vae_scale_factor, width // self.vae_scale_factor)
+            shape = (
+                batch_size,
+                num_channels_latents,
+                height // self.vae_scale_factor,
+                width // self.vae_scale_factor,
+            )
             if isinstance(generator, list) and len(generator) != batch_size:
                 raise ValueError(
                     f"You have passed a list of generators of length {len(generator)}, but requested an effective batch"
@@ -1054,7 +1140,8 @@ class SimpleStableDiffusionPipeline(
 
             if latents is None:
                 latents = randn_tensor(
-                    shape, generator=generator, device=device, dtype=dtype)
+                    shape, generator=generator, device=device, dtype=dtype
+                )
             else:
                 latents = latents.to(device)
 
@@ -1068,15 +1155,14 @@ class SimpleStableDiffusionPipeline(
             init_latents = self.vae.config.scaling_factor * init_latents
 
             # Expand init_latents for batch_size and num_images_per_prompt
-            init_latents = torch.cat(
-                [init_latents] * num_images_per_prompt, dim=0)
+            init_latents = torch.cat([init_latents] * num_images_per_prompt, dim=0)
             init_latents_orig = init_latents
 
             # add noise to latents using the timesteps
             noise = randn_tensor(
-                init_latents.shape, generator=generator, device=self.device, dtype=dtype)
-            init_latents = self.scheduler.add_noise(
-                init_latents, noise, timestep)
+                init_latents.shape, generator=generator, device=self.device, dtype=dtype
+            )
+            init_latents = self.scheduler.add_noise(init_latents, noise, timestep)
             latents = init_latents
             return latents, init_latents_orig, noise
 
@@ -1102,7 +1188,8 @@ class SimpleStableDiffusionPipeline(
                 for image_ in image:
                     image_ = image_.convert("RGB")
                     image_ = image_.resize(
-                        (width, height), resample=PIL_INTERPOLATION["lanczos"])
+                        (width, height), resample=PIL_INTERPOLATION["lanczos"]
+                    )
                     image_ = np.array(image_)
                     image_ = image_[None, :]
                     images.append(image_)
@@ -1148,26 +1235,34 @@ class SimpleStableDiffusionPipeline(
         num_images_per_prompt: Optional[int] = 1,
         add_predicted_noise: Optional[bool] = False,
         eta: float = 0.0,
-        generator: Optional[Union[torch.Generator,
-                                  List[torch.Generator]]] = None,
+        generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
         latents: Optional[torch.FloatTensor] = None,
         prompt_embeds: Optional[torch.FloatTensor] = None,
         negative_prompt_embeds: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 3,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
-        callback: Optional[Callable[[
-            int, int, torch.FloatTensor], None]] = None,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
-        controlnet_model: Optional[Union[ControlNetModel, List[ControlNetModel],
-                                         Tuple[ControlNetModel], MultiControlNetModel]] = None,
-        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
-                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        controlnet_model: Optional[
+            Union[
+                ControlNetModel,
+                List[ControlNetModel],
+                Tuple[ControlNetModel],
+                MultiControlNetModel,
+            ]
+        ] = None,
+        controlnet_image: Union[
+            torch.FloatTensor,
+            PIL.Image.Image,
+            List[torch.FloatTensor],
+            List[PIL.Image.Image],
+        ] = None,
         controlnet_conditioning_scale: float = 1.0,
         guess_mode: bool = False,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -1263,7 +1358,14 @@ class SimpleStableDiffusionPipeline(
 
         # 1. Check inputs. Raise error if not correct
         self.check_inputs(
-            prompt, height, width, strength, callback_steps, negative_prompt, prompt_embeds, negative_prompt_embeds
+            prompt,
+            height,
+            width,
+            strength,
+            callback_steps,
+            negative_prompt,
+            prompt_embeds,
+            negative_prompt_embeds,
         )
 
         # 2. Define call parameters
@@ -1282,14 +1384,16 @@ class SimpleStableDiffusionPipeline(
 
         # 3. If using controlnet, prepare controlnet
         if controlnet_model is not None and controlnet_image is not None:
-
             # prepare model
             if isinstance(controlnet_model, (list, tuple)):
                 controlnet_model = MultiControlNetModel(controlnet_model)
 
-            if isinstance(controlnet_model, MultiControlNetModel) and isinstance(controlnet_conditioning_scale, float):
-                controlnet_conditioning_scale = [
-                    controlnet_conditioning_scale] * len(controlnet_model.nets)
+            if isinstance(controlnet_model, MultiControlNetModel) and isinstance(
+                controlnet_conditioning_scale, float
+            ):
+                controlnet_conditioning_scale = [controlnet_conditioning_scale] * len(
+                    controlnet_model.nets
+                )
 
             global_pool_conditions = (
                 controlnet_model.config.global_pool_conditions
@@ -1334,17 +1438,19 @@ class SimpleStableDiffusionPipeline(
         # 4. set timesteps (changed)
         self.scheduler.set_timesteps(num_inference_steps, device=device)
         timesteps, num_inference_steps = self.get_timesteps(
-            num_inference_steps, strength, device, image is None)
-        latent_timestep = timesteps[:1].repeat(
-            batch_size * num_images_per_prompt)
+            num_inference_steps, strength, device, image is None
+        )
+        latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
 
         # 5. set prompt schedule (why we need timesteps above)
         prompt_schedule = get_learned_conditioning_prompt_schedules(
-            [prompt], num_inference_steps)[0]
+            [prompt], num_inference_steps
+        )[0]
 
         if negative_prompt != None:
             negative_schedule = get_learned_conditioning_prompt_schedules(
-                [negative_prompt], num_inference_steps)[0]
+                [negative_prompt], num_inference_steps
+            )[0]
         else:
             negative_schedule = [[num_inference_steps, None]]
 
@@ -1367,8 +1473,7 @@ class SimpleStableDiffusionPipeline(
         if image is not None:
             image = image.to(device=self.device, dtype=dtype)
         if isinstance(mask_image, PIL.Image.Image):
-            mask_image = preprocess_mask(
-                mask_image, batch_size, self.vae_scale_factor)
+            mask_image = preprocess_mask(mask_image, batch_size, self.vae_scale_factor)
         if mask_image is not None:
             mask = mask_image.to(device=self.device, dtype=dtype)
             mask = torch.cat([mask] * num_images_per_prompt)
@@ -1399,16 +1504,16 @@ class SimpleStableDiffusionPipeline(
         last_negative = negative_schedule[0][1]
 
         # 10. Denoising loop
-        num_warmup_steps = len(timesteps) - \
-            num_inference_steps * self.scheduler.order
+        num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
-
                 # expand the latents if we are doing classifier free guidance
-                latent_model_input = torch.cat(
-                    [latents] * 2) if do_classifier_free_guidance else latents
+                latent_model_input = (
+                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+                )
                 latent_model_input = self.scheduler.scale_model_input(
-                    latent_model_input, t)
+                    latent_model_input, t
+                )
 
                 # handle possible prompt scheduling
                 change = False
@@ -1417,7 +1522,10 @@ class SimpleStableDiffusionPipeline(
                     last_positive = prompt_schedule[lp][1]
                     change = True
                 if negative_prompt:
-                    if lp < len(negative_schedule) and negative_schedule[ln][0] <= i - 1:
+                    if (
+                        lp < len(negative_schedule)
+                        and negative_schedule[ln][0] <= i - 1
+                    ):
                         ln += 1
                         last_negative = negative_schedule[ln][1]
                         change = True
@@ -1429,7 +1537,7 @@ class SimpleStableDiffusionPipeline(
                         num_images_per_prompt,
                         do_classifier_free_guidance,
                         last_negative,
-                        max_embeddings_multiples
+                        max_embeddings_multiples,
                     )
 
                 # controlnet(s) inference
@@ -1457,9 +1565,15 @@ class SimpleStableDiffusionPipeline(
                         # To apply the output of ControlNet to both the unconditional and conditional batches,
                         # add 0 to the unconditional batch to keep it unchanged.
                         down_block_res_samples = [
-                            torch.cat([torch.zeros_like(d), d]) for d in down_block_res_samples]
+                            torch.cat([torch.zeros_like(d), d])
+                            for d in down_block_res_samples
+                        ]
                         mid_block_res_sample = torch.cat(
-                            [torch.zeros_like(mid_block_res_sample), mid_block_res_sample])
+                            [
+                                torch.zeros_like(mid_block_res_sample),
+                                mid_block_res_sample,
+                            ]
+                        )
 
                     # predict the noise residual
                     noise_pred = self.unet(
@@ -1484,33 +1598,39 @@ class SimpleStableDiffusionPipeline(
                 # perform guidance
                 if do_classifier_free_guidance:
                     noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * \
-                        (noise_pred_text - noise_pred_uncond)
+                    noise_pred = noise_pred_uncond + guidance_scale * (
+                        noise_pred_text - noise_pred_uncond
+                    )
 
                 # compute the previous noisy sample x_t -> x_t-1
                 latents = self.scheduler.step(
-                    noise_pred, t, latents, **extra_step_kwargs).prev_sample
+                    noise_pred, t, latents, **extra_step_kwargs
+                ).prev_sample
 
                 if mask is not None:
                     # masking
                     if add_predicted_noise:
                         init_latents_proper = self.scheduler.add_noise(
-                            init_latents_orig, noise_pred_uncond, torch.tensor([
-                                                                               t])
+                            init_latents_orig, noise_pred_uncond, torch.tensor([t])
                         )
                     else:
                         init_latents_proper = self.scheduler.add_noise(
-                            init_latents_orig, noise, torch.tensor([t]))
-                    latents = (init_latents_proper * mask) + \
-                        (latents * (1 - mask))
+                            init_latents_orig, noise, torch.tensor([t])
+                        )
+                    latents = (init_latents_proper * mask) + (latents * (1 - mask))
 
                 # call the callback, if provided
-                if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
+                if i == len(timesteps) - 1 or (
+                    (i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0
+                ):
                     progress_bar.update()
                     if i % callback_steps == 0:
                         if callback is not None:
                             callback(i, t, latents)
-                        if is_cancelled_callback is not None and is_cancelled_callback():
+                        if (
+                            is_cancelled_callback is not None
+                            and is_cancelled_callback()
+                        ):
                             return None
 
         if hasattr(self, "final_offload_hook") and self.final_offload_hook is not None:
@@ -1528,7 +1648,8 @@ class SimpleStableDiffusionPipeline(
 
             # 12. Run safety checker
             image, has_nsfw_concept = self.run_safety_checker(
-                image, device, prompt_embeds.dtype)
+                image, device, prompt_embeds.dtype
+            )
 
             # 13. Convert to PIL
             image = self.numpy_to_pil(image)
@@ -1559,26 +1680,34 @@ class SimpleStableDiffusionPipeline(
         guidance_scale: float = 7.5,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
-        generator: Optional[Union[torch.Generator,
-                                  List[torch.Generator]]] = None,
+        generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
         latents: Optional[torch.FloatTensor] = None,
         prompt_embeds: Optional[torch.FloatTensor] = None,
         negative_prompt_embeds: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 3,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
-        callback: Optional[Callable[[
-            int, int, torch.FloatTensor], None]] = None,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
-        controlnet_model: Optional[Union[ControlNetModel, List[ControlNetModel],
-                                         Tuple[ControlNetModel], MultiControlNetModel]] = None,
-        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
-                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        controlnet_model: Optional[
+            Union[
+                ControlNetModel,
+                List[ControlNetModel],
+                Tuple[ControlNetModel],
+                MultiControlNetModel,
+            ]
+        ] = None,
+        controlnet_image: Union[
+            torch.FloatTensor,
+            PIL.Image.Image,
+            List[torch.FloatTensor],
+            List[PIL.Image.Image],
+        ] = None,
         controlnet_conditioning_scale: float = 1.0,
         guess_mode: bool = False,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Function for text-to-image generation.
@@ -1673,7 +1802,7 @@ class SimpleStableDiffusionPipeline(
             controlnet_model=controlnet_model,
             controlnet_image=controlnet_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
-            guess_mode=guess_mode
+            guess_mode=guess_mode,
         )
 
     def img2img(
@@ -1686,25 +1815,33 @@ class SimpleStableDiffusionPipeline(
         guidance_scale: Optional[float] = 7.5,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
-        generator: Optional[Union[torch.Generator,
-                                  List[torch.Generator]]] = None,
+        generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
         prompt_embeds: Optional[torch.FloatTensor] = None,
         negative_prompt_embeds: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 3,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
-        callback: Optional[Callable[[
-            int, int, torch.FloatTensor], None]] = None,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
-        controlnet_model: Optional[Union[ControlNetModel, List[ControlNetModel],
-                                         Tuple[ControlNetModel], MultiControlNetModel]] = None,
-        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
-                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        controlnet_model: Optional[
+            Union[
+                ControlNetModel,
+                List[ControlNetModel],
+                Tuple[ControlNetModel],
+                MultiControlNetModel,
+            ]
+        ] = None,
+        controlnet_image: Union[
+            torch.FloatTensor,
+            PIL.Image.Image,
+            List[torch.FloatTensor],
+            List[PIL.Image.Image],
+        ] = None,
         controlnet_conditioning_scale: float = 1.0,
         guess_mode: bool = False,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Function for image-to-image generation.
@@ -1798,7 +1935,7 @@ class SimpleStableDiffusionPipeline(
             controlnet_model=controlnet_model,
             controlnet_image=controlnet_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
-            guess_mode=guess_mode
+            guess_mode=guess_mode,
         )
 
     def inpaint(
@@ -1813,25 +1950,33 @@ class SimpleStableDiffusionPipeline(
         num_images_per_prompt: Optional[int] = 1,
         add_predicted_noise: Optional[bool] = False,
         eta: Optional[float] = 0.0,
-        generator: Optional[Union[torch.Generator,
-                                  List[torch.Generator]]] = None,
+        generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
         prompt_embeds: Optional[torch.FloatTensor] = None,
         negative_prompt_embeds: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 3,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
-        callback: Optional[Callable[[
-            int, int, torch.FloatTensor], None]] = None,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         cross_attention_kwargs: Optional[Dict[str, Any]] = None,
-        controlnet_model: Optional[Union[ControlNetModel, List[ControlNetModel],
-                                         Tuple[ControlNetModel], MultiControlNetModel]] = None,
-        controlnet_image: Union[torch.FloatTensor, PIL.Image.Image,
-                                List[torch.FloatTensor], List[PIL.Image.Image]] = None,
+        controlnet_model: Optional[
+            Union[
+                ControlNetModel,
+                List[ControlNetModel],
+                Tuple[ControlNetModel],
+                MultiControlNetModel,
+            ]
+        ] = None,
+        controlnet_image: Union[
+            torch.FloatTensor,
+            PIL.Image.Image,
+            List[torch.FloatTensor],
+            List[PIL.Image.Image],
+        ] = None,
         controlnet_conditioning_scale: float = 1.0,
         guess_mode: bool = False,
-        **kwargs
+        **kwargs,
     ):
         r"""
         Function for inpaint.
@@ -1934,5 +2079,5 @@ class SimpleStableDiffusionPipeline(
             controlnet_model=controlnet_model,
             controlnet_image=controlnet_image,
             controlnet_conditioning_scale=controlnet_conditioning_scale,
-            guess_mode=guess_mode
+            guess_mode=guess_mode,
         )
