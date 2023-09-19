@@ -144,7 +144,7 @@ def prepare_pipe_options(
 
 def load_ckpt(ckpt_link: str) -> SimpleStableDiffusionPipeline:
     # takes a huggingface link or a filepath to a ckpt/safetensors
-    return SimpleStableDiffusionPipeline.from_ckpt(
+    return SimpleStableDiffusionPipeline.from_single_file(
         ckpt_link, torch_dtype=torch.float16, load_safety_checker=False
     )
 
