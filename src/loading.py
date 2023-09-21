@@ -298,9 +298,16 @@ def attach_lora_to_pipe_from_drive_or_huggingface(
 
 
 def attach_lora_from_civitai(
-    civitai_model_id: int, pipe: SimpleStableDiffusionPipeline, lora_weight: float = 0.5
+    civitai_model_id: int,
+    pipe: SimpleStableDiffusionPipeline,
+    lora_weight: float = 0.5,
+    if_not_safetensors_specify_extension_here: Optional[str] = None,
 ) -> SimpleStableDiffusionPipeline:
-    lora_filepath = get_model_file_from_civitai_with_model_id(civitai_model_id)
+    lora_filepath = (
+        (f"{get_model_file_from_civitai_with_model_id(civitai_model_id)}.safetensors")
+        if not if_not_safetensors_specify_extension_here
+        else f"{get_model_file_from_civitai_with_model_id(civitai_model_id)}.{if_not_safetensors_specify_extension_here}"
+    )
     pipe.load_lora_weights(lora_filepath)
     pipe._lora_scale = lora_weight
     find_modules_and_assign_padding_mode(pipe, "setup")
