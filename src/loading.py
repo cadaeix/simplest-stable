@@ -304,10 +304,11 @@ def attach_lora_from_civitai(
     if_not_safetensors_specify_extension_here: Optional[str] = None,
 ) -> SimpleStableDiffusionPipeline:
     lora_filepath = (
-        (f"{get_model_file_from_civitai_with_model_id(civitai_model_id)}.safetensors")
+        (f"{civitai_model_id}.safetensors")
         if not if_not_safetensors_specify_extension_here
-        else f"{get_model_file_from_civitai_with_model_id(civitai_model_id)}.{if_not_safetensors_specify_extension_here}"
+        else f"{civitai_model_id}.{if_not_safetensors_specify_extension_here}"
     )
+    get_model_file_from_civitai_with_model_id(civitai_model_id, lora_filepath)
     pipe.load_lora_weights(lora_filepath)
     pipe._lora_scale = lora_weight
     find_modules_and_assign_padding_mode(pipe, "setup")
