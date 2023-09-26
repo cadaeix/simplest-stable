@@ -102,7 +102,11 @@ def prepare_pipe_from_presets(
 
     if "vae" in model_choice:
         if model_choice["vae"]["type"] == "hf-file":
-            vae_filepath = download_file_from_hf()
+            vae_filepath = download_file_from_hf(
+                model_choice["vae"]["repo_id"],
+                model_choice["vae"]["filename"],
+                f'{model_download_folder}{model_choice["vae"]["filename"]}',
+            )
         elif model_choice["vae"]["type"] == "civitai":
             vae_filepath = get_vae_file_from_civitai_with_model_id(
                 model_choice["model_id"],

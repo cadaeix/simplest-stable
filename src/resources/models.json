@@ -115,7 +115,7 @@
   },
   "Anything v4.0": {
     "type": "diffusers",
-    "repo_id": "andite/anything-v4.0",
+    "repo_id": "xyn-ai/anything-v4.0",
     "prediction": "epsilon",
     "description": "Anime style, further merged/finetuned on 3.0 by different people - SD 1.x",
     "image_size": 512,
