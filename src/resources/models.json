@@ -206,7 +206,7 @@
   "Collage Diffusion": {
     "type": "hf-file",
     "repo_id": "wavymulder/collage-diffusion",
-    "filename": " collage-1.0.safetensors",
+    "filename": "collage-1.0.safetensors",
     "config": "",
     "keyword": "collage style",
     "prediction": "epsilon",
